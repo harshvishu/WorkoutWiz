@@ -8,7 +8,6 @@ DerivedData/
 
 # Swift Package Manager
 /.build/
-/Packages/Domain/.swiftpm/xcode/package.xcworkspace/xcshareddata/
 
 # CocoaPods
 /Pods/
