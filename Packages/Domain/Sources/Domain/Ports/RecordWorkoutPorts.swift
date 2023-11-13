@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol RecordWorkoutOutputPort: AnyObject {
-    func workoutRecordedwithResult(_: Result<Workout, Error>)
+    func workoutRecordedwithResult(_ result: Result<Workout, Error>)
 }
 
 public protocol RecordWorkoutInputPort {
