@@ -1,0 +1,117 @@
+# Xcode
+.DS_Store
+build/
+DerivedData/
+/*.xcodeproj/
+/*.xcworkspace/
+/xcuserdata/
+
+# Swift Package Manager
+/.build/
+/Packages/Domain/.swiftpm/xcode/package.xcworkspace/xcshareddata/
+
+# CocoaPods
+/Pods/
+/*.xcworkspace/
+
+# Carthage
+/Carthage/Build/
+
+# Fastlane
+/fastlane/report.xml
+/fastlane/Preview.html
+/fastlane/screenshots/
+/fastlane/test_output/
+
+# Playgrounds
+/*.playground/
+
+# Exclude user-specific files and settings
+xcuserdata/
+
+# Exclude any logs, databases, and temporary files
+*.log
+*.sql
+*.sqlite
+
+# Exclude Xcode and macOS files
+*.swiftpm
+*.xccheckout
+*.xcuserstate
+*.xcscmblueprint
+*.xcscms
+.DS_Store
+profile
+*.ipa
+
+# Exclude JetBrains files
+.idea/
+
+# Exclude Visual Studio Code files
+.vscode/
+
+# Exclude macOS folder attributes
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Exclude iOS Gatekeeper files
+.DS_Store
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.xcarchive
+
+# Exclude AppCode files
+.idea/
+
+# Exclude fastlane files
+/fastlane/report.xml
+/fastlane/Preview.html
+/fastlane/screenshots/
+/fastlane/test_output/
+
+# Exclude Playgrounds
+.playground/
+
+# Exclude Xcode project files
+/*.pbxproj
+/*.xcworkspace
+/*.xcuserstate
+
+# Exclude Xcode user-specific workspace settings
+xcuserdata/
+
+# Exclude Pods directory
+/Pods/
+
+# Exclude Carthage directory
+/Carthage/
+
+# Exclude SPM-generated directory
+/.build/
+
+# Exclude macOS metadata
+.AppleDouble
+.DS_Store
+
+# Exclude Xcode configuration files
+*.xcodeproj/
+*.xcworkspace/
+
+# Exclude Xcode build files
+build/
+
+# Exclude Xcode subdirectories
+xcuserdata/
+
+# Exclude .git directory
+.git/
+
+# Exclude .DS_Store files everywhere
+**/.DS_Store
+
+# Exclude .vscode directory
+.vscode/
+

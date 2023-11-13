@@ -6,27 +6,19 @@
 //
 
 import SwiftUI
-import SwiftData
+import OSLog
+import UI
+
+let logger: Logger = Logger(subsystem: "com.phychicowl.WorkoutWiz", category: "WorkoutWiz")
 
 @main
-struct WorkoutWizApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+struct AppMain: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .task {
+                    logger.log("Welcome to WorkoutWiz!")
+                }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

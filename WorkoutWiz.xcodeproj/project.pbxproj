@@ -7,19 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3A0D2FCA2B02156B00F1F371 /* Domain in Resources */ = {isa = PBXBuildFile; fileRef = 3A0D2FC72B02156B00F1F371 /* Domain */; };
-		3A0D2FD62B02170B00F1F371 /* ApplicationServices in Resources */ = {isa = PBXBuildFile; fileRef = 3A0D2FD32B02170B00F1F371 /* ApplicationServices */; };
-		3A0D2FD72B02170B00F1F371 /* DesignSystem in Resources */ = {isa = PBXBuildFile; fileRef = 3A0D2FD42B02170B00F1F371 /* DesignSystem */; };
-		3A0D2FD82B02170B00F1F371 /* FrameworksAndDrivers in Resources */ = {isa = PBXBuildFile; fileRef = 3A0D2FD52B02170B00F1F371 /* FrameworksAndDrivers */; };
-		3A0D2FDA2B02178D00F1F371 /* ApplicationServices in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0D2FD92B02178D00F1F371 /* ApplicationServices */; };
-		3A0D2FDC2B02178D00F1F371 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0D2FDB2B02178D00F1F371 /* Domain */; };
-		3A0D2FDE2B02178D00F1F371 /* FrameworksAndDrivers in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0D2FDD2B02178D00F1F371 /* FrameworksAndDrivers */; };
-		3A0D2FE02B0217C800F1F371 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 3A0D2FDF2B0217C800F1F371 /* DesignSystem */; };
+		3A0D2FE82B0232BB00F1F371 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0D2FE72B0232BB00F1F371 /* RootView.swift */; };
 		3A51FAF52AF8CE1200404A4D /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A51FAEE2AF8CE1200404A4D /* Item.swift */; };
 		3A51FAF62AF8CE1200404A4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */; };
 		3A51FAF72AF8CE1200404A4D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A51FAF12AF8CE1200404A4D /* Preview Assets.xcassets */; };
 		3A51FAF82AF8CE1200404A4D /* WorkoutWizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */; };
-		3A51FAF92AF8CE1200404A4D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A51FAF42AF8CE1200404A4D /* ContentView.swift */; };
+		3A7260062B023A7F007AF4E9 /* Domain in Resources */ = {isa = PBXBuildFile; fileRef = 3A7260052B023A7F007AF4E9 /* Domain */; };
+		3A7260082B023A8D007AF4E9 /* DesignSystem in Resources */ = {isa = PBXBuildFile; fileRef = 3A7260072B023A8D007AF4E9 /* DesignSystem */; };
+		3A72600A2B023A9B007AF4E9 /* ApplicationServices in Resources */ = {isa = PBXBuildFile; fileRef = 3A7260092B023A9B007AF4E9 /* ApplicationServices */; };
+		3A72600C2B023AA6007AF4E9 /* FrameworksAndDrivers in Resources */ = {isa = PBXBuildFile; fileRef = 3A72600B2B023AA6007AF4E9 /* FrameworksAndDrivers */; };
+		3A72600E2B023B09007AF4E9 /* ApplicationServices in Frameworks */ = {isa = PBXBuildFile; productRef = 3A72600D2B023B09007AF4E9 /* ApplicationServices */; };
+		3A7260102B023B09007AF4E9 /* DesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = 3A72600F2B023B09007AF4E9 /* DesignSystem */; };
+		3A7260122B023B09007AF4E9 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260112B023B09007AF4E9 /* Domain */; };
+		3A7260142B023B75007AF4E9 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260132B023B75007AF4E9 /* Persistence */; };
+		3A7260162B023B78007AF4E9 /* UI in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260152B023B78007AF4E9 /* UI */; };
+		3A7260182B023B85007AF4E9 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260172B023B85007AF4E9 /* Preferences */; };
 		3ACF1A152AF8CA7B005AFB40 /* WorkoutWizTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */; };
 		3ACF1A1F2AF8CA7B005AFB40 /* WorkoutWizUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A1E2AF8CA7B005AFB40 /* WorkoutWizUITests.swift */; };
 		3ACF1A212AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A202AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift */; };
@@ -43,16 +45,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3A0D2FC72B02156B00F1F371 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Domain; path = Packages/Domain; sourceTree = "<group>"; };
-		3A0D2FD32B02170B00F1F371 /* ApplicationServices */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ApplicationServices; path = Packages/ApplicationServices; sourceTree = "<group>"; };
-		3A0D2FD42B02170B00F1F371 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DesignSystem; path = Packages/DesignSystem; sourceTree = "<group>"; };
-		3A0D2FD52B02170B00F1F371 /* FrameworksAndDrivers */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = FrameworksAndDrivers; path = Packages/FrameworksAndDrivers; sourceTree = "<group>"; };
+		3A0D2FE72B0232BB00F1F371 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		3A0D2FFC2B02386400F1F371 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
 		3A51FAEE2AF8CE1200404A4D /* Item.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A51FAF12AF8CE1200404A4D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutWizApp.swift; sourceTree = "<group>"; };
 		3A51FAF32AF8CE1200404A4D /* WorkoutWiz.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = WorkoutWiz.entitlements; sourceTree = "<group>"; };
-		3A51FAF42AF8CE1200404A4D /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3A7260052B023A7F007AF4E9 /* Domain */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Domain; sourceTree = "<group>"; };
+		3A7260072B023A8D007AF4E9 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DesignSystem; sourceTree = "<group>"; };
+		3A7260092B023A9B007AF4E9 /* ApplicationServices */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ApplicationServices; sourceTree = "<group>"; };
+		3A72600B2B023AA6007AF4E9 /* FrameworksAndDrivers */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FrameworksAndDrivers; sourceTree = "<group>"; };
 		3ACF19FD2AF8CA7A005AFB40 /* WorkoutWiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutWiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A102AF8CA7B005AFB40 /* WorkoutWizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutWizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutWizTests.swift; sourceTree = "<group>"; };
@@ -66,10 +69,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A0D2FDC2B02178D00F1F371 /* Domain in Frameworks */,
-				3A0D2FDA2B02178D00F1F371 /* ApplicationServices in Frameworks */,
-				3A0D2FDE2B02178D00F1F371 /* FrameworksAndDrivers in Frameworks */,
-				3A0D2FE02B0217C800F1F371 /* DesignSystem in Frameworks */,
+				3A7260162B023B78007AF4E9 /* UI in Frameworks */,
+				3A7260182B023B85007AF4E9 /* Preferences in Frameworks */,
+				3A7260142B023B75007AF4E9 /* Persistence in Frameworks */,
+				3A7260122B023B09007AF4E9 /* Domain in Frameworks */,
+				3A72600E2B023B09007AF4E9 /* ApplicationServices in Frameworks */,
+				3A7260102B023B09007AF4E9 /* DesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,14 +98,26 @@
 		3A0D2FAE2B01F98600F1F371 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3A0D2FFC2B02386400F1F371 /* ApplicationServices.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3A0D2FF12B02383300F1F371 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				3A72600B2B023AA6007AF4E9 /* FrameworksAndDrivers */,
+				3A7260092B023A9B007AF4E9 /* ApplicationServices */,
+				3A7260072B023A8D007AF4E9 /* DesignSystem */,
+				3A7260052B023A7F007AF4E9 /* Domain */,
+			);
+			path = Packages;
 			sourceTree = "<group>";
 		};
 		3A51FAED2AF8CE1200404A4D /* App */ = {
 			isa = PBXGroup;
 			children = (
-				3A51FAF42AF8CE1200404A4D /* ContentView.swift */,
+				3A0D2FE72B0232BB00F1F371 /* RootView.swift */,
 				3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */,
 				3A51FAEE2AF8CE1200404A4D /* Item.swift */,
 				3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */,
@@ -121,10 +138,7 @@
 		3ACF19F42AF8CA7A005AFB40 = {
 			isa = PBXGroup;
 			children = (
-				3A0D2FD32B02170B00F1F371 /* ApplicationServices */,
-				3A0D2FD42B02170B00F1F371 /* DesignSystem */,
-				3A0D2FD52B02170B00F1F371 /* FrameworksAndDrivers */,
-				3A0D2FC72B02156B00F1F371 /* Domain */,
+				3A0D2FF12B02383300F1F371 /* Packages */,
 				3A51FAED2AF8CE1200404A4D /* App */,
 				3ACF1A132AF8CA7B005AFB40 /* WorkoutWizTests */,
 				3ACF1A1D2AF8CA7B005AFB40 /* WorkoutWizUITests */,
@@ -177,10 +191,12 @@
 			);
 			name = WorkoutWiz;
 			packageProductDependencies = (
-				3A0D2FD92B02178D00F1F371 /* ApplicationServices */,
-				3A0D2FDB2B02178D00F1F371 /* Domain */,
-				3A0D2FDD2B02178D00F1F371 /* FrameworksAndDrivers */,
-				3A0D2FDF2B0217C800F1F371 /* DesignSystem */,
+				3A72600D2B023B09007AF4E9 /* ApplicationServices */,
+				3A72600F2B023B09007AF4E9 /* DesignSystem */,
+				3A7260112B023B09007AF4E9 /* Domain */,
+				3A7260132B023B75007AF4E9 /* Persistence */,
+				3A7260152B023B78007AF4E9 /* UI */,
+				3A7260172B023B85007AF4E9 /* Preferences */,
 			);
 			productName = WorkoutWiz;
 			productReference = 3ACF19FD2AF8CA7A005AFB40 /* WorkoutWiz.app */;
@@ -272,12 +288,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A0D2FD72B02170B00F1F371 /* DesignSystem in Resources */,
+				3A7260062B023A7F007AF4E9 /* Domain in Resources */,
+				3A72600A2B023A9B007AF4E9 /* ApplicationServices in Resources */,
 				3A51FAF72AF8CE1200404A4D /* Preview Assets.xcassets in Resources */,
-				3A0D2FCA2B02156B00F1F371 /* Domain in Resources */,
 				3A51FAF62AF8CE1200404A4D /* Assets.xcassets in Resources */,
-				3A0D2FD62B02170B00F1F371 /* ApplicationServices in Resources */,
-				3A0D2FD82B02170B00F1F371 /* FrameworksAndDrivers in Resources */,
+				3A7260082B023A8D007AF4E9 /* DesignSystem in Resources */,
+				3A72600C2B023AA6007AF4E9 /* FrameworksAndDrivers in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -303,8 +319,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A51FAF52AF8CE1200404A4D /* Item.swift in Sources */,
+				3A0D2FE82B0232BB00F1F371 /* RootView.swift in Sources */,
 				3A51FAF82AF8CE1200404A4D /* WorkoutWizApp.swift in Sources */,
-				3A51FAF92AF8CE1200404A4D /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -663,21 +679,29 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3A0D2FD92B02178D00F1F371 /* ApplicationServices */ = {
+		3A72600D2B023B09007AF4E9 /* ApplicationServices */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ApplicationServices;
 		};
-		3A0D2FDB2B02178D00F1F371 /* Domain */ = {
+		3A72600F2B023B09007AF4E9 /* DesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignSystem;
+		};
+		3A7260112B023B09007AF4E9 /* Domain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Domain;
 		};
-		3A0D2FDD2B02178D00F1F371 /* FrameworksAndDrivers */ = {
+		3A7260132B023B75007AF4E9 /* Persistence */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = FrameworksAndDrivers;
+			productName = Persistence;
 		};
-		3A0D2FDF2B0217C800F1F371 /* DesignSystem */ = {
+		3A7260152B023B78007AF4E9 /* UI */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = DesignSystem;
+			productName = UI;
+		};
+		3A7260172B023B85007AF4E9 /* Preferences */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Preferences;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
