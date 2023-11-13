@@ -118,3 +118,4 @@ xcuserdata/
 # Ignore all files that start with GoogleService-Info-
 **/GoogleService-Info-*
 App/Resources/GoogleService-Info-*
+GoogleService-Info.plist

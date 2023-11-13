@@ -8,7 +8,6 @@
 import Observation
 import Domain
 import ApplicationServices
-import Persistence
 
 @Observable
 public final class RecordWorkoutViewModel: RecordWorkoutOutputPort {

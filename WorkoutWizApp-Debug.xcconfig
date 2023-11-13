@@ -8,4 +8,4 @@
 
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
-GoogleService-Info = GoogleService-Info-Debug.plist
+GOOGLE_SERVICE_INFO = GoogleService-Info-Debug.plist

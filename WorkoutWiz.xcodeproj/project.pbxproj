@@ -24,6 +24,7 @@
 		3A7260182B023B85007AF4E9 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260172B023B85007AF4E9 /* Preferences */; };
 		3A72601E2B025F21007AF4E9 /* GoogleService-Info-Debug.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */; };
 		3A72601F2B025F21007AF4E9 /* GoogleService-Info-Release.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */; };
+		3A7260222B0264D9007AF4E9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */; };
 		3ACF1A152AF8CA7B005AFB40 /* WorkoutWizTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */; };
 		3ACF1A1F2AF8CA7B005AFB40 /* WorkoutWizUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A1E2AF8CA7B005AFB40 /* WorkoutWizUITests.swift */; };
 		3ACF1A212AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A202AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift */; };
@@ -62,6 +63,7 @@
 		3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "WorkoutWizApp-Release.xcconfig"; sourceTree = "<group>"; };
 		3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Debug.plist"; sourceTree = "<group>"; };
 		3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Release.plist"; sourceTree = "<group>"; };
+		3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		3ACF19FD2AF8CA7A005AFB40 /* WorkoutWiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutWiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A102AF8CA7B005AFB40 /* WorkoutWizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutWizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutWizTests.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 		3ACF19F42AF8CA7A005AFB40 = {
 			isa = PBXGroup;
 			children = (
+				3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */,
 				3A72601A2B025DFA007AF4E9 /* WorkoutWizApp-Debug.xcconfig */,
 				3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */,
 				3A0D2FF12B02383300F1F371 /* Packages */,
@@ -202,6 +205,7 @@
 				3ACF19F92AF8CA7A005AFB40 /* Sources */,
 				3ACF19FA2AF8CA7A005AFB40 /* Frameworks */,
 				3ACF19FB2AF8CA7A005AFB40 /* Resources */,
+				3A7260202B0263A1007AF4E9 /* CopyGoogleServiceInfoScript */,
 			);
 			buildRules = (
 			);
@@ -314,6 +318,7 @@
 				3A7260082B023A8D007AF4E9 /* DesignSystem in Resources */,
 				3A72601F2B025F21007AF4E9 /* GoogleService-Info-Release.plist in Resources */,
 				3A72600C2B023AA6007AF4E9 /* FrameworksAndDrivers in Resources */,
+				3A7260222B0264D9007AF4E9 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,6 +337,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		3A7260202B0263A1007AF4E9 /* CopyGoogleServiceInfoScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = CopyGoogleServiceInfoScript;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n#!/bin/bash\n\n# Get the value of the GoogleServiceInfo variable from the xcconfig file\nGOOGLE_SERVICE_INFO=\"$GOOGLE_SERVICE_INFO\"\n\n# Destination path for the GoogleService-Info.plist file at the root\nDEST_PATH=\"$PROJECT_DIR/GoogleService-Info.plist\"\n\n# Source path for the GoogleService-Info-Release.plist file\nSOURCE_PATH=\"$PROJECT_DIR/App/Resources/$GOOGLE_SERVICE_INFO\"\n\n# Copy the Release configuration file to the root\ncat \"$SOURCE_PATH\" > \"$DEST_PATH\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		3ACF19F92AF8CA7A005AFB40 /* Sources */ = {
@@ -415,7 +441,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -477,7 +503,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
