@@ -7,6 +7,10 @@
 
 import Foundation
 
+public enum RecordWorkoutError: Error {
+    case writeFailed
+}
+
 public protocol RecordWorkoutOutputPort: AnyObject {
     func workoutRecordedwithResult(_ result: Result<Workout, Error>)
 }

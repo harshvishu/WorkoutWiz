@@ -12,7 +12,7 @@ public final class RecordWorkoutUseCase: RecordWorkoutInputPort {
     public weak var output: RecordWorkoutOutputPort?
     var workoutRepository: WorkoutRepository
     
-    init(output: RecordWorkoutOutputPort? = nil, workoutRepository: WorkoutRepository) {
+    public init(output: RecordWorkoutOutputPort? = nil, workoutRepository: WorkoutRepository) {
         self.output = output
         self.workoutRepository = workoutRepository
     }

@@ -11,7 +11,6 @@ import ApplicationServices
 
 @Observable
 public final class RecordWorkoutViewModel: RecordWorkoutOutputPort {
-    public private(set) var workout: Workout = Workout()
     
     private let recordWorkoutUseCase: RecordWorkoutInputPort
     
@@ -24,13 +23,13 @@ public final class RecordWorkoutViewModel: RecordWorkoutOutputPort {
     public func workoutRecordedwithResult(_ result: Result<Domain.Workout, Error>) {
         switch result {
         case .success(let workout):
-            self.workout = workout
+            print(workout)
         case .failure(let error):
             print(error)
         }
     }
     
-    public func recordWorkout() async {
+    public func recordWorkout(_ workout: Workout) async {
         await recordWorkoutUseCase.recordWorkout(workout)
     }
 }

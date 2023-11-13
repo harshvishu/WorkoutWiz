@@ -1,12 +1,12 @@
 import Foundation
 
 public struct Workout {
-    var id: String
-    var date: Date
-    var duration: TimeInterval
-    var notes: String
+    public private(set) var id: String
+    public private(set) var date: Date
+    public private(set) var duration: TimeInterval
+    public private(set) var notes: String
     
-    public init(id: String, date: Date, duration: TimeInterval, notes: String) {
+    public init(id: String = UUID().uuidString, date: Date = Date(), duration: TimeInterval = 0.0, notes: String = "") {
         self.id = id
         self.date = date
         self.duration = duration
