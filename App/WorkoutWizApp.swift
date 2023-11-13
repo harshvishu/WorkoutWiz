@@ -8,11 +8,16 @@
 import SwiftUI
 import OSLog
 import UI
+import Persistence
 
 let logger: Logger = Logger(subsystem: "com.phychicowl.WorkoutWiz", category: "WorkoutWiz")
 
 @main
 struct AppMain: App {
+    init() {
+        FirebaseManager.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
             RootView()

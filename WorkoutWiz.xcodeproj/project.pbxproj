@@ -22,6 +22,8 @@
 		3A7260142B023B75007AF4E9 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260132B023B75007AF4E9 /* Persistence */; };
 		3A7260162B023B78007AF4E9 /* UI in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260152B023B78007AF4E9 /* UI */; };
 		3A7260182B023B85007AF4E9 /* Preferences in Frameworks */ = {isa = PBXBuildFile; productRef = 3A7260172B023B85007AF4E9 /* Preferences */; };
+		3A72601E2B025F21007AF4E9 /* GoogleService-Info-Debug.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */; };
+		3A72601F2B025F21007AF4E9 /* GoogleService-Info-Release.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */; };
 		3ACF1A152AF8CA7B005AFB40 /* WorkoutWizTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */; };
 		3ACF1A1F2AF8CA7B005AFB40 /* WorkoutWizUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A1E2AF8CA7B005AFB40 /* WorkoutWizUITests.swift */; };
 		3ACF1A212AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A202AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift */; };
@@ -56,6 +58,10 @@
 		3A7260072B023A8D007AF4E9 /* DesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = DesignSystem; sourceTree = "<group>"; };
 		3A7260092B023A9B007AF4E9 /* ApplicationServices */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = ApplicationServices; sourceTree = "<group>"; };
 		3A72600B2B023AA6007AF4E9 /* FrameworksAndDrivers */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = FrameworksAndDrivers; sourceTree = "<group>"; };
+		3A72601A2B025DFA007AF4E9 /* WorkoutWizApp-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "WorkoutWizApp-Debug.xcconfig"; sourceTree = "<group>"; };
+		3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "WorkoutWizApp-Release.xcconfig"; sourceTree = "<group>"; };
+		3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Debug.plist"; sourceTree = "<group>"; };
+		3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Release.plist"; sourceTree = "<group>"; };
 		3ACF19FD2AF8CA7A005AFB40 /* WorkoutWiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutWiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A102AF8CA7B005AFB40 /* WorkoutWizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutWizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutWizTests.swift; sourceTree = "<group>"; };
@@ -117,6 +123,7 @@
 		3A51FAED2AF8CE1200404A4D /* App */ = {
 			isa = PBXGroup;
 			children = (
+				3A7260192B025B7D007AF4E9 /* Resources */,
 				3A0D2FE72B0232BB00F1F371 /* RootView.swift */,
 				3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */,
 				3A51FAEE2AF8CE1200404A4D /* Item.swift */,
@@ -135,9 +142,20 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		3A7260192B025B7D007AF4E9 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */,
+				3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
 		3ACF19F42AF8CA7A005AFB40 = {
 			isa = PBXGroup;
 			children = (
+				3A72601A2B025DFA007AF4E9 /* WorkoutWizApp-Debug.xcconfig */,
+				3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */,
 				3A0D2FF12B02383300F1F371 /* Packages */,
 				3A51FAED2AF8CE1200404A4D /* App */,
 				3ACF1A132AF8CA7B005AFB40 /* WorkoutWizTests */,
@@ -290,9 +308,11 @@
 			files = (
 				3A7260062B023A7F007AF4E9 /* Domain in Resources */,
 				3A72600A2B023A9B007AF4E9 /* ApplicationServices in Resources */,
+				3A72601E2B025F21007AF4E9 /* GoogleService-Info-Debug.plist in Resources */,
 				3A51FAF72AF8CE1200404A4D /* Preview Assets.xcassets in Resources */,
 				3A51FAF62AF8CE1200404A4D /* Assets.xcassets in Resources */,
 				3A7260082B023A8D007AF4E9 /* DesignSystem in Resources */,
+				3A72601F2B025F21007AF4E9 /* GoogleService-Info-Release.plist in Resources */,
 				3A72600C2B023AA6007AF4E9 /* FrameworksAndDrivers in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -359,6 +379,7 @@
 /* Begin XCBuildConfiguration section */
 		3ACF1A222AF8CA7B005AFB40 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3A72601A2B025DFA007AF4E9 /* WorkoutWizApp-Debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -420,6 +441,7 @@
 		};
 		3ACF1A232AF8CA7B005AFB40 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
