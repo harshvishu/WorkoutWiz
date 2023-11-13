@@ -7,17 +7,25 @@
 
 import SwiftUI
 import SwiftData
+import DesignSystem
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
-
+    
     var body: some View {
         NavigationSplitView {
+            SizeClassAdaptiveView {
+                Text("Compact")
+            } regular: {
+                Text("Regular")
+            }
+
             List {
                 ForEach(items) { item in
                     NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+                        Circle()
+                            .fill()
                     } label: {
                         Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
                     }
