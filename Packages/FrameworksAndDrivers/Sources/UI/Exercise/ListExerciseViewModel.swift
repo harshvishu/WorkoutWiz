@@ -18,6 +18,7 @@ public final class ListExerciseViewModel: ListExerciseOutputPort {
     public init(listExerciseUseCase: ListExerciseInputPort) {
         self.listExerciseUseCase = listExerciseUseCase
         (listExerciseUseCase as? ListExerciseUseCase)?.output = self
+        print("New list Exersice View Model")
     }
     
     @MainActor

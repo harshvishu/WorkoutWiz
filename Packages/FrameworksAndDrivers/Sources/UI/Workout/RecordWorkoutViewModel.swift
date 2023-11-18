@@ -10,13 +10,19 @@ import Domain
 import ApplicationServices
 
 @Observable
-public final class RecordWorkoutViewModel: RecordWorkoutOutputPort {
+public final class RecordWorkoutViewModel: RecordWorkoutOutputPort, ListExerciseOutputPort {
     
     private let recordWorkoutUseCase: RecordWorkoutInputPort
+    private let listExerciseUseCase: ListExerciseInputPort
     
-    public init(recordWorkoutUseCase: RecordWorkoutInputPort) {
+    public private(set) var exercies: [Exercise] = []
+    
+    public init(recordWorkoutUseCase: RecordWorkoutInputPort, listExerciseUseCase: ListExerciseInputPort) {
         self.recordWorkoutUseCase = recordWorkoutUseCase
+        self.listExerciseUseCase = listExerciseUseCase
+        
         (recordWorkoutUseCase as? RecordWorkoutUseCase)?.output = self
+        (listExerciseUseCase as? ListExerciseUseCase)?.output = self
     }
 
     @MainActor
@@ -27,9 +33,14 @@ public final class RecordWorkoutViewModel: RecordWorkoutOutputPort {
         case .failure(let error):
             print(error)
         }
-    }
+    }	
     
     public func recordWorkout(_ workout: Workout) async {
         await recordWorkoutUseCase.recordWorkout(workout)
+    }
+    
+    @MainActor
+    public func displayExercises(_ exercises: [Exercise]) {
+        self.exercies = exercises
     }
 }
