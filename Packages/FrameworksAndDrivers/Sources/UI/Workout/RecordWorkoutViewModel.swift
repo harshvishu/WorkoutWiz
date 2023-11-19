@@ -8,6 +8,7 @@
 import Observation
 import Domain
 import ApplicationServices
+import Persistence
 
 @Observable
 public final class RecordWorkoutViewModel: RecordWorkoutOutputPort, ListExerciseOutputPort {
@@ -17,7 +18,7 @@ public final class RecordWorkoutViewModel: RecordWorkoutOutputPort, ListExercise
     
     public private(set) var exercies: [Exercise] = []
     
-    public init(recordWorkoutUseCase: RecordWorkoutInputPort, listExerciseUseCase: ListExerciseInputPort) {
+    public init(recordWorkoutUseCase: RecordWorkoutInputPort = RecordWorkoutUseCase(workoutRepository: FirebaseWorkoutRepository()), listExerciseUseCase: ListExerciseInputPort = ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository())) {
         self.recordWorkoutUseCase = recordWorkoutUseCase
         self.listExerciseUseCase = listExerciseUseCase
         

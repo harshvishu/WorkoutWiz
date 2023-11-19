@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct CustomTabBar: View {
+public struct CustomTabBar: View {
     @Binding var selectedScreen: AppScreen
     @Binding var popToRootScreen: AppScreen
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(AppScreen.availableTabs) { tab in
@@ -45,6 +45,9 @@ struct CustomTabBar: View {
 }
 
 #Preview {
-    CustomTabBar(selectedScreen: .constant(.dashboard), popToRootScreen: .constant(.other))
+    @State var selectedScreen: AppScreen = .dashboard
+    @State var popToRootScreen: AppScreen = .other
+    
+    return CustomTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
         .frame(maxHeight: .infinity, alignment: .bottom)
 }

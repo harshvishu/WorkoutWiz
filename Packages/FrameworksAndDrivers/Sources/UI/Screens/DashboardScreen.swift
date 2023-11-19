@@ -9,10 +9,9 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
-import UI
 
 @MainActor
-struct DashboardScreen: View {
+public struct DashboardScreen: View {
     @State private var listExersiceViewModel = ListExerciseViewModel(listExerciseUseCase: ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository()))
     
     @State private var routerPath = RouterPath()
@@ -22,7 +21,7 @@ struct DashboardScreen: View {
         _popToRootScreen = popToRootScreen
     }
     
-    var body: some View {
+    public var body: some View {
         NavigationStack {
             ListExerciseView(viewModel: listExersiceViewModel)
                 .withAppRouter()
@@ -32,5 +31,7 @@ struct DashboardScreen: View {
 }
 
 #Preview {
-    DashboardScreen(popToRootScreen: .constant(.other))
+    @State var popToRootScreen: AppScreen = .other
+    
+    return DashboardScreen(popToRootScreen: $popToRootScreen)
 }

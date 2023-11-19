@@ -33,7 +33,7 @@ let package = Package(
                                                     .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
         ]),
         .target(name: "Preferences", dependencies: ["Domain", "ApplicationServices"]),
-        .target(name: "UI", dependencies: ["Domain", "ApplicationServices", "DesignSystem"]),
+        .target(name: "UI", dependencies: ["Domain", "ApplicationServices", "DesignSystem", "Persistence"]),
         .testTarget(name: "FrameworksAndDriversTests", dependencies: ["Persistence", "Preferences", "UI"]),
     ]
 )

@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3A0D2FE82B0232BB00F1F371 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A0D2FE72B0232BB00F1F371 /* RootView.swift */; };
-		3A2C624C2B0763F40012D4A8 /* AppScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2C624B2B0763F40012D4A8 /* AppScreen.swift */; };
-		3A2C624F2B0766830012D4A8 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2C624E2B0766830012D4A8 /* Router.swift */; };
-		3A2C62512B0768540012D4A8 /* TabBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2C62502B0768540012D4A8 /* TabBarView.swift */; };
-		3A2C62532B076B770012D4A8 /* DashboardScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2C62522B076B770012D4A8 /* DashboardScreen.swift */; };
 		3A51FAF62AF8CE1200404A4D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */; };
 		3A51FAF72AF8CE1200404A4D /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A51FAF12AF8CE1200404A4D /* Preview Assets.xcassets */; };
 		3A51FAF82AF8CE1200404A4D /* WorkoutWizApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */; };
@@ -28,7 +23,6 @@
 		3A72601E2B025F21007AF4E9 /* GoogleService-Info-Debug.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */; };
 		3A72601F2B025F21007AF4E9 /* GoogleService-Info-Release.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */; };
 		3A7260222B0264D9007AF4E9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */; };
-		3AC7D2822B08C5C400B2C214 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC7D2812B08C5C400B2C214 /* CustomTabBar.swift */; };
 		3ACF1A152AF8CA7B005AFB40 /* WorkoutWizTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */; };
 		3ACF1A1F2AF8CA7B005AFB40 /* WorkoutWizUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A1E2AF8CA7B005AFB40 /* WorkoutWizUITests.swift */; };
 		3ACF1A212AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ACF1A202AF8CA7B005AFB40 /* WorkoutWizUITestsLaunchTests.swift */; };
@@ -52,12 +46,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3A0D2FE72B0232BB00F1F371 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		3A0D2FFC2B02386400F1F371 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
-		3A2C624B2B0763F40012D4A8 /* AppScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppScreen.swift; sourceTree = "<group>"; };
-		3A2C624E2B0766830012D4A8 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
-		3A2C62502B0768540012D4A8 /* TabBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarView.swift; sourceTree = "<group>"; };
-		3A2C62522B076B770012D4A8 /* DashboardScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardScreen.swift; sourceTree = "<group>"; };
 		3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A51FAF12AF8CE1200404A4D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutWizApp.swift; sourceTree = "<group>"; };
@@ -71,7 +60,6 @@
 		3A72601C2B025F21007AF4E9 /* GoogleService-Info-Debug.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Debug.plist"; sourceTree = "<group>"; };
 		3A72601D2B025F21007AF4E9 /* GoogleService-Info-Release.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-Release.plist"; sourceTree = "<group>"; };
 		3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		3AC7D2812B08C5C400B2C214 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
 		3ACF19FD2AF8CA7A005AFB40 /* WorkoutWiz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutWiz.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A102AF8CA7B005AFB40 /* WorkoutWizTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutWizTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ACF1A142AF8CA7B005AFB40 /* WorkoutWizTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutWizTests.swift; sourceTree = "<group>"; };
@@ -130,23 +118,10 @@
 			path = Packages;
 			sourceTree = "<group>";
 		};
-		3A2C624A2B0763F40012D4A8 /* Screens */ = {
-			isa = PBXGroup;
-			children = (
-				3A2C624B2B0763F40012D4A8 /* AppScreen.swift */,
-				3A2C62502B0768540012D4A8 /* TabBarView.swift */,
-				3A2C62522B076B770012D4A8 /* DashboardScreen.swift */,
-				3AC7D2812B08C5C400B2C214 /* CustomTabBar.swift */,
-			);
-			path = Screens;
-			sourceTree = "<group>";
-		};
 		3A2C624D2B07640C0012D4A8 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
-				3A0D2FE72B0232BB00F1F371 /* RootView.swift */,
 				3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */,
-				3A2C624E2B0766830012D4A8 /* Router.swift */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -155,7 +130,6 @@
 			isa = PBXGroup;
 			children = (
 				3A2C624D2B07640C0012D4A8 /* Navigation */,
-				3A2C624A2B0763F40012D4A8 /* Screens */,
 				3A7260192B025B7D007AF4E9 /* Resources */,
 				3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */,
 				3A51FAF02AF8CE1200404A4D /* Preview Content */,
@@ -392,13 +366,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A2C624F2B0766830012D4A8 /* Router.swift in Sources */,
-				3A0D2FE82B0232BB00F1F371 /* RootView.swift in Sources */,
-				3A2C62532B076B770012D4A8 /* DashboardScreen.swift in Sources */,
-				3AC7D2822B08C5C400B2C214 /* CustomTabBar.swift in Sources */,
 				3A51FAF82AF8CE1200404A4D /* WorkoutWizApp.swift in Sources */,
-				3A2C62512B0768540012D4A8 /* TabBarView.swift in Sources */,
-				3A2C624C2B0763F40012D4A8 /* AppScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

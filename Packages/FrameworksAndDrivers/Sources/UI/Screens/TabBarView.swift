@@ -9,19 +9,23 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
-import UI
 
 @MainActor
-struct TabBarView: View {
+public struct TabBarView: View {
     
+    /// navigation properties
     @Binding var selectedScreen: AppScreen
     @Binding var popToRootScreen: AppScreen
     
-    @State private var listExersiceViewModel = ListExerciseViewModel(listExerciseUseCase: ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository()))
+    public init(selectedScreen: Binding<AppScreen>, popToRootScreen: Binding<AppScreen>) {
+        _selectedScreen = selectedScreen
+        _popToRootScreen = popToRootScreen
+    }
     
+    /// view properties
     @State private var showSheet = false
     
-    var body: some View {
+    public var body: some View {
         TabView(selection: .init(get: {
             selectedScreen
         }, set: { newTab in
@@ -34,7 +38,7 @@ struct TabBarView: View {
         }), content:  {
             ForEach(AppScreen.availableTabs) { tab in
                 tab.makeContentView(popToRootScreen: $popToRootScreen)
-                    .hideNativeTabBar()
+                    .hideNativeTabBar() /// Hides the native TabBarView we use `CustomTabBar`
                     .tabItem {
                         tab.label
                     }
@@ -42,6 +46,7 @@ struct TabBarView: View {
             }
         })
         .tabSheet(initialHeight: 116.0, sheetCornerRadius: 15.0, showSheet: $showSheet) {
+            // TODO: Make it dynamic
             NavigationStack {
                 ScrollView {
                     
@@ -56,7 +61,7 @@ struct TabBarView: View {
                     if selectedScreen == .dashboard {
                         ToolbarItem(placement: .topBarTrailing) {
                             NavigationLink {
-                                RecordWorkoutView(viewModel: RecordWorkoutViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: FirebaseWorkoutRepository()), listExerciseUseCase: ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository())), exerciseViewModel: listExersiceViewModel)
+                                RecordWorkoutView()
                             } label: {
                                 Image(systemName: "plus")
                             }
@@ -68,7 +73,7 @@ struct TabBarView: View {
         .onChange(of: selectedScreen, { _, newValue in
             showSheet = newValue == .dashboard
         })
-        .task {
+        .onAppear {
             let tempScreen = selectedScreen
             selectedScreen = AppScreen.other
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
@@ -82,6 +87,5 @@ struct TabBarView: View {
     @State var selectedScreen: AppScreen = .dashboard
     @State var popToRootScreen: AppScreen = .other
     
-    return RootView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-        .environment(SceneDelegate())
+    return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
 }

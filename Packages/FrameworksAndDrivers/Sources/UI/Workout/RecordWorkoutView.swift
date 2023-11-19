@@ -17,11 +17,9 @@ public struct RecordWorkoutView: View {
     @State private var workoutDuration = 0.0
     
     @State private var viewModel: RecordWorkoutViewModel
-    @State private var exerciseViewModel: ListExerciseViewModel
     
-    public init(viewModel: RecordWorkoutViewModel, exerciseViewModel: ListExerciseViewModel) {
+    public init(viewModel: RecordWorkoutViewModel = RecordWorkoutViewModel()) {
         self._viewModel = .init(initialValue: viewModel)
-        self._exerciseViewModel = .init(initialValue: exerciseViewModel)
     }
     
     public var body: some View {
@@ -44,9 +42,9 @@ public struct RecordWorkoutView: View {
                 Spacer()
             }
             
-            if !searchText.isEmpty {
-                ListExerciseView(viewModel: exerciseViewModel)
-            }
+//            if !searchText.isEmpty {
+//                ListExerciseView(viewModel: exerciseViewModel)
+//            }
         }
        
         .searchable(text: $searchText, placement: .automatic)

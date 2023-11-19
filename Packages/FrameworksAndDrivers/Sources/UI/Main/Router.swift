@@ -27,7 +27,7 @@ public enum SheetDestination: Identifiable {
 
 
 @MainActor
-@Observable final class RouterPath {
+@Observable public final class RouterPath {
     public var path: [RouterDestination] = []
     public var presentedSheet: SheetDestination?
     
@@ -39,7 +39,7 @@ public enum SheetDestination: Identifiable {
 }
 
 @MainActor
-extension View {
+public extension View {
     func withAppRouter() -> some View {
         navigationDestination(for: RouterDestination.self) { destination in
             switch destination {
