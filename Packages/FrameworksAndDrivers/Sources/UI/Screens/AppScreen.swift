@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 /// Screens
-@MainActor
 public enum AppScreen: Hashable, Identifiable , CaseIterable {
     
     nonisolated

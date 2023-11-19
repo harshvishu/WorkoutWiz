@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 #if os(iOS)
 import UIKit
 #endif
@@ -25,9 +26,9 @@ public extension View {
     }
     
     func debugAction(_ closure: () -> Void) -> Self {
-        #if DEBUG
+#if DEBUG
         closure()
-        #endif
+#endif
         return self
     }
     
@@ -37,11 +38,11 @@ public extension View {
     }
     
     func debugModifier<T: View>(_ modifier: (Self) -> T) -> some View {
-        #if DEBUG
+#if DEBUG
         return modifier(self)
-        #else
+#else
         return self
-        #endif
+#endif
     }
     
     func debugBorder(_ color: Color = .red, width: CGFloat = 1) -> some View {
@@ -57,7 +58,7 @@ public extension View {
     }
     
     func eraseToAnyView() -> AnyView {
-      AnyView(self)
+        AnyView(self)
     }
 }
 
@@ -110,31 +111,66 @@ public extension View {
     }
 }
 
-
-public extension TabView {
-    @ViewBuilder
-    func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
+public extension View {
+    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         self
-            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, sheetView: content()))
+            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, detents: detents, selectedDetent: selectedDetent, sheetView: content))
     }
 }
 
 /// Helper View Modifiers
 fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
-    var initialHeight: CGFloat
-    var sheetCornerRadius: CGFloat
-    @Binding var showSheet: Bool        // View Property
-    var sheetView: SheetContent
+    
+    private var initialHeight: CGFloat
+    private var sheetCornerRadius: CGFloat
+    @Binding private var showSheet: Bool
+    private var detents: Set<PresentationDetent>
+    @Binding private var selectedDetent: PresentationDetent
+    private var sheetView: SheetContent
+    
+    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, sheetView: @escaping () -> SheetContent) {
+        self.initialHeight = initialHeight
+        self.sheetCornerRadius = sheetCornerRadius
+        self._showSheet = showSheet
+        self.detents = detents
+        self._selectedDetent = selectedDetent
+        self.sheetView = sheetView()
+    }
     
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $showSheet, content: {
                 sheetView
-                    .presentationDetents([.height(initialHeight), .medium, .fraction(0.99)])
+                    .presentationDetents([.InitialSheetDetent, .ExpandedSheetDetent], selection: $selectedDetent)
                     .presentationCornerRadius(sheetCornerRadius)
-                    .presentationBackgroundInteraction(.enabled(upThrough: .medium))
+                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
                     .presentationBackground(.regularMaterial)
                     .interactiveDismissDisabled()
             })
+    }
+}
+
+public extension PresentationDetent {
+    static let InitialSheetDetent: PresentationDetent = .height(116.0)
+    static let ExpandedSheetDetent: PresentationDetent = .fraction(0.99)
+}
+
+/// Publisher to read keyboard changes.
+public protocol KeyboardReadable {
+    var keyboardPublisher: AnyPublisher<Bool, Never> { get }
+}
+
+public extension KeyboardReadable {
+    var keyboardPublisher: AnyPublisher<Bool, Never> {
+        Publishers.Merge(
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillShowNotification)
+                .map { _ in true },
+            
+            NotificationCenter.default
+                .publisher(for: UIResponder.keyboardWillHideNotification)
+                .map { _ in false }
+        )
+        .eraseToAnyPublisher()
     }
 }

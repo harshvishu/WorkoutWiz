@@ -10,6 +10,11 @@ import DesignSystem
 import ApplicationServices
 import Persistence
 
+fileprivate struct Constants {
+    static let InitialSheetHeight = CGFloat(116.0)
+    static let EligibleBottomSheetScreens: [AppScreen] = [.dashboard]
+}
+
 @MainActor
 public struct TabBarView: View {
     
@@ -23,7 +28,11 @@ public struct TabBarView: View {
     }
     
     /// view properties
-    @State private var showSheet = false
+    @State private var showTabBottomSheet = false
+    @State var selectedDetent: PresentationDetent = .InitialSheetDetent
+    
+    /// internal properties
+    private var availableSheetDetents: Set<PresentationDetent> = [.InitialSheetDetent, .ExpandedSheetDetent]
     
     public var body: some View {
         TabView(selection: .init(get: {
@@ -45,40 +54,31 @@ public struct TabBarView: View {
                     .tag(tab)
             }
         })
-        .tabSheet(initialHeight: 116.0, sheetCornerRadius: 15.0, showSheet: $showSheet) {
-            // TODO: Make it dynamic
-            NavigationStack {
-                ScrollView {
-                    
-                }
-                .scrollIndicators(.hidden)
-                .toolbar(content: {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Text(selectedScreen.title)
-                            .font(.title3.bold())
-                    }
-                    
-                    if selectedScreen == .dashboard {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            NavigationLink {
-                                RecordWorkoutView()
-                            } label: {
-                                Image(systemName: "plus")
-                            }
-                        }
-                    }
-                })
-            }
-        }
-        .onChange(of: selectedScreen, { _, newValue in
-            showSheet = newValue == .dashboard
+        .tabSheet(initialHeight: Constants.InitialSheetHeight, sheetCornerRadius: 15.0, showSheet: $showTabBottomSheet, detents: availableSheetDetents, selectedDetent: $selectedDetent, content: tabSheetContent)
+        .onChange(of: selectedScreen, initial: true, { _, newValue in
+            /// Make it more dynamic
+            showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(newValue)
+            /// Reset `selectedDetent` on change of screen
+            selectedDetent = .InitialSheetDetent
         })
-        .onAppear {
-            let tempScreen = selectedScreen
-            selectedScreen = AppScreen.other
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                selectedScreen = tempScreen
-            }
+//        .onAppear {
+//            let tempScreen = selectedScreen
+//            selectedScreen = AppScreen.other
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+//                selectedScreen = tempScreen
+//            }
+//        }
+    }
+}
+
+fileprivate extension TabBarView {
+    
+    @ViewBuilder func tabSheetContent() -> some View {
+        switch selectedScreen {
+        case .dashboard:
+            RecordWorkoutView(selectedDetent: $selectedDetent)
+        default:
+            EmptyView()
         }
     }
 }

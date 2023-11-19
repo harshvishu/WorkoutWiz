@@ -343,7 +343,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		3A7260202B0263A1007AF4E9 /* CopyGoogleServiceInfoScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
@@ -355,7 +355,7 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n#!/bin/bash\n\n# Get the value of the GoogleServiceInfo variable from the xcconfig file\nGOOGLE_SERVICE_INFO=\"$GOOGLE_SERVICE_INFO\"\n\n# Destination path for the GoogleService-Info.plist file at the root\nDEST_PATH=\"$PROJECT_DIR/GoogleService-Info.plist\"\n\n# Source path for the GoogleService-Info-Release.plist file\nSOURCE_PATH=\"$PROJECT_DIR/App/Resources/$GOOGLE_SERVICE_INFO\"\n\n# Copy the Release configuration file to the root\ncat \"$SOURCE_PATH\" > \"$DEST_PATH\"\n";
 		};
