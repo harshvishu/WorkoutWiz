@@ -14,13 +14,7 @@ public final class FirebaseExerciseRepository: ExerciseRepository {
     
     public func fetchExercises() async -> [Domain.Exercise] {
         // TODO: Must Call Firebase API
-        let exersices = [
-            Exercise(name: "Chest Press", caloriesPerSecond: 0.025, tags: ["Chest", "Push"]),
-            Exercise(name: "Inclined Chest Press", caloriesPerSecond: 0.020, tags: ["Chest", "Push"]),
-            Exercise(name: "Declined Chest Press", caloriesPerSecond: 0.015, tags: ["Chest", "Push"]),
-            Exercise(name: "Dumbell Press", caloriesPerSecond: 0.010, tags: ["Chest", "Push", "Dumbell"]),
-            Exercise(name: "Dumbell Fly", caloriesPerSecond: 0.015, tags: ["Chest", "Push", "Dumbell"]),
-        ]
+        let exersices: [Exercise] = []
         return exersices
     }
     
