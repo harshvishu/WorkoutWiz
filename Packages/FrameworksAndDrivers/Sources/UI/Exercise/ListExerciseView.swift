@@ -8,13 +8,14 @@
 import SwiftUI
 import Domain
 import ApplicationServices
+import Persistence
 
 @MainActor
 public struct ListExerciseView: View {
     
     @State var viewModel: ListExerciseViewModel
     
-    public init(viewModel: ListExerciseViewModel) {
+    public init(viewModel: ListExerciseViewModel = ListExerciseViewModel()) {
         self._viewModel = .init(initialValue: viewModel)
     }
     
@@ -22,6 +23,7 @@ public struct ListExerciseView: View {
         List(viewModel.exercies) {
             Text($0.name)
         }
+        .debugBorder()
         .task(priority: .background) {
             await viewModel.listExercises()
         }

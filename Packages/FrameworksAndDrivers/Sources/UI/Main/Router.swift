@@ -13,12 +13,13 @@ import Combine
 /// Navigation view for Router (NavigationStack)
 public enum RouterDestination: Hashable {
     case workoutDetails
-    case exerciseList
+    case listExercise
 }
 
 /// View for Sheets
 public enum SheetDestination: Identifiable {
     case recordWorkout
+    case listExercise
     
     public var id: String {
         String(describing: self)
@@ -42,11 +43,12 @@ public enum SheetDestination: Identifiable {
 public extension View {
     func withAppRouter() -> some View {
         navigationDestination(for: RouterDestination.self) { destination in
+            print("asdadasdasdd")
             switch destination {
             case .workoutDetails:
                 Text("Workout Details")
-            case .exerciseList:
-                Text("Show Exercise List")
+            case .listExercise:
+                ListExerciseView()
             }
         }
     }
@@ -56,6 +58,8 @@ public extension View {
             switch destination {
             case .recordWorkout:
                 Text("Show Record Sheet Here")
+            case .listExercise:
+                ListExerciseView()
             }
         }
     }

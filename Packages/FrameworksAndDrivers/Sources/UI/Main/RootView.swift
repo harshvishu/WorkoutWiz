@@ -16,9 +16,12 @@ public struct RootView: View {
     @State var selectedScreen: AppScreen = .dashboard
     @State var popToRootScreen: AppScreen = .other
     
+    @State var recordWorkoutViewModel = RecordWorkoutViewModel()
+    
     public var body: some View {
         TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
             .environment(workoutWizAppModel)
+            .environment(recordWorkoutViewModel)
             .task {
                 guard sceneDelegate.tabWindow == nil else {return}
                 sceneDelegate.addTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, workoutWizAppModel: workoutWizAppModel)

@@ -22,7 +22,7 @@ public struct DashboardScreen: View {
     }
     
     public var body: some View {
-        NavigationStack {
+        NavigationStack(path: $routerPath.path) {
             ListExerciseView(viewModel: listExersiceViewModel)
                 .withAppRouter()
                 .withSheetDestinations(sheetDestinations: $routerPath.presentedSheet)

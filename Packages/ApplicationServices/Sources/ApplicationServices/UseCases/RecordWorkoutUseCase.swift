@@ -9,6 +9,7 @@ import Foundation
 import Domain
 
 public final class RecordWorkoutUseCase: RecordWorkoutInputPort {
+    
     public weak var output: RecordWorkoutOutputPort?
     var workoutRepository: WorkoutRepository
     

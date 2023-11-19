@@ -8,6 +8,7 @@
 import Observation
 import Domain
 import ApplicationServices
+import Persistence
 
 @Observable
 public final class ListExerciseViewModel: ListExerciseOutputPort {
@@ -15,7 +16,7 @@ public final class ListExerciseViewModel: ListExerciseOutputPort {
     
     private let listExerciseUseCase: ListExerciseInputPort
     
-    public init(listExerciseUseCase: ListExerciseInputPort) {
+    public init(listExerciseUseCase: ListExerciseInputPort = ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository())) {
         self.listExerciseUseCase = listExerciseUseCase
         (listExerciseUseCase as? ListExerciseUseCase)?.output = self
         print("New list Exersice View Model")

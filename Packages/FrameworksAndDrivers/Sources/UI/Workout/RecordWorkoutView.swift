@@ -26,12 +26,21 @@ public struct RecordWorkoutView: View {
     @State private var workoutName = ""
     @State private var workoutDuration = 0.0
     
+//    @State private var routerPath = RouterPath()
+    
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    TextField("Workout Name", text: $workoutName)
-                        .padding()
+                    
+                    if let startTime = viewModel.startTime {
+                        Text(startTime, style: .relative)
+                    }
+                    
+                    NavigationLink(destination: ListExerciseView()) {
+                        Text("Add Exercise")
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
                     Stepper("Workout Duration: \(workoutDuration, specifier: "%.02f") minutes", value: $workoutDuration, in: 0...120, step: 2.5)
                         .padding()
@@ -44,10 +53,36 @@ public struct RecordWorkoutView: View {
                     }
                     .padding()
                     
+                    HStack {
+                        Button {
+                            Task {
+                                await viewModel.startTimer()
+                            }
+                        } label: {
+                            Text("Start Workout")
+                        }
+                        
+                        Button {
+                            Task {
+                                await viewModel.endTimer()
+                            }
+                        } label: {
+                            Text("End Workout")
+                        }
+
+                        Button {
+                            Task {
+                                await viewModel.resetTimer()
+                            }
+                        } label: {
+                            Text("Reset Workout")
+                        }
+                    }
+                    
                     Spacer()
                 }
             }
-            .searchable(text: $searchText, placement: .automatic)
+            .searchable(text: $searchText, placement: .automatic, prompt: "Search exercises")
             .padding()
             .scrollIndicators(.hidden)
             .toolbar(content: {
@@ -63,11 +98,19 @@ public struct RecordWorkoutView: View {
                         } else {
                             selectedDetent = .InitialSheetDetent
                         }
+                        
+                        if !viewModel.isTimerRunning {
+                            Task {
+                                await viewModel.startTimer()
+                            }
+                        }
                     }, label: {
                         Image(systemName: selectedDetent == .InitialSheetDetent ? "plus" : "xmark")
                     })
                 }
             })
+//            .withAppRouter()
+//            .withSheetDestinations(sheetDestinations: $routerPath.presentedSheet)
         }
     }
 }

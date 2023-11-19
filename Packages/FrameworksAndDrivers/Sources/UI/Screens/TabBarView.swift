@@ -22,6 +22,8 @@ public struct TabBarView: View {
     @Binding var selectedScreen: AppScreen
     @Binding var popToRootScreen: AppScreen
     
+    @Environment(RecordWorkoutViewModel.self) var recordWorkoutViewModel
+    
     public init(selectedScreen: Binding<AppScreen>, popToRootScreen: Binding<AppScreen>) {
         _selectedScreen = selectedScreen
         _popToRootScreen = popToRootScreen
@@ -76,7 +78,7 @@ fileprivate extension TabBarView {
     @ViewBuilder func tabSheetContent() -> some View {
         switch selectedScreen {
         case .dashboard:
-            RecordWorkoutView(selectedDetent: $selectedDetent)
+            RecordWorkoutView(viewModel: recordWorkoutViewModel, selectedDetent: $selectedDetent)
         default:
             EmptyView()
         }
