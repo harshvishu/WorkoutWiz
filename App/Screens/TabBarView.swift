@@ -78,11 +78,10 @@ struct TabBarView: View {
     }
 }
 
-fileprivate struct RootView_Previews: PreviewProvider {
-    @State static var selectedScreen: AppScreen = .dashboard
-    @State static var popToRootScreen: AppScreen = .other
+#Preview {
+    @State var selectedScreen: AppScreen = .dashboard
+    @State var popToRootScreen: AppScreen = .other
     
-    static var previews: some View {
-        RootView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-    }
+    return RootView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
+        .environment(SceneDelegate())
 }
