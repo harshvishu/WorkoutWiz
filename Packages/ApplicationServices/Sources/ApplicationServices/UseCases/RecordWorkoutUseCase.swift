@@ -7,21 +7,18 @@
 
 import Foundation
 import Domain
+import OSLog
 
-public final class RecordWorkoutUseCase: RecordWorkoutInputPort {
+public final class RecordWorkoutUseCase: RecordWorkoutIOPort {
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: RecordWorkoutIOPort.self))
     
-    public weak var output: RecordWorkoutOutputPort?
-    var workoutRepository: WorkoutRepository
+    private var workoutRepository: WorkoutRepository
     
-    public init(output: RecordWorkoutOutputPort? = nil, workoutRepository: WorkoutRepository) {
-        self.output = output
+    public init(workoutRepository: WorkoutRepository) {
         self.workoutRepository = workoutRepository
     }
     
-    public func recordWorkout(_ workout: Domain.Workout) async {
-        // TODO: Actual work
-        let result = await workoutRepository.recordWorkout(workout)
-        self.output?.workoutRecordedwithResult(result)
+    public func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
+        try await workoutRepository.recordWorkout(workout)
     }
-    
 }

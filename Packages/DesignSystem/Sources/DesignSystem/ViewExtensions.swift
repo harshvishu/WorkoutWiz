@@ -56,6 +56,27 @@ public extension View {
             $0.background(color)
         }
     }
+        
+    @ViewBuilder
+    func previewModifier<T: View>(_ modifier: (Self) -> T) -> some View {
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            modifier(self)
+        } else {
+            self
+        }
+    }
+    
+    func previewBorder(_ color: Color = .red, width: CGFloat = 1) -> some View {
+        previewModifier {
+            $0.border(color, width: width)
+        }
+    }
+    
+    func previewBackground(_ color: Color = .red) -> some View {
+        previewModifier {
+            $0.background(color)
+        }
+    }
     
     func eraseToAnyView() -> AnyView {
         AnyView(self)
@@ -101,6 +122,15 @@ public extension View {
                 }
         })
     }
+    
+    /// Usually you would pass  `@Environment(\.displayScale) var displayScale`
+    @MainActor func render(scale displayScale: CGFloat = 1.0) -> UIImage? {
+        let renderer = ImageRenderer(content: self)
+        
+        renderer.scale = displayScale
+        
+        return renderer.uiImage
+    }
 }
 
 /// Custom TabView Modifiers
@@ -140,19 +170,50 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .sheet(isPresented: $showSheet, content: {
-                sheetView
-                    .presentationDetents([.InitialSheetDetent, .ExpandedSheetDetent], selection: $selectedDetent)
-                    .presentationCornerRadius(sheetCornerRadius)
-                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
-                    .presentationBackground(.regularMaterial)
-                    .interactiveDismissDisabled()
+                VStack(spacing: 0) {
+                    sheetView
+                    Divider()
+                        .hidden()
+                    
+                    Rectangle()
+                        .fill(.clear)
+                        .frame(height: 55)
+                }
+                .presentationDetents([.InitialSheetDetent, .ExpandedSheetDetent], selection: $selectedDetent)
+                .presentationCornerRadius(sheetCornerRadius)
+                .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
+                .presentationBackground(.background)
+                .interactiveDismissDisabled()
             })
     }
 }
 
 public extension PresentationDetent {
-    static let InitialSheetDetent: PresentationDetent = .height(116.0)
+    static let InitialSheetDetent: PresentationDetent = .height(110.0)
     static let ExpandedSheetDetent: PresentationDetent = .fraction(0.99)
+}
+
+public enum PresentationDetentState {
+    case collapsed
+    case expanded
+}
+
+public extension PresentationDetent {
+    var state: PresentationDetentState {
+        isExpanded ? .expanded : .collapsed
+    }
+    
+    var isExpanded: Bool {
+        self == .ExpandedSheetDetent
+    }
+    
+    var isCollapsed: Bool {
+        !isExpanded
+    }
+    
+    mutating func toggle() {
+        self = isExpanded ? .InitialSheetDetent : .ExpandedSheetDetent
+    }
 }
 
 /// Publisher to read keyboard changes.
@@ -173,4 +234,52 @@ public extension KeyboardReadable {
         )
         .eraseToAnyPublisher()
     }
+}
+
+public extension View {
+    /// Whether the view should be empty.
+    /// - Parameter bool: Set to `true` to show the view (return EmptyView instead).
+    func showIf(_ bool: Bool) -> some View {
+        modifier(ConditionalView(show: [bool]))
+    }
+    
+    /// returns a original view only if all conditions are true
+    func showIf(_ conditions: Bool...) -> some View {
+        modifier(ConditionalView(show: conditions))
+    }
+}
+
+struct ConditionalView: ViewModifier {
+    
+    let show: [Bool]
+    
+    func body(content: Content) -> some View {
+        Group {
+            if show.filter({ $0 == false }).count == 0 {
+                content
+            } else {
+                EmptyView()
+            }
+        }
+    }
+}
+
+// MARK: - Animations
+
+public extension Animation {
+    static func customSpring() -> Animation {
+        return Animation.spring(response: 0.55, dampingFraction: 0.45, blendDuration: 0.25)
+    }
+    
+    static func easeOut(duration: Double = 0.3) -> Animation {
+        return Animation.timingCurve(0.17, 0.67, 0.83, 0.67, duration: duration)
+    }
+}
+
+public func withCustomSpring<T>(_ action: @escaping () -> T) -> T {
+    withAnimation(.customSpring(), action)
+}
+
+public func withEaseOut<T>(_ duration: Double = 0.3, _ action: @escaping () -> T) -> T {
+    withAnimation(.easeOut(duration: duration), action)
 }

@@ -9,11 +9,10 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
+import Domain
 
 @MainActor
 public struct DashboardScreen: View {
-    @State private var listExersiceViewModel = ListExerciseViewModel(listExerciseUseCase: ListExerciseUseCase(exerciseRepository: SwiftDataExerciseRepository()))
-    
     @State private var routerPath = RouterPath()
     @Binding var popToRootScreen: AppScreen
     
@@ -23,15 +22,18 @@ public struct DashboardScreen: View {
     
     public var body: some View {
         NavigationStack(path: $routerPath.path) {
-            ListExerciseView(viewModel: listExersiceViewModel)
+            DashboardView()
                 .withAppRouter()
                 .withSheetDestinations(sheetDestinations: $routerPath.presentedSheet)
+                .environment(routerPath)
         }
     }
 }
 
 #Preview {
     @State var popToRootScreen: AppScreen = .other
+    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
     return DashboardScreen(popToRootScreen: $popToRootScreen)
+        .environment(globalMessageQueue)
 }

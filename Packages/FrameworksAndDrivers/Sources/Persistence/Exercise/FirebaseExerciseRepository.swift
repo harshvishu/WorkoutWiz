@@ -12,9 +12,9 @@ import ApplicationServices
 public final class FirebaseExerciseRepository: ExerciseRepository {
     public init() {}
     
-    public func fetchExercises() async -> [Domain.Exercise] {
+    public func fetchExercises() async -> [ExerciseTemplate] {
         // TODO: Must Call Firebase API
-        let exersices: [Exercise] = []
+        let exersices: [ExerciseTemplate] = []
         return exersices
     }
     

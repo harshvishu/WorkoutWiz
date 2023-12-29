@@ -9,5 +9,5 @@ import Foundation
 import Domain
 
 public protocol ExerciseRepository {
-    func fetchExercises() async -> [Exercise]
+    func fetchExercises() async -> [ExerciseTemplate]
 }

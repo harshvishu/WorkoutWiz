@@ -35,7 +35,9 @@ let package = Package(
                 ],
                 resources: [.copy("Resources/exercises.json")]),
         .target(name: "Preferences", dependencies: ["Domain", "ApplicationServices"]),
-        .target(name: "UI", dependencies: ["Domain", "ApplicationServices", "DesignSystem", "Persistence"]),
+        .target(name: "UI",
+                dependencies: ["Domain", "ApplicationServices", "DesignSystem", "Persistence"],
+                resources: [.process("Resources/Assets.xcassets")]),
         .testTarget(name: "FrameworksAndDriversTests", dependencies: ["Persistence", "Preferences", "UI"]),
     ]
 )

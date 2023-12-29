@@ -9,9 +9,10 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
+import SwiftData
 
 fileprivate struct Constants {
-    static let InitialSheetHeight = CGFloat(116.0)
+    static let InitialSheetHeight = CGFloat(110.0)
     static let EligibleBottomSheetScreens: [AppScreen] = [.dashboard]
 }
 
@@ -21,8 +22,6 @@ public struct TabBarView: View {
     /// navigation properties
     @Binding var selectedScreen: AppScreen
     @Binding var popToRootScreen: AppScreen
-    
-    @Environment(RecordWorkoutViewModel.self) var recordWorkoutViewModel
     
     public init(selectedScreen: Binding<AppScreen>, popToRootScreen: Binding<AppScreen>) {
         _selectedScreen = selectedScreen
@@ -78,7 +77,7 @@ fileprivate extension TabBarView {
     @ViewBuilder func tabSheetContent() -> some View {
         switch selectedScreen {
         case .dashboard:
-            RecordWorkoutView(viewModel: recordWorkoutViewModel, selectedDetent: $selectedDetent)
+            EditWorkoutSheetView(selectedDetent: $selectedDetent)
         default:
             EmptyView()
         }
@@ -89,5 +88,8 @@ fileprivate extension TabBarView {
     @State var selectedScreen: AppScreen = .dashboard
     @State var popToRootScreen: AppScreen = .other
     
+    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
+    
     return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
+        .environment(globalMessageQueue)
 }

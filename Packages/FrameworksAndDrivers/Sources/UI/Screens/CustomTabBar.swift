@@ -37,7 +37,7 @@ public struct CustomTabBar: View, KeyboardReadable {
                     })
                 }
             }
-            .frame(height: 64)
+            .frame(height: 55)
         }
         .background(
             UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 0, bottomTrailing: 0, topTrailing: 15))

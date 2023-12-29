@@ -9,8 +9,10 @@ import SwiftUI
 import OSLog
 import Persistence
 import DesignSystem
+import SwiftData
+import Domain
 
-let logger: Logger = Logger(subsystem: "com.phychicowl.WorkoutWiz", category: "WorkoutWiz")
+private let logger: Logger = Logger(subsystem: "com.phychicowl.WorkoutWiz", category: "WorkoutWiz")
 
 public protocol WorkoutWizApp : App {}
 
@@ -22,6 +24,7 @@ public extension WorkoutWizApp {
         WindowGroup {
             RootView()
                 .task {logger.log("Welcome to WorkoutWiz!")}
+                .withModelContainer()
         }
     }
 }

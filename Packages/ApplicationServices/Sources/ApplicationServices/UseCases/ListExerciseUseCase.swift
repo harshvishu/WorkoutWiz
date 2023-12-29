@@ -8,17 +8,14 @@
 import Foundation
 import Domain
 
-public final class ListExerciseUseCase: ListExerciseInputPort {
-    public weak var output: ListExerciseOutputPort?
+public final class ListExerciseUseCase: ListExerciseIOPort {
     var exerciseRepository: ExerciseRepository
     
-    public init(output: ListExerciseOutputPort? = nil, exerciseRepository: ExerciseRepository) {
-        self.output = output
+    public init(exerciseRepository: ExerciseRepository) {
         self.exerciseRepository = exerciseRepository
     }
 
-    public func listExercise() async {
-        let exercises = await exerciseRepository.fetchExercises()
-        output?.displayExercises(exercises)
+    public func listExercise() async -> [ExerciseTemplate]{
+        await exerciseRepository.fetchExercises()
     }
 }
