@@ -8,4 +8,5 @@
 public enum ApplicationMessage {
     case workout
     case openEditWorkoutSheet
+    case closeWorkoutEditor
 }

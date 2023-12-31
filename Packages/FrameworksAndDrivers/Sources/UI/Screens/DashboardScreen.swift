@@ -25,8 +25,8 @@ public struct DashboardScreen: View {
             DashboardView()
                 .withAppRouter()
                 .withSheetDestinations(sheetDestinations: $routerPath.presentedSheet)
-                .environment(routerPath)
         }
+        .environment(routerPath)
     }
 }
 

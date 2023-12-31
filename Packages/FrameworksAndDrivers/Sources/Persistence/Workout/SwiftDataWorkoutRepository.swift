@@ -37,6 +37,18 @@ public final class SwiftDataWorkoutRepository: WorkoutRepository {
         let descriptor = FetchDescriptor<SD_WorkoutRecord>()
         return try modelContext.fetch(descriptor).map(WorkoutRecord.init)
     }
+    
+    public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {
+        let descriptor = fetchDescriptor(filterByDocumentID: workout.documentID, fetchLimit: 1)
+        if let model = try modelContext.fetch(descriptor).first {
+            modelContext.delete(model)
+            logger.info("\(model.documentID) Model updated")
+            return model.isDeleted
+        } else {
+            // data was never written
+            return true
+        }
+    }
 }
 
 fileprivate extension SwiftDataWorkoutRepository {
@@ -54,14 +66,14 @@ public class SD_WorkoutRecord {
     
     @Attribute(.unique)
     public var documentID: String
-    public var name: String?
-    public var startDate: Date?
-    public var endDate: Date?
-    public var duration: TimeInterval?
+    public var name: String
+    public var startDate: Date
+    public var endDate: Date
+    public var duration: TimeInterval
     public var notes: String?
     public var exercises: [ExerciseRecord]
     
-    init(documentID: String, name: String?, startDate: Date?, endDate: Date?, duration: TimeInterval? = nil, notes: String? = nil, exercises: [ExerciseRecord]) {
+    init(documentID: String, name: String, startDate: Date, endDate: Date, duration: TimeInterval, notes: String? = nil, exercises: [ExerciseRecord]) {
         self.documentID = documentID
         self.name = name
         self.startDate = startDate

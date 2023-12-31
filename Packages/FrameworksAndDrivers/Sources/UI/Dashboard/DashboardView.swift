@@ -29,6 +29,7 @@ struct DashboardView: View {
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 42, height: 42)
                     .clipShape(Circle())
+
                 VStack {
                     Text("Hi, Harsh")
                         .font(.title3.bold())
@@ -37,6 +38,8 @@ struct DashboardView: View {
                 }
                 Spacer()
                 Image(systemName: "bell.badge.fill")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(Color.accentColor, Color.primary) 
                     .symbolEffect(.pulse.byLayer, value: isPresented)
             }
             .padding(.horizontal)
@@ -48,9 +51,14 @@ struct DashboardView: View {
                     }
                 }
             }
+            .safeAreaInset(edge: .bottom, content: {
+                EmptyView()
+                    .frame(height: 110)
+            })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
             .onChange(of: isPresented) { _, isPresented in
                 //            if !isPresented {
                 //                viewModel.didSelect(exercises: getSelectedExercises())

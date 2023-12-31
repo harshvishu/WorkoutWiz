@@ -77,7 +77,7 @@ fileprivate extension TabBarView {
     @ViewBuilder func tabSheetContent() -> some View {
         switch selectedScreen {
         case .dashboard:
-            EditWorkoutSheetView(selectedDetent: $selectedDetent)
+            WorkoutEditorBottomSheetView(selectedDetent: $selectedDetent)
         default:
             EmptyView()
         }

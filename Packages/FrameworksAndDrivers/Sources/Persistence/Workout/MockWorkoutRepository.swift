@@ -27,5 +27,10 @@ public final class MockWorkoutRepository: WorkoutRepository {
     public func fetchWorkouts() async throws -> [WorkoutRecord] {
         workouts
     }
+    
+    public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {
+        workouts.removeAll(where: {$0.documentID == workout.documentID})
+        return true
+    }
 }
 

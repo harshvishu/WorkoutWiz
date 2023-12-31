@@ -13,4 +13,5 @@ public enum RecordWorkoutError: Error {
 
 public protocol RecordWorkoutIOPort {
     func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord
+    func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool
 }

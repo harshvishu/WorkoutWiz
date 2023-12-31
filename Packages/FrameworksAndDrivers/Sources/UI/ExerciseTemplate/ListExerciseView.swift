@@ -1,6 +1,6 @@
 //
 //  ListExerciseView.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 13/11/23.
 //
@@ -31,12 +31,12 @@ public struct ListExerciseView: View {
     public var body: some View {
         VStack {
             List(viewModel.exercies) {
-               ExerciseTemplateRowView(exercise: $0, selectionMap: $selectionMap)
+                ExerciseTemplateRowView(exercise: $0, selectionMap: $selectionMap)
             }
         }
         .listStyle(.plain)
         .listSectionSeparator(.hidden)
-//        .listRowSpacing(.listRowVerticalSpacing)
+        //        .listRowSpacing(.listRowVerticalSpacing)
         .scrollContentBackground(.hidden)
         .debugBorder()
         .toolbar {

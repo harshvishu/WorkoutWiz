@@ -10,5 +10,6 @@ import Domain
 
 public protocol WorkoutRepository {
     func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord 
+    func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool
     func fetchWorkouts() async throws -> [WorkoutRecord]
 }

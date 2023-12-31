@@ -1,5 +1,5 @@
 //
-//  EditWorkoutViewModel.swift
+//  WorkoutEditorViewModel.swift
 //
 //
 //  Created by harsh vishwakarma on 13/11/23.
@@ -15,8 +15,8 @@ import SwiftData
 import OSLog
 
 @Observable
-public final class EditWorkoutViewModel {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: EditWorkoutViewModel.self))
+public final class WorkoutEditorViewModel {
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorViewModel.self))
     
     var recordWorkoutUseCase: RecordWorkoutIOPort?
     var listExerciseUseCase: ListExerciseIOPort?
@@ -74,8 +74,9 @@ public final class EditWorkoutViewModel {
     func startTimer() async {
         guard !isTimerRunning else {return}
         isTimerRunning = true
-        startTime = Date()
-        workout.startDate = startTime
+        let startDate = Date()
+        startTime = startDate
+        workout.startDate = startDate
     }
     
     func stopTimer() async {
@@ -115,7 +116,7 @@ public final class EditWorkoutViewModel {
 }
 
 // MARK: - Helper Functions
-public extension EditWorkoutViewModel {
+public extension WorkoutEditorViewModel {
     var elapsedTime: ElapsedTime? {
         guard let startTime = startTime else {return nil}
         let timeInterval = getTimeDifference(startDate: startTime, endDate: Date())

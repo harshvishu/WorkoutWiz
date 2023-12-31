@@ -9,10 +9,11 @@ import SwiftUI
 import Foundation
 import Observation
 import Combine
+import Domain
 
 /// Navigation view for Router (NavigationStack)
 public enum RouterDestination: Hashable {
-    case workoutDetails
+    case workoutDetails(workout: WorkoutRecord)
     case listExercise
 }
 
@@ -43,10 +44,9 @@ public enum SheetDestination: Identifiable {
 public extension View {
     func withAppRouter() -> some View {
         navigationDestination(for: RouterDestination.self) { destination in
-            print("asdadasdasdd")
             switch destination {
-            case .workoutDetails:
-                Text("Workout Details")
+            case .workoutDetails(let workout):
+                WorkoutRowView(workout: workout)
             case .listExercise:
                 ListExerciseView()
             }

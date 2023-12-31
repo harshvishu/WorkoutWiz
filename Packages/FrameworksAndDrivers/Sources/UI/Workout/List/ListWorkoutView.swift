@@ -37,13 +37,11 @@ struct ListWorkoutView: View {
         case .display(let workouts):
             ForEach(workouts) {
                 WorkoutRowView(workout: $0)
-                    .id($0.id)
-                    .listRowSeparator(.hidden)
             }
             .onChange(of: isPresented) { _, isPresented in
-    //            if !isPresented {
-    //                viewModel.didSelect(exercises: getSelectedExercises())
-    //            }
+                //            if !isPresented {
+                //                viewModel.didSelect(exercises: getSelectedExercises())
+                //            }
             }
             .onReceive(globalMessageQueue.signal) {
                 if case .workout = $0 {
@@ -53,10 +51,24 @@ struct ListWorkoutView: View {
                 }
             }
         case .empty:
-            VStack {
-                Text("No workouts yet!")
-                Button("Tap to add a workout") {
-                    globalMessageQueue.send(.openEditWorkoutSheet)
+            Button(action: {
+                globalMessageQueue.send(.openEditWorkoutSheet)
+            }, label: {
+                VStack {
+                    Text("No workouts yet!\nTap to add a workout")
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+            })
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .listRowSeparator(.hidden)
+            .onReceive(globalMessageQueue.signal) {
+                if case .workout = $0 {
+                    Task {
+                        await viewModel.listWorkouts()
+                    }
                 }
             }
         }

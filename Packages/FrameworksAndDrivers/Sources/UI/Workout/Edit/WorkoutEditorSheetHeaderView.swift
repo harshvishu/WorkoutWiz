@@ -1,5 +1,5 @@
 //
-//  EditWorkoutSheetHeaderView.swift
+//  WorkoutEditorSheetHeaderView.swift
 //
 //
 //  Created by harsh vishwakarma on 29/12/23.
@@ -10,8 +10,8 @@ import DesignSystem
 import Persistence
 import ApplicationServices
 
-struct EditWorkoutSheetHeaderView: View {
-    var viewModel: EditWorkoutViewModel
+struct WorkoutEditorSheetHeaderView: View {
+    @Environment(WorkoutEditorViewModel.self) private var viewModel
     
     @State private var viewState: ViewState = .timer
     
@@ -52,6 +52,13 @@ struct EditWorkoutSheetHeaderView: View {
                 .scaleEffect(0.75)
                 .previewBorder()
                 
+                Text("In Progress")
+                    .font(.headline)
+                    .foregroundStyle(.tertiary)
+                    .transition(.asymmetric(insertion: .identity, removal: .slide))
+                    .previewBorder()
+                
+                
             } else {
                 /// Show record workout
                 Text("Record Workout")
@@ -79,11 +86,12 @@ fileprivate enum ViewState {
 }
 
 #Preview {
-    @State var viewModel = EditWorkoutViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
+    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
     @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
     @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
-    return EditWorkoutSheetHeaderView(viewModel: viewModel)
+    return WorkoutEditorSheetHeaderView()
+        .environment(viewModel)
         .environment(saveDataManager)
         .environment(globalMessageQueue)
         .withPreviewModelContainer()

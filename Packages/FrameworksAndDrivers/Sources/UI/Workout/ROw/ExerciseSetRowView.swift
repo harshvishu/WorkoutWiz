@@ -16,7 +16,7 @@ fileprivate struct RowFooterView: View {
 //    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
     @Environment(SaveDataManager.self) private var saveDataManager
         
-    var editWorkoutViewModel: EditWorkoutViewModel
+    var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
     
@@ -62,7 +62,7 @@ fileprivate struct RowFooterView: View {
 fileprivate struct RowHeaderView: View {
 //    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
     
-    var editWorkoutViewModel: EditWorkoutViewModel
+    var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
     @Binding var isExpanded: Bool
@@ -101,15 +101,13 @@ fileprivate struct RowHeaderView: View {
 }
 
 public struct ExerciseSetRowView: View {
+    @Environment(WorkoutEditorViewModel.self) private var editWorkoutViewModel
     
     @State private var exercise: ExerciseRecord
     @State private var showExpandedSetView = true
     
-    var editWorkoutViewModel: EditWorkoutViewModel
-    
-    init(exercise: ExerciseRecord, recordWorkoutViewModel: EditWorkoutViewModel) {
+    init(exercise: ExerciseRecord) {
         self._exercise = .init(initialValue: exercise)
-        self.editWorkoutViewModel = recordWorkoutViewModel
     }
     
     public var body: some View {
@@ -188,15 +186,15 @@ public struct ExerciseSetRowView: View {
 }
 
 #Preview {
-    @State var viewModel = EditWorkoutViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
+    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
     @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
     @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
     return VStack {
         List {
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 5.5, rep: 10,failure: true)]), recordWorkoutViewModel: viewModel)
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 15.5, rep: 10,failure: true)]), recordWorkoutViewModel: viewModel)
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 135, rep: 10,failure: true)]), recordWorkoutViewModel: viewModel)
+            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 5.5, rep: 10,failure: true)]))
+            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 15.5, rep: 10,failure: true)]))
+            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 135, rep: 10,failure: true)]))
         }
         .listRowSpacing(.listRowVerticalSpacing)
     }

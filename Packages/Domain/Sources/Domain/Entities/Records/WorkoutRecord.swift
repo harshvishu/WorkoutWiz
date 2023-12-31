@@ -10,14 +10,14 @@ import Foundation
 public struct WorkoutRecord {
     public let id = UUID()
     public var documentID: String
-    public var name: String?
-    public var startDate: Date?
-    public var endDate: Date?
-    public var duration: TimeInterval?
+    public var name: String
+    public var startDate: Date
+    public var endDate: Date
+    public var duration: TimeInterval
     public var notes: String?
     public var exercises: [ExerciseRecord]
     
-    public init(documentID: String, name: String?, startDate: Date?, endDate: Date?, duration: TimeInterval?, notes: String?, exercises: [ExerciseRecord] = []) {
+    public init(documentID: String, name: String, startDate: Date, endDate: Date, duration: TimeInterval, notes: String?, exercises: [ExerciseRecord] = []) {
         self.documentID = documentID
         self.name = name
         self.startDate = startDate
@@ -29,10 +29,10 @@ public struct WorkoutRecord {
     
     public init() {
         self.documentID = UUID().uuidString
-        self.name = nil
-        self.startDate = nil
-        self.endDate = nil
-        self.duration = nil
+        self.name = ""
+        self.startDate = .now
+        self.endDate = .now
+        self.duration = 0
         self.notes = nil
         self.exercises = []
     }
@@ -50,7 +50,7 @@ public extension WorkoutRecord {
     }
     
     static func mock(_ index: Int = 0) -> Self {
-        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout_\(index)", startDate: .distantPast, endDate: .now, duration: nil, notes: "Workout_\(index) Notes", exercises: [
+        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 45, notes: "Workout_\(index) Notes", exercises: [
             ExerciseRecord(documentID: "Workout_Exercise_1_\(index)", template: .mock_1, sets: [
                 .init(weight: 5, rep: 12),
                 .init(weight: 7.5, rep: 10),
@@ -62,5 +62,19 @@ public extension WorkoutRecord {
                 .init(weight: 200, rep: 4)
             ])
         ])
+    }
+    
+    // Calories Burned=(Weight Lifted×Repetitions×Sets)×Caloric Expenditure Factor
+    func estimatedCaloriesBurned() -> Double {
+        exercises.reduce(0.0, {$0 + $1.estimatedCaloriesBurned()})
+    }
+    
+    // TODO: Make it better
+    func abbreviatedCategory() -> String {
+        let wordCounts = exercises.reduce(into: [:]) { counts, word in
+            counts[word.template.category, default: 0] += 1
+        }
+
+        return wordCounts.max { $0.value < $1.value }?.key ?? ""
     }
 }
