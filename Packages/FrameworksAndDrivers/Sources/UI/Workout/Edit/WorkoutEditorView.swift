@@ -43,7 +43,7 @@ public struct WorkoutEditorView: View {
                                 
                                 if let abbreviatedCategory = viewModel.workout.abbreviatedCategory() {
                                     Button(action: {}, label: {
-                                        Text(abbreviatedCategory)
+                                        Text(abbreviatedCategory.rawValue)
                                             .font(.caption)
                                     })
                                     .foregroundStyle(.secondary)
@@ -126,7 +126,7 @@ public struct WorkoutEditorView: View {
             Alert(title: Text("Finish Workout?"), message: nil, primaryButton: .default(Text("Finish"), action: {
                 Task(priority: .userInitiated) {
                     _ = await viewModel.finishWorkout()
-                    globalMessageQueue.send(.workout)
+                    globalMessageQueue.send(.workoutFinished)
                     viewModel.startEmptyWorkout()
                     globalMessageQueue.send(.closeWorkoutEditor)
                 }
@@ -141,7 +141,7 @@ public struct WorkoutEditorView: View {
         .navigationDestination(for: RouterDestination.self) { dest in
             switch dest {
             case .listExercise:
-                ListExerciseView(messageQueue: editorMessageQueue)
+                ListExerciseTemplatesView(messageQueue: editorMessageQueue)
             default:
                 EmptyView()
             }

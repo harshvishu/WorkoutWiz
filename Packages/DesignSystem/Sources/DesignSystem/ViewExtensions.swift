@@ -66,7 +66,7 @@ public extension View {
         }
     }
     
-    func previewBorder(_ color: Color = .red, width: CGFloat = 1) -> some View {
+    func previewBorder(_ color: Color = .red.opacity(0.25), width: CGFloat = 1) -> some View {
         previewModifier {
             $0.border(color, width: width)
         }

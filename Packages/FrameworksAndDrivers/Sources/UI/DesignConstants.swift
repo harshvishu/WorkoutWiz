@@ -12,6 +12,8 @@ public extension CGFloat {
     static let listRowVerticalSpacing: CGFloat = 16
     static let listRowContentVerticalSpacing: CGFloat = 12
     static let listRowContentHorizontalSpacing: CGFloat = 16
+    static let exerciseTemplatePreviewImageSize: CGFloat = 56.0
+    static let exerciseTemplatePreviewImageCornerRadius: CGFloat = 16.0
     //  static let listRowHorizontalSpacing: CGFloat = 20
 }
 

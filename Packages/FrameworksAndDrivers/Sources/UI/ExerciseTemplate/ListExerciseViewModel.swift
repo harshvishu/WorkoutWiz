@@ -11,13 +11,15 @@ import ApplicationServices
 import Persistence
 import DesignSystem
 import Combine
+import Foundation
 
 @Observable
 public final class ListExerciseViewModel {
-    public private(set) var exercies: [ExerciseTemplate] = []
+//    private(set) var exercies: [ExerciseTemplate] = []
     
     private let listExerciseUseCase: ListExerciseIOPort
     private var messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>?
+    private(set) var viewState: ViewState = .loading
     
     public init(
         listExerciseUseCase: ListExerciseIOPort = ListExerciseUseCase(
@@ -30,7 +32,12 @@ public final class ListExerciseViewModel {
     }
     
     func listExercises() async {
-        self.exercies = await listExerciseUseCase.listExercise()
+        let exercies = await listExerciseUseCase.listExercise()
+        if exercies.isNotEmpty {
+            self.viewState = .display(templates: exercies)
+        } else {
+            self.viewState = .empty
+        }
     }
     
     /// Methods
@@ -40,5 +47,17 @@ public final class ListExerciseViewModel {
     
     func didSelect(exercises: [ExerciseTemplate]) {
         messageQueue?.send(exercises)
+    }
+    
+    func imageUrlFor(exercise: ExerciseTemplate) -> [URL] {
+        listExerciseUseCase.imageUrlFor(exercise: exercise)
+    }
+}
+
+extension ListExerciseViewModel {
+    enum ViewState {
+        case loading
+        case empty
+        case display(templates: [ExerciseTemplate])
     }
 }

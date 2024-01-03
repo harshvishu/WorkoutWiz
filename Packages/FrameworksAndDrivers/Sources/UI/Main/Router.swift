@@ -48,7 +48,7 @@ public extension View {
             case .workoutDetails(let workout):
                 WorkoutRowView(workout: workout)
             case .listExercise:
-                ListExerciseView()
+                ListExerciseTemplatesView()
             }
         }
     }
@@ -59,7 +59,7 @@ public extension View {
             case .recordWorkout:
                 Text("Show Record Sheet Here")
             case .listExercise:
-                ListExerciseView()
+                ListExerciseTemplatesView()
             }
         }
     }

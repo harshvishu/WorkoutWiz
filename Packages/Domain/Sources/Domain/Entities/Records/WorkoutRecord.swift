@@ -70,7 +70,7 @@ public extension WorkoutRecord {
     }
     
     // TODO: Make it better
-    func abbreviatedCategory() -> String? {
+    func abbreviatedCategory() -> ExerciseCategory? {
         let wordCounts = exercises.reduce(into: [:]) { counts, word in
             counts[word.template.category, default: 0] += 1
         }
@@ -79,26 +79,12 @@ public extension WorkoutRecord {
     }
     
     func iconForCategory() -> String {
-        switch abbreviatedCategory() {
-        case "cardio":
-            "figure.mixed.cardio"
-        case "stretching":
-            "figure.cooldown"
-        case "olympic weightlifting":
-            "dumbbell"
-        case "plyometrics":
-            "figure.track.and.field"
-        case "strength", "powerlifting", "strongman":
-            "figure.strengthtraining.traditional"
-        default:
-            "figure.core.training"
-        }
+        abbreviatedCategory()?.iconForCategory() ?? "figure.core.training"
     }
     
-    func abbreviatedMuscle() -> String? {
+    func abbreviatedMuscle() ->  ExerciseMuscles? {
         let wordCounts = exercises
-            .compactMap(\.template.primaryMuscles)
-            .joined()
+            .flatMap({$0.template.primaryMuscles})
             .reduce(into: [:]) { counts, word in
                 counts[word, default: 0] += 1
             }

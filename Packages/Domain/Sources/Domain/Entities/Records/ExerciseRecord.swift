@@ -38,10 +38,8 @@ extension ExerciseRecord: Hashable {
 }
 
 public extension ExerciseRecord {
-    // Calories Burned=(Weight Lifted×Repetitions×Sets)×Caloric Expenditure Factor
     func estimatedCaloriesBurned() -> Double {
-        let caloricExpenditureFactor = self.template.caloricExpenditureFactor ?? 0.0
-        return sets.reduce(0.0) {$0 + $1.weight * Double($1.rep) * caloricExpenditureFactor }
+        return sets.reduce(0.0) {$0 + $1.calories }
     }
 }
 

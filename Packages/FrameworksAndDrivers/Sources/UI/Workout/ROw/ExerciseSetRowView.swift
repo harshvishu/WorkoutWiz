@@ -19,8 +19,7 @@ fileprivate struct RowFooterView: View {
     var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
-    
-    @State var lastSavedSet: ExerciseSet = .init(weight: 5, rep: 10)
+    @State var lastSavedSet: ExerciseSet = .init(weight: 5, duration: 45)
     
     var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 4) {
@@ -36,7 +35,7 @@ fileprivate struct RowFooterView: View {
             Button(action: {
                 withAnimation {
                     exercise.sets.append(lastSavedSet)
-                    editWorkoutViewModel.addSetToExercise(withID: exercise.id, set: lastSavedSet)
+                    editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, unit: lastSavedSet.unit, failure: lastSavedSet.failure)
                 }
             }, label: {
                 Text("Add a set")
@@ -53,7 +52,7 @@ fileprivate struct RowFooterView: View {
         }
         .padding(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
         .task {
-            await lastSavedSet = saveDataManager.readSaveDataFor(exerciseName: exercise.template.name)?.sets.first ?? .init(weight: 5.0, rep: 10)
+//            await lastSavedSet = saveDataManager.readSaveDataFor(exerciseName: exercise.template.name)?.sets.first ?? .init(weight: 5.0, rep: 10)
         }
     }
 }
@@ -125,11 +124,22 @@ public struct ExerciseSetRowView: View {
                         HStack(alignment: .center, spacing: 0) {
                             
                             HStack(alignment: .center, spacing: 4) {
-                                Text("\(set.rep)")
-                                    .font(.title.bold())
-                                
-                                Text("reps")
-                                    .font(.caption2)
+                                switch set.type {
+                                case .duration(let time):
+                                    
+                                    Text(formatTime(time, allowedUnits: [.second], unitsStyle: .positional))
+                                        .font(.title.bold())
+                                    
+                                    Image(systemName: "timer")
+                                        .font(.caption2)
+                                    
+                                case .rep(let count):
+                                    Text("\(count)")
+                                        .font(.title.bold())
+                                    
+                                    Text("reps")
+                                        .font(.caption2)
+                                }
                             }
                             
                             

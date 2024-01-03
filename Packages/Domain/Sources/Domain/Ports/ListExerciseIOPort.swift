@@ -9,4 +9,5 @@ import Foundation
 
 public protocol ListExerciseIOPort {
     func listExercise() async -> [ExerciseTemplate]
+    func imageUrlFor(exercise: ExerciseTemplate) -> [URL]
 }

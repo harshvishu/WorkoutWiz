@@ -12,6 +12,8 @@ import OSLog
 
 public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: UserDefaultsExerciseTemplateRepository.self))
+    
+    public var imageBaseURL: URL = URL(string: "https://raw.githubusercontent.com/harshvishu/free-exercise-db/main/exercises/")!
 
     public init() {}
     

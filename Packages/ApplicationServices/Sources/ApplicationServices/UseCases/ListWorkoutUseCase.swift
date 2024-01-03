@@ -18,6 +18,7 @@ public final class ListWorkoutUseCase: ListWorkoutIOPort {
         self.workoutRepository = workoutRepository
     }
     
+    @MainActor
     public func listWorkouts() async throws -> [WorkoutRecord] {
         try await workoutRepository.fetchWorkouts()
     }

@@ -37,7 +37,7 @@ struct WorkoutRowView: View {
                 
                 // MARK: Tags
                 if let primaryMuscle = workout.abbreviatedMuscle() {
-                    Text(primaryMuscle)
+                    Text(primaryMuscle.rawValue)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .previewBorder(.red.opacity(0.2))
@@ -79,7 +79,7 @@ struct WorkoutRowView: View {
                         .frame(width: 4)
                         .previewBorder(.red.opacity(0.2))
                     
-                    Label(abbreviatedCategory, systemImage: workout.iconForCategory())
+                    Label(abbreviatedCategory.rawValue, systemImage: workout.iconForCategory())
                         .frame(maxWidth: .infinity)
                         .previewBorder(.red.opacity(0.2))
                 } else {

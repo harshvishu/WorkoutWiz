@@ -16,13 +16,13 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
     
     case dashboard
     case profile
-    case calendar
+    case logs
     case settings
     case other
     
     /// Available Tabs for
     static var availableTabs: [AppScreen] {
-        [.dashboard, .profile, .calendar, .settings]
+        [.dashboard, .profile, .logs, .settings]
     }
     
     var systemImageName: String {
@@ -31,7 +31,7 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
             "square.grid.2x2.fill"
         case .profile:
             "person.circle.fill"
-        case .calendar:
+        case .logs:
             "calendar"
         case .settings:
             "gearshape.fill"
@@ -46,7 +46,7 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
             "Dashboard"
         case .profile:
             "Profile"
-        case .calendar:
+        case .logs:
             "Logs"
         case .settings:
             "Settings"
@@ -73,7 +73,7 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
             DashboardScreen(popToRootScreen: popToRootScreen)
         case .profile:
             Text("Profile")
-        case .calendar:
+        case .logs:
             Text("Calendar")
         case .settings:
             Text("Settings")

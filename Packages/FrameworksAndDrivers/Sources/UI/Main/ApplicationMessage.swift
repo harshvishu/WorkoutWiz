@@ -6,7 +6,8 @@
 //
 
 public enum ApplicationMessage {
-    case workout
+    case workoutFinished
     case openEditWorkoutSheet
     case closeWorkoutEditor
+    case showLogs
 }

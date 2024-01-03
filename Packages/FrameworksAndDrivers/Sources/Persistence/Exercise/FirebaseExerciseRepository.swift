@@ -10,6 +10,8 @@ import Domain
 import ApplicationServices
 
 public final class FirebaseExerciseRepository: ExerciseRepository {
+    public var imageBaseURL: URL = URL(string: "")!  // TODO: Pending for firebase
+    
     public init() {}
     
     public func fetchExercises() async -> [ExerciseTemplate] {

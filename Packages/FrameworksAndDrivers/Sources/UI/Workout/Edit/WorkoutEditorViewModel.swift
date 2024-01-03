@@ -20,6 +20,7 @@ public final class WorkoutEditorViewModel {
     
     var recordWorkoutUseCase: RecordWorkoutIOPort?
     var listExerciseUseCase: ListExerciseIOPort?
+    var fitnessTrackingUseCase: FitnessTrackingIOPort
         
     public private(set) var isTimerRunning: Bool = false
     public private(set) var startTime: Date? = nil
@@ -27,10 +28,12 @@ public final class WorkoutEditorViewModel {
     
     public init(
         recordWorkoutUseCase: RecordWorkoutIOPort? = nil,
-        listExerciseUseCase: ListExerciseIOPort = ListExerciseUseCase(exerciseRepository: UserDefaultsExerciseTemplateRepository())
+        listExerciseUseCase: ListExerciseIOPort = ListExerciseUseCase(exerciseRepository: UserDefaultsExerciseTemplateRepository()),
+        fitnessTrackingUseCase: FitnessTrackingIOPort = FitnessTrackingUseCase()
     ) {
         self.recordWorkoutUseCase = recordWorkoutUseCase
         self.listExerciseUseCase = listExerciseUseCase
+        self.fitnessTrackingUseCase = fitnessTrackingUseCase
         self.workout = WorkoutRecord.empty()    // Start with an empty
     }
     
@@ -61,10 +64,46 @@ public final class WorkoutEditorViewModel {
         workout.exercises.append(contentsOf: exercises.map({ExerciseRecord(template: $0)}))
     }
     
-    func addSetToExercise(withID id: UUID, set: ExerciseSet) {
+    func addSetToExercise(
+        withID id: UUID,
+        weight: Double,
+        type: SetType,
+        unit: Domain.Unit = .kg,
+        failure: Bool = false
+    ) {
         guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return}
+        let met = workout.exercises[index].template.category.met()
+        
+        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
+        let set = ExerciseSet(weight: weight, type: type, unit: unit, failure: failure, calories: calories)
         workout.exercises[index].addSet(set: set)
     }
+    
+    func updateSetFor(
+        exerciseID: UUID,
+        setID: UUID,
+        weight: Double,
+        type: SetType,
+        duration: Double = 0.0,
+        unit: Domain.Unit = .kg,
+        failure: Bool = false
+    ) {
+        guard let exerciseIndex = workout.exercises.firstIndex(where: {$0.id == exerciseID}) else {return}
+        guard let setIndex = workout.exercises[exerciseIndex].sets.firstIndex(where: {$0.id == setID}) else {return}
+        
+        let met = workout.exercises[exerciseIndex].template.category.met()
+        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
+        
+        workout.exercises[exerciseIndex].sets[setIndex].weight = weight
+        workout.exercises[exerciseIndex].sets[setIndex].unit = unit
+        workout.exercises[exerciseIndex].sets[setIndex].failure = failure
+        workout.exercises[exerciseIndex].sets[setIndex].calories = calories
+    }
+    
+//    func addSetToExercise(withID id: UUID, set: ExerciseSet) {
+//        guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return}
+//        workout.exercises[index].addSet(set: set)
+//    }
     
     var isWorkoutComplete: Bool {
         workout.exercises.isNotEmpty

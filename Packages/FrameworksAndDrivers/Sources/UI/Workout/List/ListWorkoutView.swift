@@ -35,8 +35,27 @@ struct ListWorkoutView: View {
                     await viewModel.listWorkouts()
                 }
         case .display(let workouts):
-            ForEach(workouts) {
-                WorkoutRowView(workout: $0)
+            Section {
+                ForEach(workouts) {
+                    WorkoutRowView(workout: $0)
+                }
+            } header: {
+                HStack {
+                    Text("Recents")
+//                        .font(.headline)
+//                        .foregroundStyle(.secondary)
+                    
+                    Spacer()
+                    
+                    Button {
+                        globalMessageQueue.send(.showLogs)
+                    } label: {
+                        Text("View All")
+                    }
+                    .buttonStyle(.plain)
+                }
+//                .font(.headline)
+                .foregroundStyle(.secondary)
             }
             .onChange(of: isPresented) { _, isPresented in
                 //            if !isPresented {
@@ -44,7 +63,7 @@ struct ListWorkoutView: View {
                 //            }
             }
             .onReceive(globalMessageQueue.signal) {
-                if case .workout = $0 {
+                if case .workoutFinished = $0 {
                     Task {
                         await viewModel.listWorkouts()
                     }
@@ -66,7 +85,7 @@ struct ListWorkoutView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .onReceive(globalMessageQueue.signal) {
-                if case .workout = $0 {
+                if case .workoutFinished = $0 {
                     Task {
                         await viewModel.listWorkouts()
                     }
@@ -89,14 +108,3 @@ fileprivate extension ListWorkoutView {
         .environment(globalMessageQueue)
         .withPreviewModelContainer()
 }
-
-
-//public enum StatusesState {
-//  public enum PagingState {
-//    case hasNextPage, loadingNextPage, none
-//  }
-//
-//  case loading
-//  case display(statuses: [Status], nextPageState: StatusesState.PagingState)
-//  case error(error: Error)
-//}

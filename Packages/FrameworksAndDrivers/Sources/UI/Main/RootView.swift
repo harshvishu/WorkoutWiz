@@ -29,6 +29,13 @@ public struct RootView: View {
             .environment(workoutWizAppModel)
             .environment(saveDataManager)
             .environment(globalMessageQueue)
+            .onReceive(globalMessageQueue.signal) { newValue in
+                if case .showLogs = newValue {
+                    withCustomSpring {
+                        selectedScreen = .logs
+                    }
+                }
+            }
             .task {
                 initializeSwiftDataManager()
                 initializeTabBar()

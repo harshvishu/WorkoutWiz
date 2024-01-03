@@ -10,4 +10,5 @@ import Domain
 
 public protocol ExerciseRepository {
     func fetchExercises() async -> [ExerciseTemplate]
+    var imageBaseURL: URL {get}
 }

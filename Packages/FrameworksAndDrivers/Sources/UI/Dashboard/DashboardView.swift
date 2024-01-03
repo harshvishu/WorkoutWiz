@@ -73,7 +73,7 @@ struct DashboardView: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Image(systemName: "bell.badge.fill")
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(Color.accentColor, Color.primary)
+                        .foregroundStyle(Color.accentColor, Color.primary.opacity(0.64))
                         .symbolEffect(.pulse.byLayer, value: isPresented)
                 }
             }
