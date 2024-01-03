@@ -41,14 +41,15 @@ public struct WorkoutEditorView: View {
                                 
                                 Spacer()
                                 
-                                if viewModel.workout.abbreviatedCategory().isNotEmpty {
-                                    Text("\(viewModel.workout.abbreviatedCategory())")
-                                        .font(.caption)
-                                        .foregroundStyle(.tertiary)
-                                        .padding(.vertical, 2)
-                                        .padding(.horizontal, 8)
-                                        .background(in: .capsule)
-                                        .backgroundStyle(.quaternary)
+                                if let abbreviatedCategory = viewModel.workout.abbreviatedCategory() {
+                                    Button(action: {}, label: {
+                                        Text(abbreviatedCategory)
+                                            .font(.caption)
+                                    })
+                                    .foregroundStyle(.secondary)
+                                    .buttonStyle(.bordered)
+                                    .buttonBorderShape(.capsule)
+                                    .scaleEffect(0.75)
                                 }
                             }
                             

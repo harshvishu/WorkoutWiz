@@ -8,8 +8,11 @@
 import Foundation
 import Domain
 import ApplicationServices
+import OSLog
 
 public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
+    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: UserDefaultsExerciseTemplateRepository.self))
+
     public init() {}
     
     public func fetchExercises() async -> [Domain.ExerciseTemplate] {
@@ -21,7 +24,10 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
 
 fileprivate extension UserDefaultsExerciseTemplateRepository {
     func readJSONFromBundle() async -> [ExerciseTemplate] {
-        Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
+        let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
+        logger.debug("\(data)")
+//        Swift.print(Set(data.compactMap(\.category)))
+        return data
     }
 }
 

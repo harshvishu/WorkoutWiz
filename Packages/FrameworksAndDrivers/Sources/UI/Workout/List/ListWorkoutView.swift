@@ -63,6 +63,7 @@ struct ListWorkoutView: View {
             })
             .buttonStyle(.plain)
             .contentShape(Rectangle())
+            .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .onReceive(globalMessageQueue.signal) {
                 if case .workout = $0 {

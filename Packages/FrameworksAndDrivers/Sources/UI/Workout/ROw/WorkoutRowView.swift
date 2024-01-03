@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Domain
+import DesignSystem
 
 struct WorkoutRowView: View {
     @Environment(RouterPath.self) var routerPath
@@ -26,7 +27,7 @@ struct WorkoutRowView: View {
                     
                     Text(workout.startDate, style: .date)
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                    //                        .foregroundStyle(.secondary)
                         .previewBorder(.red.opacity(0.2))
                 }
                 .previewBorder(.green.opacity(0.2))
@@ -35,10 +36,13 @@ struct WorkoutRowView: View {
                 
                 
                 // MARK: Tags
-                Text("\(workout.exercises.first?.template.primaryMuscles?.first ?? "")")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .previewBorder(.red.opacity(0.2))
+                if let primaryMuscle = workout.abbreviatedMuscle() {
+                    Text(primaryMuscle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .previewBorder(.red.opacity(0.2))
+                }
+                
             }
             .previewBorder(.blue.opacity(0.2))
             
@@ -48,31 +52,47 @@ struct WorkoutRowView: View {
                 
                 // TODO: Use tags & a dropdown
             }
+            .previewBorder(.purple.opacity(0.5))
             
             Divider()
             
-            // TODO: Add adaptive class
-            HStack {
-                Label("\(workout.estimatedCaloriesBurned(), specifier: "%d") Kcal", systemImage: "flame")
+            HStack(spacing: 4) {
+                let energy =  Measurement(value: workout.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
+                Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
                     .frame(maxWidth: .infinity)
+                    .previewBorder(.red.opacity(0.2))
                 
                 Circle()
                     .fill()
                     .frame(width: 4)
+                    .previewBorder(.red.opacity(0.2))
                 
                 // TODO: Fix Time Duration
-                Label("45 Min", systemImage: "timer")
-                    .frame(maxWidth: .infinity)
                 
-                Circle()
-                    .fill()
-                    .frame(width: 4)
-                
-                Label("\(workout.abbreviatedCategory())", systemImage: "dumbbell")
+                Label(formatTime(workout.duration), systemImage: "timer")
                     .frame(maxWidth: .infinity)
+                    .previewBorder(.red.opacity(0.2))
+                
+                if let abbreviatedCategory = workout.abbreviatedCategory() {
+                    Circle()
+                        .fill()
+                        .frame(width: 4)
+                        .previewBorder(.red.opacity(0.2))
+                    
+                    Label(abbreviatedCategory, systemImage: workout.iconForCategory())
+                        .frame(maxWidth: .infinity)
+                        .previewBorder(.red.opacity(0.2))
+                } else {
+                    Spacer()
+                        .frame(maxWidth: .infinity)
+                        .previewBackground(.red.opacity(0.2))
+                }
+                
             }
             .font(.caption2)
-            .foregroundStyle(.tertiary)
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity)
+            .previewBorder(Color.red.opacity(0.2))
             
         }
         .padding(.listRowContentInset)
@@ -92,5 +112,10 @@ struct WorkoutRowView: View {
 }
 
 #Preview {
-    WorkoutRowView(workout: .mock(0))
+    @State var routerPath: RouterPath = .init()
+    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
+    
+    return WorkoutRowView(workout: .mock(0))
+        .environment(routerPath)
+        .environment(globalMessageQueue)
 }

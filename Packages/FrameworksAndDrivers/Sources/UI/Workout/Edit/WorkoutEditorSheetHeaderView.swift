@@ -14,6 +14,7 @@ struct WorkoutEditorSheetHeaderView: View {
     @Environment(WorkoutEditorViewModel.self) private var viewModel
     
     @State private var viewState: ViewState = .timer
+    @State private var isAnimating: Bool = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -23,7 +24,7 @@ struct WorkoutEditorSheetHeaderView: View {
                 Button(action: {
                     /// Show a popup timer with options to reset the time
                     /// A Context Menu
-                    withCustomSpring {
+                    withAnimation(.linear) {
                         viewState.toggle()
                     }
                 }, label: {
@@ -31,32 +32,39 @@ struct WorkoutEditorSheetHeaderView: View {
                         switch viewState {
                         case .timer:
                             Group {
-                                Text(viewModel.startTime ?? .now, style: .timer)
+                                Text(viewModel.workout.startDate, style: .timer)
+                                    .contentTransition(.numericText(value: 1))
                                 Image(systemName: "timer")
                             }
+                            .fixedSize()
+                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         case .calories:
                             Group {
-                                // TODO: Fix the values
-                                let energy =  Measurement(value: viewModel.totalCaloriesBurned, unit: UnitEnergy.kilocalories)
-                                Text(energy, format: .measurement(width: .narrow, numberFormatStyle: .number.rounded()))
+                                let energy =  Measurement(value: viewModel.workout.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
+                                Text(energy.formatted(.measurement(width: .abbreviated, usage: .workout)))
                                 Image(systemName: "bolt.fill")
                             }
+                            .fixedSize()
+                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         }
                     }
+                    .layoutPriority(1)
                 })
                 .font(.headline.monospaced())
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.capsule)
-                .foregroundStyle(.primary)
-                .transition(.asymmetric(insertion: .slide, removal: .identity))
+                .foregroundStyle(.white)
                 .scaleEffect(0.75)
+                .layoutPriority(1)
                 .previewBorder()
                 
-                Text("In Progress")
-                    .font(.headline)
+                // TODO: Optimize
+                Label("In Progress...", systemImage: "figure.run")
                     .foregroundStyle(.tertiary)
-                    .transition(.asymmetric(insertion: .identity, removal: .slide))
+                    .symbolEffect(.pulse, isActive: isAnimating)
+                    .layoutPriority(0)
                     .previewBorder()
+                    .clipped()
                 
                 
             } else {
@@ -64,10 +72,14 @@ struct WorkoutEditorSheetHeaderView: View {
                 Text("Record Workout")
                     .font(.title3.bold())
                     .transition(.asymmetric(insertion: .identity, removal: .slide))
+                    .layoutPriority(0)
                     .previewBorder()
             }
         }
         .animation(.easeInOut, value:  viewModel.isTimerRunning)
+        .onAppear {
+            isAnimating = true
+        }
     }
 }
 

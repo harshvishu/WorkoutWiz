@@ -13,7 +13,7 @@ public extension View {
       modelContainer(for: [
         SD_SaveDataRecord.self,
         SD_WorkoutRecord.self,
-      ], inMemory: true)
+      ], inMemory: false)
     }
     
     

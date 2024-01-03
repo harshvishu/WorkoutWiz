@@ -50,7 +50,7 @@ public extension WorkoutRecord {
     }
     
     static func mock(_ index: Int = 0) -> Self {
-        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 45, notes: "Workout_\(index) Notes", exercises: [
+        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 60 * 45, notes: "Workout_\(index) Notes", exercises: [
             ExerciseRecord(documentID: "Workout_Exercise_1_\(index)", template: .mock_1, sets: [
                 .init(weight: 5, rep: 12),
                 .init(weight: 7.5, rep: 10),
@@ -70,11 +70,39 @@ public extension WorkoutRecord {
     }
     
     // TODO: Make it better
-    func abbreviatedCategory() -> String {
+    func abbreviatedCategory() -> String? {
         let wordCounts = exercises.reduce(into: [:]) { counts, word in
             counts[word.template.category, default: 0] += 1
         }
 
-        return wordCounts.max { $0.value < $1.value }?.key ?? ""
+        return wordCounts.max { $0.value < $1.value }?.key
+    }
+    
+    func iconForCategory() -> String {
+        switch abbreviatedCategory() {
+        case "cardio":
+            "figure.mixed.cardio"
+        case "stretching":
+            "figure.cooldown"
+        case "olympic weightlifting":
+            "dumbbell"
+        case "plyometrics":
+            "figure.track.and.field"
+        case "strength", "powerlifting", "strongman":
+            "figure.strengthtraining.traditional"
+        default:
+            "figure.core.training"
+        }
+    }
+    
+    func abbreviatedMuscle() -> String? {
+        let wordCounts = exercises
+            .compactMap(\.template.primaryMuscles)
+            .joined()
+            .reduce(into: [:]) { counts, word in
+                counts[word, default: 0] += 1
+            }
+        
+        return wordCounts.max { $0.value < $1.value }?.key
     }
 }

@@ -100,6 +100,7 @@ public final class WorkoutEditorViewModel {
         let duration = getTimeDifference(startDate: startTime, endDate: endTime)    /// Calculate the workout duration
         workout.duration = duration
         workout.endDate = endTime
+        workout.duration = duration
         await recordWorkout()    /// Save this workout
 
         self.isTimerRunning = false
