@@ -1,5 +1,8 @@
 # Advanced Workout App
 
+## BUILD IN PUBLIC
+## Work In Progress
+
 ## Overview
 
 Welcome to the Advanced Workout App, a demonstration project showcasing the capabilities and large-scale architecture using SwiftUI. This project incorporates advanced features such as SwiftData for local data storage, Firebase for real-time data synchronization, and a comprehensive set of workout app functionalities.
