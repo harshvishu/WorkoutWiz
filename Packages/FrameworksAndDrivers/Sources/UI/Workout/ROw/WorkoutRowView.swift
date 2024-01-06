@@ -56,7 +56,7 @@ struct WorkoutRowView: View {
             
             Divider()
             
-            HStack(spacing: 4) {
+            HStack(spacing: 0) {
                 let energy =  Measurement(value: workout.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
                 Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
                     .frame(maxWidth: .infinity)
@@ -80,6 +80,8 @@ struct WorkoutRowView: View {
                         .previewBorder(.red.opacity(0.2))
                     
                     Label(abbreviatedCategory.rawValue, systemImage: workout.iconForCategory())
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
                         .frame(maxWidth: .infinity)
                         .previewBorder(.red.opacity(0.2))
                 } else {

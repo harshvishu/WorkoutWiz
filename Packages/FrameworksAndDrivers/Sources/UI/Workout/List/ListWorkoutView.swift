@@ -22,8 +22,12 @@ struct ListWorkoutView: View {
     
     @State var viewModel: ListWorkoutViewModel
     
-    public init(viewModel: ListWorkoutViewModel = ListWorkoutViewModel()) {
-        self._viewModel = .init(initialValue: viewModel)
+    public init(
+        filter: ListWorkoutFilter
+    ) {
+        self._viewModel = .init(
+            initialValue: ListWorkoutViewModel(filter: filter)
+        )
     }
     
     var body: some View {
@@ -39,28 +43,23 @@ struct ListWorkoutView: View {
                 ForEach(workouts) {
                     WorkoutRowView(workout: $0)
                 }
+                .onDelete(perform: delete)
             } header: {
+                // TODO: Change header based on data
                 HStack {
-                    Text("Recents")
-//                        .font(.headline)
-//                        .foregroundStyle(.secondary)
+                    Text("Today")
                     
                     Spacer()
                     
                     Button {
-                        globalMessageQueue.send(.showLogs)
+                        globalMessageQueue.send(.openEditWorkoutSheet)
                     } label: {
-                        Text("View All")
+                        Image(systemName: "plus")
                     }
                     .buttonStyle(.plain)
                 }
-//                .font(.headline)
-                .foregroundStyle(.secondary)
-            }
-            .onChange(of: isPresented) { _, isPresented in
-                //            if !isPresented {
-                //                viewModel.didSelect(exercises: getSelectedExercises())
-                //            }
+                .foregroundStyle(.primary)
+                .font(.headline)
             }
             .onReceive(globalMessageQueue.signal) {
                 if case .workoutFinished = $0 {
@@ -70,19 +69,40 @@ struct ListWorkoutView: View {
                 }
             }
         case .empty:
-            Button(action: {
-                globalMessageQueue.send(.openEditWorkoutSheet)
-            }, label: {
-                VStack {
-                    Text("No workouts yet!\nTap to add a workout")
-                        .multilineTextAlignment(.center)
+            Section {
+                HStack {
+                    Text("Today")
+                        .foregroundStyle(.primary)
+                        .font(.title3.bold())
+                    
+                    Spacer()
+                    
+                    Button {
+                        globalMessageQueue.send(.openEditWorkoutSheet)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .buttonStyle(.plain)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 200)
-            })
-            .buttonStyle(.plain)
-            .contentShape(Rectangle())
-            .listRowBackground(Color.clear)
+                
+                Button(action: {
+                    globalMessageQueue.send(.openEditWorkoutSheet)
+                }, label: {
+                    VStack {
+                        Text("No workouts for today!")
+                            .font(.title3)
+                            Text("Tap to start a workout")
+                                .font(.headline)
+                    }
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                })
+                .buttonStyle(.plain)
+                .contentShape(Rectangle())
+            }
+//            .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .onReceive(globalMessageQueue.signal) {
                 if case .workoutFinished = $0 {
@@ -99,12 +119,18 @@ fileprivate extension ListWorkoutView {
     func bindModelContext() {
         viewModel.bind(listWorkoutUseCase: ListWorkoutUseCase(workoutRepository: SwiftDataWorkoutRepository(modelContext: modelContext)))
     }
+    
+    func delete(at offsets: IndexSet) {
+        Task {
+            await viewModel.delete(at: offsets)
+        }
+    }
 }
 
 #Preview {
     @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
-    return ListWorkoutView()
+    return ListWorkoutView(filter: .none)
         .environment(globalMessageQueue)
         .withPreviewModelContainer()
 }

@@ -116,6 +116,28 @@ extension DaySelectView {
     }
 }
 
+public func getCurrentMonthDayRange(date: Date) -> [Day] {
+    let calendar = Calendar.current
+    let month = calendar.dateInterval(of: .month, for: date)
+    
+    guard let firstMonthDay = month?.start else {return []}
+    guard let numberOfDays = calendar.range(of: .day, in: .month, for: date)?.count else {return []}
+    
+    return (0..<numberOfDays).compactMap{Day(date: calendar.date(byAdding: .day, value: $0, to: firstMonthDay))}
+}
+
+public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day] {
+    let calendar = Calendar.current
+    guard let date = calendar.date(byAdding: .month, value: count, to: date) else {return []}
+    let month = calendar.dateInterval(of: .month, for: date)
+    
+    guard let firstMonthDay = month?.start else {return []}
+    guard let numberOfDays = calendar.range(of: .day, in: .month, for: date)?.count else {return []}
+    
+    return (0..<numberOfDays).compactMap{Day(date: calendar.date(byAdding: .day, value: $0, to: firstMonthDay))}
+}
+
+
 #Preview {
     ZStack {
         DaySelectView(

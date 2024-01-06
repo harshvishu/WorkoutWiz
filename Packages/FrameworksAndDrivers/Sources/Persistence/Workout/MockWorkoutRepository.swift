@@ -5,8 +5,9 @@
 //  Created by harsh vishwakarma on 23/12/23.
 //
 
-import Domain
 import ApplicationServices
+import Domain
+import Foundation
 
 public final class MockWorkoutRepository: WorkoutRepository {
     
@@ -23,14 +24,12 @@ public final class MockWorkoutRepository: WorkoutRepository {
         workouts.append(workout)
         return workout
     }
-    
-    public func fetchWorkouts() async throws -> [WorkoutRecord] {
-        workouts
-    }
-    
     public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {
         workouts.removeAll(where: {$0.documentID == workout.documentID})
         return true
+    }
+    public func fetchWorkouts(filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
+        workouts
     }
 }
 

@@ -33,10 +33,12 @@ fileprivate struct RowFooterView: View {
             Spacer()
             
             Button(action: {
-                withAnimation {
-                    exercise.sets.append(lastSavedSet)
-                    editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, unit: lastSavedSet.unit, failure: lastSavedSet.failure)
+                if let addedSet = editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, unit: lastSavedSet.unit, failure: lastSavedSet.failure) {
+                    withCustomSpring {
+                        exercise.sets.append(addedSet)
+                    }
                 }
+                
             }, label: {
                 Text("Add a set")
                     .font(.footnote)
@@ -121,51 +123,7 @@ public struct ExerciseSetRowView: View {
                 if showExpandedSetView {
                     // Show all exercise sets
                     ForEach(exercise.sets, id: \.self) { set in
-                        HStack(alignment: .center, spacing: 0) {
-                            
-                            HStack(alignment: .center, spacing: 4) {
-                                switch set.type {
-                                case .duration(let time):
-                                    
-                                    Text(formatTime(time, allowedUnits: [.second], unitsStyle: .positional))
-                                        .font(.title.bold())
-                                    
-                                    Image(systemName: "timer")
-                                        .font(.caption2)
-                                    
-                                case .rep(let count):
-                                    Text("\(count)")
-                                        .font(.title.bold())
-                                    
-                                    Text("reps")
-                                        .font(.caption2)
-                                }
-                            }
-                            
-                            
-                            Spacer()
-                            HStack(alignment: .center, spacing: 20) {
-                                Text("x")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                                
-                                                            
-                                HStack(alignment: .center, spacing: 4) {
-                                    Text("\(set.weight, specifier: "%0.1f")")
-                                        .font(.title.bold())
-                                    Text("\(set.unit.symbol)")
-                                        .font(.caption2)
-                                }
-                                
-//                                Spacer()
-                            }
-                            .frame(width: 120, alignment: .leading)
-                            
-                            if set.failure {
-                                Image(systemName: "circle.fill")
-                                    .foregroundStyle(.purple)
-                            }
-                        }
+                        SetView(set: set)
                     }
                 } else {
                     // Show Summary View
@@ -192,6 +150,92 @@ public struct ExerciseSetRowView: View {
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(.listRowInset)
+    }
+}
+
+
+@Observable
+fileprivate class ViewModel {
+    var set: ExerciseSet
+    init(set: ExerciseSet) {
+        self.set = set
+    }
+}
+
+struct SetView: View {
+    
+    @State fileprivate var viewModel: ViewModel
+        
+    init(set: ExerciseSet) {
+        self.viewModel = .init(set: set)
+    }
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 0) {
+            
+            HStack(alignment: .center, spacing: 4) {
+                switch viewModel.set.type {
+                case .duration(let time):
+                    
+                    TextField("", text:  Binding(
+                        get: { formatTime(time, allowedUnits: [.minute], unitsStyle: .positional) },
+                        set: { viewModel.set.update(type: .duration((Double($0) ?? 0.0) * 60.0 ))}
+                    ))
+                    .keyboardType(.numberPad)
+                    .textContentType(.none)
+                    .font(.title.bold())
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            
+                            Button("Hide") {
+                                hideKeyboard()
+                            }
+                        }
+                    }
+                    
+//                    Text(formatTime(time, allowedUnits: [.minute], unitsStyle: .positional))
+//                        .font(.title.bold())
+//                        .onTapGesture {
+//                            viewModel.set.update(type: .duration(time + 5))
+//                        }
+                    
+                    Image(systemName: "timer")
+                        .font(.caption2)
+                    
+                case .rep(let count):
+                    Text("\(count)")
+                        .font(.title.bold())
+                    
+                    Text("reps")
+                        .font(.caption2)
+                }
+            }
+            
+            
+            Spacer()
+            HStack(alignment: .center, spacing: 20) {
+                Text("x")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                
+                                            
+                HStack(alignment: .center, spacing: 4) {
+                    Text("\(viewModel.set.weight, specifier: "%0.1f")")
+                        .font(.title.bold())
+                    Text("\(viewModel.set.unit.symbol)")
+                        .font(.caption2)
+                }
+                
+//                                Spacer()
+            }
+            .frame(width: 120, alignment: .leading)
+            
+            if viewModel.set.failure {
+                Image(systemName: "circle.fill")
+                    .foregroundStyle(.purple)
+            }
+        }
     }
 }
 

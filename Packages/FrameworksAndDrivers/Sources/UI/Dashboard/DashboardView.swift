@@ -21,28 +21,13 @@ struct DashboardView: View {
     @Environment(ConcreteMessageQueue<ApplicationMessage>.self) private var globalMessageQueue
     
     @State private var resetScroll: Day? = nil
-    @State private var isTodayVisible: Bool = true
-    @State private var selectedDateRange: [Day] = getCurrentMonthDayRange(date: .now)
-    @State private var selectedDate: Day = Day(date: .now)
-    @State private var today: Day = Day(date: .now)
     
     var body: some View {
         VStack {
             ScrollViewReader { proxy in
                 ZStack(alignment: .top) {
                     List {
-                        DaySelectView(
-                            currentDayRange: $selectedDateRange,
-                            scrollTarget: $resetScroll,
-                            selectedDate: $selectedDate,
-                            today: today,
-                            isTodayVisible: $isTodayVisible
-                        )
-                        .frame(height: 90)
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        
-                        ListWorkoutView()
+                        ListWorkoutView(filter: .date(.now))
                     }
                 }
             }
@@ -52,7 +37,7 @@ struct DashboardView: View {
             })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
-            .scrollContentBackground(.hidden)
+//            .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
@@ -95,26 +80,4 @@ struct DashboardView: View {
             .environment(globalMessageQueue)
             .withPreviewModelContainer()
     }
-}
-
-
-func getCurrentMonthDayRange(date: Date) -> [Day] {
-    let calendar = Calendar.current
-    let month = calendar.dateInterval(of: .month, for: date)
-    
-    guard let firstMonthDay = month?.start else {return []}
-    guard let numberOfDays = calendar.range(of: .day, in: .month, for: date)?.count else {return []}
-    
-    return (0..<numberOfDays).compactMap{Day(date: calendar.date(byAdding: .day, value: $0, to: firstMonthDay))}
-}
-
-func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day] {
-    let calendar = Calendar.current
-    guard let date = calendar.date(byAdding: .month, value: count, to: date) else {return []}
-    let month = calendar.dateInterval(of: .month, for: date)
-    
-    guard let firstMonthDay = month?.start else {return []}
-    guard let numberOfDays = calendar.range(of: .day, in: .month, for: date)?.count else {return []}
-    
-    return (0..<numberOfDays).compactMap{Day(date: calendar.date(byAdding: .day, value: $0, to: firstMonthDay))}
 }

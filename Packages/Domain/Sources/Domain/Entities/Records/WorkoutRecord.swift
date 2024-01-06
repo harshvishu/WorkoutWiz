@@ -49,21 +49,6 @@ public extension WorkoutRecord {
         WorkoutRecord()
     }
     
-    static func mock(_ index: Int = 0) -> Self {
-        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 60 * 45, notes: "Workout_\(index) Notes", exercises: [
-            ExerciseRecord(documentID: "Workout_Exercise_1_\(index)", template: .mock_1, sets: [
-                .init(weight: 5, rep: 12),
-                .init(weight: 7.5, rep: 10),
-                .init(weight: 12.5, rep: 8)
-            ]),
-            ExerciseRecord(documentID: "Workout_Exercise_2_\(index)", template: .mock_1, sets: [
-                .init(weight: 135, rep: 10),
-                .init(weight: 175, rep: 6),
-                .init(weight: 200, rep: 4)
-            ])
-        ])
-    }
-    
     // Calories Burned=(Weight Lifted×Repetitions×Sets)×Caloric Expenditure Factor
     func estimatedCaloriesBurned() -> Double {
         exercises.reduce(0.0, {$0 + $1.estimatedCaloriesBurned()})
@@ -74,7 +59,7 @@ public extension WorkoutRecord {
         let wordCounts = exercises.reduce(into: [:]) { counts, word in
             counts[word.template.category, default: 0] += 1
         }
-
+        
         return wordCounts.max { $0.value < $1.value }?.key
     }
     
@@ -92,3 +77,22 @@ public extension WorkoutRecord {
         return wordCounts.max { $0.value < $1.value }?.key
     }
 }
+
+#if DEBUG
+public extension WorkoutRecord {
+    static func mock(_ index: Int = 0) -> Self {
+        WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 60 * 45, notes: "Workout_\(index) Notes", exercises: [
+            ExerciseRecord(documentID: "Workout_Exercise_1_\(index)", template: .mock_1, sets: [
+                .init(weight: 5, rep: 12),
+                .init(weight: 7.5, rep: 10),
+                .init(weight: 12.5, rep: 8)
+            ]),
+            ExerciseRecord(documentID: "Workout_Exercise_2_\(index)", template: .mock_1, sets: [
+                .init(weight: 135, rep: 10),
+                .init(weight: 175, rep: 6),
+                .init(weight: 200, rep: 4)
+            ])
+        ])
+    }
+}
+#endif

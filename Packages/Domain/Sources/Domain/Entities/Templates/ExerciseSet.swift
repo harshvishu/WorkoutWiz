@@ -38,6 +38,10 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
         self.failure = failure
         self.calories = calories
     }
+    
+    public mutating func update(type: SetType) {
+        self.type = type
+    }
 }
 
 public enum SetType: Codable, Hashable, Equatable {

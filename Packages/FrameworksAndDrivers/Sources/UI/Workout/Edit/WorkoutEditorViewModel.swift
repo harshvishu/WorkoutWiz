@@ -70,13 +70,14 @@ public final class WorkoutEditorViewModel {
         type: SetType,
         unit: Domain.Unit = .kg,
         failure: Bool = false
-    ) {
-        guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return}
+    ) -> ExerciseSet? {
+        guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return nil}
         let met = workout.exercises[index].template.category.met()
         
         let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
         let set = ExerciseSet(weight: weight, type: type, unit: unit, failure: failure, calories: calories)
         workout.exercises[index].addSet(set: set)
+        return set
     }
     
     func updateSetFor(

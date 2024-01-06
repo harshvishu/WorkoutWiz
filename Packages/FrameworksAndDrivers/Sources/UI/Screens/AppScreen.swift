@@ -74,7 +74,7 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
         case .profile:
             Text("Profile")
         case .logs:
-            Text("Calendar")
+            CalendarScreen(popToRootScreen: popToRootScreen)
         case .settings:
             Text("Settings")
         case .other:

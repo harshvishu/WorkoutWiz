@@ -2,12 +2,15 @@
 .DS_Store
 build/
 DerivedData/
-/*.xcodeproj/
-/*.xcworkspace/
-/xcuserdata/
 
 # Swift Package Manager
 /.build/
+.build/
+Packages/ApplicationServices/.swiftpm/xcode/xcuserdata/
+Packages/FrameworksAndDrivers.swiftpm/xcode/xcuserdata/
+Packages/FrameworksAndDrivers.swiftpm/xcode/xcuserdata/
+Packages/DesignSystem.swiftpm/xcode/xcuserdata/
+Packages/Domain.swiftpm/xcode/xcuserdata/
 
 # CocoaPods
 /Pods/

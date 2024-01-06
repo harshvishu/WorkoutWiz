@@ -1,8 +1,8 @@
 //
 //  DateExtensions.swift
-//  
 //
-//  Created by harsh on 17/09/22.
+//
+//  Created by harsh vishwakarma on 04/01/24.
 //
 
 import Foundation
@@ -28,3 +28,21 @@ public func dateByAddingDay(count: Int, toDate date: Date) -> Date {
     let calendar = Calendar.current
     return calendar.date(byAdding: .day, value: count, to: date) ?? date
 }
+
+public extension Date {
+    func isSameDay(_ rhs: Date) -> Bool {
+        Calendar.current.isDate(self, equalTo: rhs, toGranularity: .day)
+    }
+    
+    func setMidnight() -> Date {
+        let calendar = Calendar.current
+        
+        // Extract the date components (year, month, and day)
+        let components = calendar.dateComponents([.year, .month, .day], from: self)
+        
+        // Create a new date with the extracted components and set the time to midnight
+        return calendar.date(from: components)!
+    }
+    
+}
+

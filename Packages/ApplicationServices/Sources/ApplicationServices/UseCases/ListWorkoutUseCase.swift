@@ -19,9 +19,20 @@ public final class ListWorkoutUseCase: ListWorkoutIOPort {
     }
     
     @MainActor
-    public func listWorkouts() async throws -> [WorkoutRecord] {
-        try await workoutRepository.fetchWorkouts()
+    public func listWorkouts(_ filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
+        try await workoutRepository.fetchWorkouts(filter: filter)
     }
     
+    @MainActor
+    public func deleteWorkouts(_ workouts: [WorkoutRecord]) async throws -> Bool {
+        var status = true
+        for workout in workouts {
+            let op = try await workoutRepository.deleteWorkout(workout)
+            if op == false && status == true {
+                status = false
+            }
+        }
+        return status
+    }
 }
 
