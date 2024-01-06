@@ -47,6 +47,7 @@
 
 /* Begin PBXFileReference section */
 		3A0D2FFC2B02386400F1F371 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		3A4B178C2B4943D700167E8F /* README */ = {isa = PBXFileReference; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		3A51FAEF2AF8CE1200404A4D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A51FAF12AF8CE1200404A4D /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3A51FAF22AF8CE1200404A4D /* WorkoutWizApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WorkoutWizApp.swift; sourceTree = "<group>"; };
@@ -158,6 +159,7 @@
 		3ACF19F42AF8CA7A005AFB40 = {
 			isa = PBXGroup;
 			children = (
+				3A4B178C2B4943D700167E8F /* README */,
 				3A7260212B0264D9007AF4E9 /* GoogleService-Info.plist */,
 				3A72601A2B025DFA007AF4E9 /* WorkoutWizApp-Debug.xcconfig */,
 				3A72601B2B025E17007AF4E9 /* WorkoutWizApp-Release.xcconfig */,

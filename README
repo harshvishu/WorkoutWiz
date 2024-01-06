@@ -1,0 +1,75 @@
+# Advanced Workout App
+
+## Overview
+
+Welcome to the Advanced Workout App, a demonstration project showcasing the capabilities and large-scale architecture using SwiftUI. This project incorporates advanced features such as SwiftData for local data storage, Firebase for real-time data synchronization, and a comprehensive set of workout app functionalities.
+
+## Features
+
+### SwiftUI Interface
+
+The user interface is built using SwiftUI, taking advantage of its modern and declarative approach to design elegant and efficient user experiences.
+
+### SwiftData Integration
+
+Local data storage is handled by SwiftData, ensuring seamless persistence of user data such as workout history, personal records, and preferences. SwiftData provides a robust and type-safe interface for managing the app's local database.
+
+### Firebase Integration
+
+Firebase is utilized for real-time data synchronization across devices. Users can seamlessly sync their workout data, achievements, and progress, making it accessible from any device.
+
+### Workout Tracking
+
+- Log and track various types of workouts, including strength training, cardio, and flexibility exercises.
+- Record sets, reps, and weights for strength exercises.
+- Track duration, distance, and intensity for cardio exercises.
+
+### Personalized Profiles
+
+- Create and customize user profiles with personal information, fitness goals, and preferences.
+- Set workout preferences, such as preferred workout duration, intensity levels, and preferred exercise types.
+
+### Social Features
+
+- Connect with friends and share workout achievements.
+- Compete on leaderboards and challenge friends to achieve fitness goals.
+
+### Progress Analytics
+
+- View detailed analytics and insights into workout progress over time.
+- Track personal records and celebrate milestones.
+
+### Beautiful Charts and Visualizations
+
+- Visual representation of workout history and progress through interactive charts.
+- Monitor trends and identify areas for improvement.
+
+## Architecture
+
+The Advanced Workout App follows a Hexagonal architecture, separating concerns into different layers:
+
+- **Domain Layer**: Contains business logic and entities.
+- **Application Layer**: Orchestrates use cases and interacts with the domain layer.
+- **Interface Adapters**: Adapts the application to external frameworks (e.g., SwiftUI, Firebase, SwiftData).
+- **Frameworks and Drivers**: External tools and frameworks (SwiftData, Firebase) providing infrastructure.
+
+## Getting Started
+
+1. Clone the repository.
+2. Open the Xcode project file.
+3. Build and run the app on your device or simulator.
+
+## Requirements
+
+- Xcode 13.0 or later
+- Swift 5.5 or later
+- iOS 14.0 or later
+
+## Credits
+
+This project is maintained by [@harshvishu](https://twitter.com/harshvishu). Feel free to contribute by submitting bug reports, feature requests, or pull requests.
+
+## License
+
+This Advanced Workout App is released under the [MIT License](LICENSE).
+
