@@ -24,21 +24,35 @@ final class ListWorkoutViewModel {
     private var listWorkoutUseCase: ListWorkoutIOPort?
     private var messageQueue: ConcreteMessageQueue<[WorkoutRecord]>?
     private var workouts: [WorkoutRecord] = []
+    private var grouping: Bool
 
     public init(
         filter: ListWorkoutFilter = .none,
-        listWorkoutUseCase: ListWorkoutIOPort? = nil
+        listWorkoutUseCase: ListWorkoutIOPort? = nil,
+        grouping: Bool
     ) {
         self.filter = filter
         self.listWorkoutUseCase = listWorkoutUseCase
+        self.grouping = grouping
     }
     
     
     func listWorkouts() async {
         do {
-            let workouts = try await listWorkoutUseCase?.listWorkouts(filter) ?? []
+            let workouts = try await listWorkoutUseCase?.fetchWorkouts(filter) ?? []
             self.workouts = workouts
-            viewState = workouts.isNotEmpty ? .display(records: workouts) : .empty
+            
+            if grouping {
+                let calendar = Calendar.autoupdatingCurrent
+                let groupedByDay = Dictionary(grouping: workouts) {
+                    calendar.startOfDay(for: $0.startDate)
+                }
+                viewState = workouts.isNotEmpty ? .displayGrouped(records: groupedByDay) : .empty
+
+            } else {
+                viewState = workouts.isNotEmpty ? .display(records: workouts) : .empty
+            }
+            
             logger.info("\(workouts.count) workouts fetched")
         } catch {
             logger.error("\(error)")
@@ -75,13 +89,9 @@ final class ListWorkoutViewModel {
 
 extension ListWorkoutViewModel {
     enum ViewState {
-//        public enum PagingState {
-//            case hasNextPage, loadingNextPage, none
-//        }
-        
         case loading
         case empty
         case display(records: [WorkoutRecord])
-//        case error(error: Error)
+        case displayGrouped(records: [Date : [WorkoutRecord]])
     }
 }

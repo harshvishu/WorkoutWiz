@@ -20,7 +20,7 @@ public final class MockWorkoutRepository: WorkoutRepository {
     
     public init() {}
     
-    public func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
+    public func createOrUpdateWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
         workouts.append(workout)
         return workout
     }

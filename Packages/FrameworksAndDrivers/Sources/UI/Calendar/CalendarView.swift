@@ -27,7 +27,7 @@ struct CalendarView: View {
     @State private var today: Day = Day(date: .now)
     
     var body: some View {
-        VStack {
+        ZStack {
             ScrollViewReader { proxy in
                 ZStack(alignment: .top) {
                     List {
@@ -35,39 +35,54 @@ struct CalendarView: View {
                             currentDayRange: $selectedDateRange,
                             scrollTarget: $resetScroll,
                             selectedDate: $selectedDate,
-                            today: today,
-                            isTodayVisible: $isTodayVisible
+                            isTodayVisible: $isTodayVisible, 
+                            today: today
                         )
                         .frame(height: 90)
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                         
-                        ListWorkoutView(filter: .none)
+                        ListWorkoutView(filter: .none, grouping: true)
                     }
+                }
+                // MARK: Day Select View Bindings
+                .onChange(of: selectedDate) { _, newValue in
+                    withEaseOut {
+                        proxy.scrollTo(newValue.date.formatted(.dateTime), anchor: .top)
+                    }
+                    logger.info("Day Change \(newValue.date.formatted(.dateTime))")
                 }
             }
             .safeAreaInset(edge: .bottom, content: {
                 EmptyView()
-                    .frame(height: 110)
+                    .frame(height: .bottomListPadding)
             })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
-            .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Image(systemName: "chevron.left")
-                        .symbolEffect(.pulse.byLayer, value: isPresented)
+                    Button(action: {}, label: {
+                        Image(systemName: "chevron.left")
+                            .symbolEffect(.pulse.byLayer, value: isPresented)
+                    })
+                    .foregroundStyle(.primary)
                 }
                 
+                ToolbarItem(placement: .principal) {
+                    Text(selectedDate.date, style: .date)
+                        .contentTransition(.numericText())
+                }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "chevron.right")
-                        .symbolEffect(.pulse.byLayer, value: isPresented)
+                    Button(action: {}, label: {
+                        Image(systemName: "chevron.right")
+                            .symbolEffect(.pulse.byLayer, value: isPresented)
+                    })
+                    .foregroundStyle(.primary)
                 }
             }
-            .onChange(of: isPresented) { _, isPresented in
-            }
+            .toolbarTitleDisplayMode(.inline)
         }
     }
 }

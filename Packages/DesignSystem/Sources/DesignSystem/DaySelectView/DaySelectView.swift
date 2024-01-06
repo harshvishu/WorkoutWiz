@@ -8,24 +8,25 @@
 import SwiftUI
 
 public struct DaySelectView: View {
-    @Binding var currentDayRange: [Day]
+    @Binding public var currentDayRange: [Day]
     @Binding public var scrollTarget: Day?
     @Binding public var selectedDate: Day
     @Binding public var isTodayVisible: Bool
+    
     public var today: Day
     
     public init(
         currentDayRange: Binding<[Day]>,
         scrollTarget: Binding<Day?>,
         selectedDate: Binding<Day>,
-        today: Day,
-        isTodayVisible: Binding<Bool>
+        isTodayVisible: Binding<Bool>,
+        today: Day = .init(date: .now)
     ) {
         self._currentDayRange = currentDayRange
         self._scrollTarget = scrollTarget
         self._selectedDate = selectedDate
-        self.today = today
         self._isTodayVisible = isTodayVisible
+        self.today = today
     }
     
     public var body: some View {
@@ -36,7 +37,6 @@ public struct DaySelectView: View {
                         ForEach(currentDayRange, id: \.self) { day in
                             // MARK: Item
                             DaySelectItemView(viewModel: DaySelectItemViewModel(day: day, isSelected: selectedDate == day), itemSize: getSelectDayItemViewSize(proxy: geometry))
-                            //                                .snappingScrollView{$0.scrollSnappingAnchor(.bounds)}
                                 .onAppear {
                                     if day == today {
                                         isTodayVisible = true
@@ -50,7 +50,9 @@ public struct DaySelectView: View {
                             
                             // MARK: Day Selection
                                 .onTapGesture {
-                                    selectedDate = day
+                                    withAnimation {
+                                        selectedDate = day
+                                    }
                                 }
                         }
                     }
@@ -154,10 +156,10 @@ public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day]
                                        ]),
             scrollTarget: .constant(Day(date: Date().addingTimeInterval(-700000))),
             selectedDate: .constant(Day(date: Date().addingTimeInterval(-700000))),
-            today: Day(date: Date()),
-            isTodayVisible: .constant(true)
+            isTodayVisible: .constant(true), 
+            today: Day(date: Date())
         )
         .padding()
     }
-    .previewBackground()
+    .previewBorder()
 }

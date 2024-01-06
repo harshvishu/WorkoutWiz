@@ -103,9 +103,9 @@ struct WorkoutRowView: View {
                 .fill(.windowBackground)
                 .stroke(.tertiary, lineWidth: 0.5)
                 .shadow(color: .secondary.opacity(0.1), radius: 20, x: 0.0, y: 2.0)
-                .onTapGesture {
-                    routerPath.navigate(to: .workoutDetails(workout: workout))
-                }
+//                .onTapGesture {
+//                    routerPath.navigate(to: .workoutDetails(workout: workout))
+//                }
         }
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)

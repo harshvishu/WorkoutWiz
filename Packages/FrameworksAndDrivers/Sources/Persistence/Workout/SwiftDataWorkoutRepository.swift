@@ -19,16 +19,16 @@ public final class SwiftDataWorkoutRepository: WorkoutRepository {
         self.modelContext = modelContext
     }
     
-    public func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
+    public func createOrUpdateWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
         let descriptor = fetchDescriptor(filterByDocumentID: workout.documentID, fetchLimit: 1)
         if let model = try modelContext.fetch(descriptor).first {
             model.update(fromRecord: workout)
-            logger.info("\(model.documentID) Model updated")
+            logger.info("\(model.documentID) Workout updated")
             return workout
         } else {
             let record = SD_WorkoutRecord(workout)
             modelContext.insert(record)
-            logger.info("\(record.documentID) Model inserted")
+            logger.info("\(record.documentID) Workout inserted")
             return workout
         }
     }
@@ -37,10 +37,11 @@ public final class SwiftDataWorkoutRepository: WorkoutRepository {
         let descriptor = fetchDescriptor(filterByDocumentID: workout.documentID, fetchLimit: 1)
         if let model = try modelContext.fetch(descriptor).first {
             modelContext.delete(model)
-            logger.info("\(model.documentID) Model updated")
+            logger.info("\(model.documentID) Workout deleted")
             return model.isDeleted
         } else {
-            // data was never written
+            // Data was never written. Safe to remove from UI
+            logger.info("Workout not peresisted. Not deleted")
             return true
         }
     }
@@ -95,7 +96,7 @@ fileprivate extension SwiftDataWorkoutRepository {
         let end = calendar.date(byAdding: .init(day: 1), to: calendar.startOfDay(for: end)) ?? end
         
         return #Predicate<SD_WorkoutRecord> {
-            $0.startDate > start && $0.endDate < end
+            $0.startDate > start && $0.startDate < end
         }
     }
 }

@@ -23,21 +23,20 @@ struct DashboardView: View {
     @State private var resetScroll: Day? = nil
     
     var body: some View {
-        VStack {
+        ZStack {
             ScrollViewReader { proxy in
                 ZStack(alignment: .top) {
                     List {
-                        ListWorkoutView(filter: .date(.now))
+                        ListWorkoutView(filter: .date(.now), grouping: false)
                     }
                 }
             }
             .safeAreaInset(edge: .bottom, content: {
                 EmptyView()
-                    .frame(height: 110)
+                    .frame(height: .bottomListPadding)
             })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
-//            .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {

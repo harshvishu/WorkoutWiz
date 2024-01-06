@@ -18,7 +18,7 @@ struct RotatingImagesAroundCircle: View {
     var body: some View {
         GeometryReader(content: { geometry in
             ZStack(alignment: .center) {
-                ForEach(0..<imageCount) { index in
+                ForEach(0..<imageCount, id: \.self) { index in
                     Image("equipment-\(index+1)", bundle: Bundle.module) // Replace with your image name
                         .resizable()
                         .aspectRatio(contentMode: .fill)

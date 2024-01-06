@@ -19,8 +19,29 @@ public final class ListWorkoutUseCase: ListWorkoutIOPort {
     }
     
     @MainActor
-    public func listWorkouts(_ filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
-        try await workoutRepository.fetchWorkouts(filter: filter)
+    public func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
+        let workouts = try await workoutRepository.fetchWorkouts(filter: filter)
+        /*
+        logger.debug("Total workouts: \(workouts.count)")
+        
+        let today = Date()
+        let calendar = Calendar.autoupdatingCurrent
+//        let start = calendar.startOfDay(for: today)
+//        let end = calendar.date(byAdding: .init(day: 1), to: today) ?? today
+        
+        let dict = Dictionary(grouping: workouts) {
+            // 1. Group if Day is today
+            calendar.startOfDay(for: $0.startDate)
+        }
+        
+        for (day, records) in dict {
+            logger.debug("Day: \(day)")
+            for record in records {
+                logger.debug("\(record.startDate.formatted())")
+            }
+        }
+        */
+        return workouts
     }
     
     @MainActor

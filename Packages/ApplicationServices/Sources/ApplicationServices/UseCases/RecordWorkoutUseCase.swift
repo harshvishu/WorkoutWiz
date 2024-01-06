@@ -19,7 +19,7 @@ public final class RecordWorkoutUseCase: RecordWorkoutIOPort {
     }
     
     public func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
-        try await workoutRepository.recordWorkout(workout)
+        try await workoutRepository.createOrUpdateWorkout(workout)
     }
     
     public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {

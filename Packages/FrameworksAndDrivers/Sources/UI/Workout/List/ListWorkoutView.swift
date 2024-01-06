@@ -23,10 +23,11 @@ struct ListWorkoutView: View {
     @State var viewModel: ListWorkoutViewModel
     
     public init(
-        filter: ListWorkoutFilter
+        filter: ListWorkoutFilter,
+        grouping: Bool
     ) {
         self._viewModel = .init(
-            initialValue: ListWorkoutViewModel(filter: filter)
+            initialValue: ListWorkoutViewModel(filter: filter, grouping: grouping)
         )
     }
     
@@ -38,12 +39,38 @@ struct ListWorkoutView: View {
                     bindModelContext()
                     await viewModel.listWorkouts()
                 }
+        case .displayGrouped(let groupByDay):
+            ForEach(groupByDay.sorted(by: { $0.key > $1.key }), id: \.key) { day, workouts in
+//                Section {
+                    Text(day, style: .date)
+                    .id(day.formatted(.dateTime))
+                    .print(day.formatted(.dateTime))
+                    
+                    ForEach(workouts) {
+                        WorkoutRowView(workout: $0)
+                            .id($0.documentID)
+                    }
+                    .onDelete(perform: delete)
+                    
+//                } header: {
+//                    Text(day, style: .date)
+//                }
+                
+            }
+            .onReceive(globalMessageQueue.signal) {
+                if case .workoutFinished = $0 {
+                    Task {
+                        await viewModel.listWorkouts()
+                    }
+                }
+            }
         case .display(let workouts):
             Section {
                 ForEach(workouts) {
                     WorkoutRowView(workout: $0)
                 }
                 .onDelete(perform: delete)
+                
             } header: {
                 // TODO: Change header based on data
                 HStack {
@@ -56,7 +83,7 @@ struct ListWorkoutView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(.primary)
                 }
                 .foregroundStyle(.primary)
                 .font(.headline)
@@ -70,21 +97,6 @@ struct ListWorkoutView: View {
             }
         case .empty:
             Section {
-                HStack {
-                    Text("Today")
-                        .foregroundStyle(.primary)
-                        .font(.title3.bold())
-                    
-                    Spacer()
-                    
-                    Button {
-                        globalMessageQueue.send(.openEditWorkoutSheet)
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .buttonStyle(.plain)
-                }
-                
                 Button(action: {
                     globalMessageQueue.send(.openEditWorkoutSheet)
                 }, label: {
@@ -101,8 +113,20 @@ struct ListWorkoutView: View {
                 })
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
+            } header: {
+                HStack {
+                    Text("Today")
+                    
+                    Spacer()
+                    
+                    Button {
+                        globalMessageQueue.send(.openEditWorkoutSheet)
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .foregroundStyle(.primary)
+                }
             }
-//            .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .onReceive(globalMessageQueue.signal) {
                 if case .workoutFinished = $0 {
@@ -130,7 +154,7 @@ fileprivate extension ListWorkoutView {
 #Preview {
     @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
-    return ListWorkoutView(filter: .none)
+    return ListWorkoutView(filter: .none, grouping: false)
         .environment(globalMessageQueue)
         .withPreviewModelContainer()
 }
