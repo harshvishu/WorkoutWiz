@@ -15,11 +15,13 @@ import Foundation
 
 @Observable
 public final class ListExerciseViewModel {
-//    private(set) var exercies: [ExerciseTemplate] = []
+    private var allExercies: [ExerciseTemplate] = []
     
     private let listExerciseUseCase: ListExerciseIOPort
     private var messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>?
     private(set) var viewState: ViewState = .loading
+    
+    var searchText = ""
     
     public init(
         listExerciseUseCase: ListExerciseIOPort = ListExerciseUseCase(
@@ -34,6 +36,7 @@ public final class ListExerciseViewModel {
     func listExercises() async {
         let exercies = await listExerciseUseCase.listExercise()
         if exercies.isNotEmpty {
+            self.allExercies = exercies
             self.viewState = .display(templates: exercies)
         } else {
             self.viewState = .empty

@@ -18,10 +18,12 @@ public struct WorkoutEditorView: View {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorView.self))
     
     @Environment(\.modelContext) private var modelContext
-    @Environment(ConcreteMessageQueue<ApplicationMessage>.self) private var globalMessageQueue
+    @Environment(AppState.self) private var appState
     @Environment(RouterPath.self) private var routerPath
     @Environment(WorkoutEditorViewModel.self) private var viewModel
-    
+//    @Environment(\.keyboardShowing) private var keyboardShowing
+    @State private var keyboardShowing = false
+
     @State private var editorMessageQueue: ConcreteMessageQueue<[ExerciseTemplate]> = .init()
     @State private var showFinishAlert: Bool = false
     
@@ -88,15 +90,15 @@ public struct WorkoutEditorView: View {
                 Capsule()
                     .stroke(Color.secondary, lineWidth: 2) // Set the stroke color and width
             )
+            .opacity(keyboardShowing ? 0 : 1)
             
-            
-            if viewModel.workout.exercises.isNotEmpty {
+            if viewModel.workout.exercises.isNotEmpty && keyboardShowing == false {
                 HStack {
                     // MARK: - Cancel Action
                     Button(role: .destructive, action: {
                         Task(priority: .userInitiated) {
                             await viewModel.discardWorkout()
-                            globalMessageQueue.send(.closeWorkoutEditor)
+                            appState.send(.closeWorkoutEditor)
                         }
                     }, label: {
                         Label("Cancel", systemImage: "trash.fill")
@@ -126,9 +128,9 @@ public struct WorkoutEditorView: View {
             Alert(title: Text("Finish Workout?"), message: nil, primaryButton: .default(Text("Finish"), action: {
                 Task(priority: .userInitiated) {
                     _ = await viewModel.finishWorkout()
-                    globalMessageQueue.send(.workoutFinished)
+                    appState.send(.workoutFinished)
                     viewModel.startEmptyWorkout()
-                    globalMessageQueue.send(.closeWorkoutEditor)
+                    appState.send(.closeWorkoutEditor)
                 }
             }), secondaryButton: .cancel())
         })
@@ -141,7 +143,8 @@ public struct WorkoutEditorView: View {
         .navigationDestination(for: RouterDestination.self) { dest in
             switch dest {
             case .listExercise:
-                ListExerciseTemplatesView(messageQueue: editorMessageQueue)
+                ListExerciseTemplatesView(messageQueue: editorMessageQueue, canSelect: true)
+                    .environment(routerPath)
             default:
                 EmptyView()
             }
@@ -166,12 +169,8 @@ fileprivate extension WorkoutEditorBottomSheetView {
 #Preview {
     @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
+  
     return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
-        .environment(saveDataManager)
-        .environment(globalMessageQueue)
-        .withPreviewModelContainer()
+        .withPreviewEnvironment()
 }
 

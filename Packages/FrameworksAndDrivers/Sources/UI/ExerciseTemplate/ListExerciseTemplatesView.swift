@@ -15,17 +15,19 @@ import DesignSystem
 public struct ListExerciseTemplatesView: View {
     @Environment(\.isPresented) var isPresented
     @Environment(\.dismiss) var dismiss
+            
+    @State private var viewModel: ListExerciseViewModel
+    @State private var selectionMap: [ExerciseTemplate: Bool] = [:]
+    @State private var showNavigationBar: Bool = true
     
-    @State var viewModel: ListExerciseViewModel
-    
-    /// List selection properties
-    @State var selectionMap: [ExerciseTemplate: Bool] = [:]
-    @State var canSelect: Bool = true
+    var canSelect: Bool
     
     public init(viewModel: ListExerciseViewModel = ListExerciseViewModel(),
-                messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>? = nil) {
+                messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>? = nil,
+                canSelect: Bool = false) {
         viewModel.set(messageQueue: messageQueue)
         self._viewModel = .init(initialValue: viewModel)
+        self.canSelect = canSelect
     }
     
     public var body: some View {
@@ -46,40 +48,39 @@ public struct ListExerciseTemplatesView: View {
                     }
                     // TODO: subscribe to some repository exercise add event
                 case .display(let templates):
-                    ForEach(templates) {
+                    let searchResults = viewModel.searchText.isEmpty ? templates : templates.filter({$0.name.contains(viewModel.searchText)})
+                    ForEach(searchResults) {
                         ExerciseTemplateRowView(exercise: $0, viewModel: viewModel, selectionMap: $selectionMap)
                     }
                 }
             }
+            .searchable(text: $viewModel.searchText)
         }
         .listStyle(.plain)
         .listSectionSeparator(.hidden)
-        //        .listRowSpacing(.listRowVerticalSpacing)
         .scrollContentBackground(.hidden)
         .previewBorder()
+        .toolbar(showNavigationBar ? .visible : .hidden)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack {
-                    Button(action: {
-                        viewModel.didSelect(exercises: getSelectedExercises())
-                        dismiss()
-                    }, label: {
-                        Image(systemName: "checkmark")
-                            .contentTransition(.symbolEffect(.replace.downUp.byLayer))
-                            .foregroundStyle(.secondary)
-                    })
-                    .foregroundStyle(.primary)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.circle)
+            if canSelect {
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack {
+                        Button(action: {
+                            viewModel.didSelect(exercises: getSelectedExercises())
+                            dismiss()
+                        }, label: {
+                            Image(systemName: "checkmark")
+                                .contentTransition(.symbolEffect(.replace.downUp.byLayer))
+                                .foregroundStyle(.secondary)
+                        })
+                        .foregroundStyle(.primary)
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.circle)
+                    }
+                    .showIf(getSelectedExercises().isNotEmpty)
                 }
-                .showIf(getSelectedExercises().isNotEmpty)
             }
-            
         }
-        //        // On Appear Tasks
-        //        .task(priority: .background) {
-        //            await viewModel.listExercises()
-        //        }
     }
 }
 
@@ -90,6 +91,8 @@ fileprivate extension ListExerciseTemplatesView {
 }
 
 struct ExerciseTemplateRowView: View {
+    @Environment(RouterPath.self) private var routerPath
+    
     var exercise: ExerciseTemplate
     var viewModel: ListExerciseViewModel
     
@@ -98,13 +101,11 @@ struct ExerciseTemplateRowView: View {
     var body: some View {
         let isSelected = selectionMap[exercise, default: false]
         
-        HStack(alignment: .top) {
+        HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(exercise.name)
-                        .background(Color.clear)
                         .previewBorder(Color.black.opacity(0.2))
-                    
                     Spacer()
                 }
                 
@@ -150,18 +151,26 @@ struct ExerciseTemplateRowView: View {
                             .shadow(color: .secondary.opacity(0.1), radius: 20, x: 0.0, y: 2.0)
                     }
             }
+            
+            Button(action: {
+                debugPrint("button tap \(#file) \(#line)")
+                routerPath.navigate(to: .exerciseDetails(exercise))
+            }, label: {
+                Image(systemName: "info.circle")
+            })
+            .tint(.primary)
+            .buttonStyle(.borderless)
         }
-        .previewBorder(Color.accentColor.opacity(0.2))
-        .selectableRow(isSelected: isSelected)
-        .id(exercise.id)
         .contentShape(Rectangle())
         .onTapGesture {
+            debugPrint("gesture tap \(#file) \(#line)")
             withCustomSpring {
                 selectionMap[exercise] = !isSelected
             }
         }
-//        .listRowSeparator(.hidden)
-//        .listRowBackground(Color.clear)
+        .previewBorder(Color.accentColor.opacity(0.2))
+        .selectableRow(isSelected: isSelected)
+        .id(exercise.id)
     }
 }
 
@@ -191,8 +200,9 @@ struct SelectableRowItem: ViewModifier {
 }
 
 #Preview {
-    NavigationStack {
-        ListExerciseTemplatesView()
+    return NavigationStack {
+        ListExerciseTemplatesView(canSelect: true)
+            .withPreviewEnvironment()
     }
 }
 
@@ -203,4 +213,5 @@ struct SelectableRowItem: ViewModifier {
         viewModel: ListExerciseViewModel(),
         selectionMap: $selectionMap
     )
+    .withPreviewEnvironment()
 }

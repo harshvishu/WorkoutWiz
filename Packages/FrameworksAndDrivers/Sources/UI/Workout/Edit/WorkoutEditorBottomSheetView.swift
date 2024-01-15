@@ -18,7 +18,7 @@ public struct WorkoutEditorBottomSheetView: View {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorBottomSheetView.self))
     
     @Environment(\.modelContext) private var modelContext
-    @Environment(ConcreteMessageQueue<ApplicationMessage>.self) private var globalMessageQueue
+    @Environment(AppState.self) private var appState
     
     @State private var viewModel: WorkoutEditorViewModel
     @State private var routerPath: RouterPath = .init()
@@ -95,12 +95,12 @@ public struct WorkoutEditorBottomSheetView: View {
           
             .onChange(of: selectedDetent) { _, newValue in
                 // Sheet collapsed and ListExerciseView is visible
-                // Close the ListExerciseView
-                if routerPath.path.last == .listExercise && newValue == .InitialSheetDetent {
-                    routerPath.path = []
-                }
+                // Hide the header but do not close the sheet
+//                if routerPath.path.last == .listExercise && newValue == .InitialSheetDetent {
+//                    routerPath.path = []
+//                }
             }
-            .onReceive(globalMessageQueue.signal) { signal in
+            .onReceive(appState.signal) { signal in
                 if case .openEditWorkoutSheet = signal {
                     exapand()
                 } else if case .closeWorkoutEditor = signal {
@@ -132,11 +132,7 @@ fileprivate extension WorkoutEditorBottomSheetView {
 #Preview {
     @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
     return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
-        .environment(saveDataManager)
-        .environment(globalMessageQueue)
-        .withPreviewModelContainer()
+        .withPreviewEnvironment()
 }

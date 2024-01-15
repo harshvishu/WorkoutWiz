@@ -42,17 +42,17 @@ struct DaySelectItemView: View {
 }
 
 
-struct DaySelectItemView_Previews: PreviewProvider {
-    static var previews: some View {
-        HStack {
-            // Same Day Selected
-            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date(), isSelected: true), itemSize: CGSize(width: 45, height: 90))
-            // Same Day Un-Selected
-            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date(), isSelected: false), itemSize: CGSize(width: 45, height: 90))
-            // Different Day Selected
-            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date().addingTimeInterval(86000), isSelected: true), itemSize: CGSize(width: 45, height: 90))
-            // Different Day Un-Selected
-            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date().addingTimeInterval(86000), isSelected: false), itemSize: CGSize(width: 45, height: 90))
-        }
-    }
-}
+//struct DaySelectItemView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        HStack {
+//            // Same Day Selected
+//            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date(), isSelected: true), itemSize: CGSize(width: 45, height: 90))
+//            // Same Day Un-Selected
+//            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date(), isSelected: false), itemSize: CGSize(width: 45, height: 90))
+//            // Different Day Selected
+//            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date().addingTimeInterval(86000), isSelected: true), itemSize: CGSize(width: 45, height: 90))
+//            // Different Day Un-Selected
+//            DaySelectItemView(viewModel: DaySelectItemViewModel(date: Date().addingTimeInterval(86000), isSelected: false), itemSize: CGSize(width: 45, height: 90))
+//        }
+//    }
+//}

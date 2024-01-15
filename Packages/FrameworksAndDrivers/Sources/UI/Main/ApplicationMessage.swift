@@ -10,4 +10,5 @@ public enum ApplicationMessage {
     case openEditWorkoutSheet
     case closeWorkoutEditor
     case showLogs
+    case showKeypadForTime
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 // TODO: Rename
 struct RotatingImagesAroundCircle: View {
-    private let imageCount = 16
+    private static let ImageCount: Int = 16
     private let imageSize: CGFloat = 32.0
     private let padding: CGFloat = 42
     
@@ -18,15 +18,15 @@ struct RotatingImagesAroundCircle: View {
     var body: some View {
         GeometryReader(content: { geometry in
             ZStack(alignment: .center) {
-                ForEach(0..<imageCount, id: \.self) { index in
+                ForEach(0..<Self.ImageCount, id: \.self) { index in
                     Image("equipment-\(index+1)", bundle: Bundle.module) // Replace with your image name
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(width: imageSize, height: imageSize)
                         .rotationEffect(.degrees(-rotationAngle))
                         .offset(
-                            x: (geometry.size.width - padding) * 0.5 * cos((2 * .pi / CGFloat(imageCount)) * CGFloat(index)),
-                            y: (geometry.size.width - padding) * 0.5 * sin((2 * .pi / CGFloat(imageCount)) * CGFloat(index))
+                            x: (geometry.size.width - padding) * 0.5 * cos((2 * .pi / CGFloat(Self.ImageCount)) * CGFloat(index)),
+                            y: (geometry.size.width - padding) * 0.5 * sin((2 * .pi / CGFloat(Self.ImageCount)) * CGFloat(index))
                         )
                 }
                 .frame(width: geometry.size.width, height: geometry.size.width)

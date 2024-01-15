@@ -114,10 +114,6 @@ struct WorkoutRowView: View {
 }
 
 #Preview {
-    @State var routerPath: RouterPath = .init()
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
-    return WorkoutRowView(workout: .mock(0))
-        .environment(routerPath)
-        .environment(globalMessageQueue)
+    WorkoutRowView(workout: .mock(0))
+        .withPreviewEnvironment()
 }

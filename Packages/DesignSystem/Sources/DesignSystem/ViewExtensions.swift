@@ -142,29 +142,33 @@ public extension View {
 }
 
 public extension View {
-    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
+    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         self
-            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, detents: detents, selectedDetent: selectedDetent, sheetView: content))
+            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, detents: detents, selectedDetent: selectedDetent, bottomPadding: bottomPadding, sheetView: content))
     }
 }
 
 /// Helper View Modifiers
 fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     
+   
+    @Binding private var showSheet: Bool
+    @Binding private var selectedDetent: PresentationDetent
+    
+    private var detents: Set<PresentationDetent>
     private var initialHeight: CGFloat
     private var sheetCornerRadius: CGFloat
-    @Binding private var showSheet: Bool
-    private var detents: Set<PresentationDetent>
-    @Binding private var selectedDetent: PresentationDetent
     private var sheetView: SheetContent
+    private var bottomPadding: CGFloat
     
-    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, sheetView: @escaping () -> SheetContent) {
+    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, sheetView: @escaping () -> SheetContent) {
         self.initialHeight = initialHeight
         self.sheetCornerRadius = sheetCornerRadius
         self._showSheet = showSheet
         self.detents = detents
         self._selectedDetent = selectedDetent
         self.sheetView = sheetView()
+        self.bottomPadding = bottomPadding
     }
     
     func body(content: Content) -> some View {
@@ -177,7 +181,7 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                     
                     Rectangle()
                         .fill(.clear)
-                        .frame(height: 55)
+                        .frame(height: bottomPadding)
                 }
                 .presentationDetents([.InitialSheetDetent, .ExpandedSheetDetent], selection: $selectedDetent)
                 .presentationCornerRadius(sheetCornerRadius)

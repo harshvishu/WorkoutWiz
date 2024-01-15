@@ -32,8 +32,7 @@ public struct CalendarScreen: View {
 
 #Preview {
     @State var popToRootScreen: AppScreen = .other
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
     return DashboardScreen(popToRootScreen: $popToRootScreen)
-        .environment(globalMessageQueue)
+        .withPreviewEnvironment()
 }

@@ -55,7 +55,7 @@ public struct TabBarView: View {
                     .tag(tab)
             }
         })
-        .tabSheet(initialHeight: Constants.InitialSheetHeight, sheetCornerRadius: 15.0, showSheet: $showTabBottomSheet, detents: availableSheetDetents, selectedDetent: $selectedDetent, content: tabSheetContent)
+        .tabSheet(initialHeight: Constants.InitialSheetHeight, sheetCornerRadius: 15.0, showSheet: $showTabBottomSheet, detents: availableSheetDetents, selectedDetent: $selectedDetent, bottomPadding: .customTabBarHeight, content: tabSheetContent)
         .onChange(of: selectedScreen, initial: true, { _, newValue in
             /// Make it more dynamic
             showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(newValue)
@@ -88,8 +88,6 @@ fileprivate extension TabBarView {
     @State var selectedScreen: AppScreen = .dashboard
     @State var popToRootScreen: AppScreen = .other
     
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
     return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-        .environment(globalMessageQueue)
+        .withPreviewEnvironment()
 }

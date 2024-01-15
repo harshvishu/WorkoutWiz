@@ -18,7 +18,6 @@ struct CalendarView: View {
     
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
-    @Environment(ConcreteMessageQueue<ApplicationMessage>.self) private var globalMessageQueue
     
     @State private var resetScroll: Day? = nil
     @State private var isTodayVisible: Bool = true
@@ -55,7 +54,7 @@ struct CalendarView: View {
             }
             .safeAreaInset(edge: .bottom, content: {
                 EmptyView()
-                    .frame(height: .bottomListPadding)
+                    .frame(height: .customTabBarHeight)
             })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
@@ -88,12 +87,9 @@ struct CalendarView: View {
 }
 
 #Preview {
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
-    return NavigationStack {
+    NavigationStack {
         CalendarView()
             .previewBorder()
-            .environment(globalMessageQueue)
-            .withPreviewModelContainer()
+            .withPreviewEnvironment()
     }
 }

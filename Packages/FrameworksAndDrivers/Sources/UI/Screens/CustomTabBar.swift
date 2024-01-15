@@ -9,7 +9,8 @@ import SwiftUI
 import DesignSystem
 
 public struct CustomTabBar: View, KeyboardReadable {
-    @Environment(WorkoutWizAppModel.self) var workoutWizAppModel
+    @Environment(AppState.self) var appState
+    @Environment(\.keyboardShowing) var keyboardShowing
     
     @Binding var selectedScreen: AppScreen
     @Binding var popToRootScreen: AppScreen
@@ -37,17 +38,22 @@ public struct CustomTabBar: View, KeyboardReadable {
                     })
                 }
             }
-            .frame(height: 55)
+            .frame(height: .customTabBarHeight)
         }
         .background(
             UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 0, bottomTrailing: 0, topTrailing: 15))
                 .fill(.black)
                 .ignoresSafeArea(.all)
         )
-        .opacity(workoutWizAppModel.showTabBar ? 1 : 0)
-        .onReceive(keyboardPublisher) { isKeyboardVisible in
-            workoutWizAppModel.showTabBar = !isKeyboardVisible
-        }
+        .opacity(showTabBar ? 1 : 0)
+        .offset(y: showTabBar ? .zero : .customTabBarHeight)
+        .transition(.slide)
+        .animation(.customSpring(), value: showTabBar)
+    }
+    
+    // Accessor property for showing tab bar
+    private var showTabBar: Bool {
+        appState.showTabBar && !keyboardShowing
     }
 }
 
@@ -56,6 +62,6 @@ public struct CustomTabBar: View, KeyboardReadable {
     @State var popToRootScreen: AppScreen = .other
     
     return CustomTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-        .environment(WorkoutWizAppModel())
         .frame(maxHeight: .infinity, alignment: .bottom)
+        .withPreviewEnvironment()
 }

@@ -46,3 +46,42 @@ public extension Date {
     
 }
 
+public let hoursMinutesSecondsFormatter: DateComponentsFormatter = {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.unitsStyle = .positional
+    formatter.zeroFormattingBehavior = .pad
+    return formatter
+}()
+
+public let minutesSecondsFormatter: DateComponentsFormatter = {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.minute, .second]
+    formatter.unitsStyle = .positional
+    formatter.zeroFormattingBehavior = .pad
+    return formatter
+}()
+
+public let secondsFormatter: DateComponentsFormatter = {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.second]
+    formatter.unitsStyle = .positional
+    formatter.zeroFormattingBehavior = .pad
+    return formatter
+}()
+
+public let ordinalFormatter:  NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .ordinal
+    return formatter
+}()
+
+public func getDateComponentsFormatter(_ timeInterval: TimeInterval) -> DateComponentsFormatter {
+    if timeInterval > 3600 {
+        return hoursMinutesSecondsFormatter
+    } else if timeInterval > 60 {
+        return minutesSecondsFormatter
+    } else {
+        return secondsFormatter
+    }
+}

@@ -99,14 +99,10 @@ fileprivate enum ViewState {
 
 #Preview {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
+  
     return WorkoutEditorSheetHeaderView()
+        .withPreviewEnvironment()
         .environment(viewModel)
-        .environment(saveDataManager)
-        .environment(globalMessageQueue)
-        .withPreviewModelContainer()
         .onTapGesture {
             Task {
                 await viewModel.startTimer()

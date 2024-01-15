@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 19/11/23.
 //
@@ -19,14 +19,19 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         windowScene = scene as? UIWindowScene
     }
     
-    public func addTabBar(selectedScreen: Binding<AppScreen>, popToRootScreen: Binding<AppScreen>, workoutWizAppModel: WorkoutWizAppModel) {
+    public func addTabBar(
+        selectedScreen: Binding<AppScreen>,
+        popToRootScreen: Binding<AppScreen>,
+        appState: AppState
+    ) {
         guard let scene = windowScene else {return}
         
         let tabBarController = UIHostingController(
-            rootView: 
+            rootView:
                 CustomTabBar(selectedScreen: selectedScreen, popToRootScreen: popToRootScreen)
-                .environment(workoutWizAppModel)
                 .frame(maxHeight: .infinity, alignment: .bottom)
+                .environment(appState)
+                .addKeyboardVisibilityToEnvironment()
         )
         tabBarController.view.backgroundColor = .clear
         

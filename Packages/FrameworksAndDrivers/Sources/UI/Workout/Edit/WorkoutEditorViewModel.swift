@@ -61,7 +61,7 @@ public final class WorkoutEditorViewModel {
     
     func add(exerciesToWorkout exercises: [ExerciseTemplate]) async {
         await startTimer()
-        workout.exercises.append(contentsOf: exercises.map({ExerciseRecord(template: $0)}))
+        workout.exercises.append(contentsOf: exercises.map({ExerciseRecord.withEmptySet(template: $0)}))
     }
     
     func addSetToExercise(

@@ -14,22 +14,14 @@ public struct RootView: View {
     
     /// Navigation Properties    
     @Environment(SceneDelegate.self) var sceneDelegate
-    @Environment(\.modelContext) private var modelContext
-    
-    @State private var workoutWizAppModel = WorkoutWizAppModel()
-    @State private var saveDataManager = SaveDataManager(saveDataUseCase: nil)
-    /// Application Wide Message Queue
-    @State private var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
+    @Environment(AppState.self) var appState
     
     @State var selectedScreen: AppScreen = .dashboard
     @State var popToRootScreen: AppScreen = .other
     
     public var body: some View {
         TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-            .environment(workoutWizAppModel)
-            .environment(saveDataManager)
-            .environment(globalMessageQueue)
-            .onReceive(globalMessageQueue.signal) { newValue in
+            .onReceive(appState.signal) { newValue in
                 if case .showLogs = newValue {
                     withCustomSpring {
                         selectedScreen = .logs
@@ -37,29 +29,19 @@ public struct RootView: View {
                 }
             }
             .task {
-                initializeSwiftDataManager()
-                initializeTabBar()
+                initializeCustomTabBar()
             }
     }
 }
 
 extension RootView {
-    fileprivate func initializeSwiftDataManager() {
-        if saveDataManager.saveDataUseCase == nil {
-            saveDataManager.saveDataUseCase = SaveDataUseCase(saveDataRepository: SwiftDataSaveDataRepository(modelContext: modelContext))
-        }
-    }
-    
-    fileprivate func initializeTabBar() {
+    fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
-        sceneDelegate.addTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, workoutWizAppModel: workoutWizAppModel)
+        sceneDelegate.addTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, appState: appState)
     }
 }
 
 #Preview {
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
     return RootView()
-        .environment(globalMessageQueue)
-        .environment(SceneDelegate())
+        .withPreviewEnvironment()
 }

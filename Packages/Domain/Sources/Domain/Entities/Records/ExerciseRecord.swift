@@ -38,6 +38,12 @@ extension ExerciseRecord: Hashable {
 }
 
 public extension ExerciseRecord {
+    static func withEmptySet(template: ExerciseTemplate) -> Self {
+        var exercise: Self = .init(template: template)
+        exercise.sets.append(.init(type: .rep(0)))
+        return exercise
+    }
+    
     func estimatedCaloriesBurned() -> Double {
         return sets.reduce(0.0) {$0 + $1.calories }
     }

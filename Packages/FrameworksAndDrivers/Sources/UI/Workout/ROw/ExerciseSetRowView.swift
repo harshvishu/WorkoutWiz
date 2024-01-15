@@ -13,25 +13,15 @@ import Persistence
 
 // Footer View
 fileprivate struct RowFooterView: View {
-//    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
+    //    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
     @Environment(SaveDataManager.self) private var saveDataManager
-        
+    
     var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
-    @State var lastSavedSet: ExerciseSet = .init(weight: 5, duration: 45)
+    @State var lastSavedSet: ExerciseSet = .init(weight: 0, rep: 0)
     
     var body: some View {
-        HStack(alignment: .lastTextBaseline, spacing: 4) {
-            if exercise.sets.isEmpty {
-                Label("No sets for this exercise.", systemImage: "lightbulb.circle.fill")
-                    .foregroundStyle(.secondary)
-                    .font(.footnote)
-                    .transition(.opacity)
-            }
-            
-            Spacer()
-            
             Button(action: {
                 if let addedSet = editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, unit: lastSavedSet.unit, failure: lastSavedSet.failure) {
                     withCustomSpring {
@@ -40,28 +30,49 @@ fileprivate struct RowFooterView: View {
                 }
                 
             }, label: {
-                Text("Add a set")
-                    .font(.footnote)
-                    .padding(2)
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    if exercise.sets.isEmpty  {
+                        Label("No sets for this exercise.", systemImage: "lightbulb.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .transition(.opacity)
+                    } else {
+                        let energy =  Measurement(value: exercise.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
+                        Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
+                            .foregroundStyle(.purple)
+                    }
+                    
+                    Spacer()
+                    
+                    Text("Add a set")
+                        .foregroundStyle(.purple)
+                        .fontWeight(.semibold)
+                        .padding(2)
+                }
+                .font(.footnote)
+                
             })
-            .padding(EdgeInsets(top: 2, leading: 4, bottom: 2, trailing: 4))
-            .background {
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(.purple, style: StrokeStyle(lineWidth: 0.5, dash: [3], dashPhase: 0.5))
-            }
-            .foregroundStyle(.purple)
             .buttonStyle(.plain)
-        }
-        .padding(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
-        .task {
-//            await lastSavedSet = saveDataManager.readSaveDataFor(exerciseName: exercise.template.name)?.sets.first ?? .init(weight: 5.0, rep: 10)
-        }
+            .padding(EdgeInsets(top: 20, leading: 4, bottom: 2, trailing: 4))
+            .background(
+                UnevenRoundedRectangle(cornerRadii: .init(
+                    topLeading: 0.0,
+                    bottomLeading: 8.0,
+                    bottomTrailing: 8.0,
+                    topTrailing: 0.0), style: .continuous)
+                .fill(Color.purple.opacity(0.2))
+            )
+            .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+            .offset(y: -16)
+            .task {
+                //            await lastSavedSet = saveDataManager.readSaveDataFor(exerciseName: exercise.template.name)?.sets.first ?? .init(weight: 5.0, rep: 10)
+            }
+
     }
 }
 
 // Header View
 fileprivate struct RowHeaderView: View {
-//    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
+    //    @Environment(EditWorkoutViewModel.self) private var editWorkoutViewModel
     
     var editWorkoutViewModel: WorkoutEditorViewModel
     
@@ -112,40 +123,41 @@ public struct ExerciseSetRowView: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header
-            
-            RowHeaderView(editWorkoutViewModel: editWorkoutViewModel, exercise: $exercise, isExpanded: $showExpandedSetView)
-                .previewBorder(Color.green)
-            
-            // Sets
-            VStack(alignment: .leading, spacing: 8) {
-                if showExpandedSetView {
-                    // Show all exercise sets
-                    ForEach(exercise.sets, id: \.self) { set in
-                        SetView(set: set)
+        VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 12) {
+                // Header
+                
+                RowHeaderView(editWorkoutViewModel: editWorkoutViewModel, exercise: $exercise, isExpanded: $showExpandedSetView)
+                //                .previewBorder(Color.green)
+                
+                // Sets
+                VStack(alignment: .leading, spacing: 8) {
+                    if showExpandedSetView {
+                        // Show all exercise sets
+                        ForEachWithIndex(exercise.sets, id: \.self) { index, set in
+                            SetView(set: set, position: index)
+                        }
+                    } else {
+                        // Show Summary View
+                        Text("\(exercise.sets.count) sets. Max weight 7.5 Kg with Failure. Calories burned = \(exercise.estimatedCaloriesBurned(), specifier: "%0.02f") Cal")
+                            .fixedSize(horizontal: false, vertical: true)
+                            .multilineTextAlignment(.leading)
                     }
-                } else {
-                    // Show Summary View
-                    Text("\(exercise.sets.count) sets. Max weight 7.5 Kg with Failure. Calories burned = \(exercise.estimatedCaloriesBurned(), specifier: "%0.02f") Cal")
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
                 }
+                .padding(.leading, 8)
             }
-            .padding(.leading, 8)
-            .previewBorder(Color.orange)
-            
+            .padding(.listRowContentInset)
+            .background {
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(.tertiary, lineWidth: 0.5)
+                    .fill(.background)
+                    .onTapGesture {
+                        // TODO: Open detailed view for editing
+                    }
+            }
             // Footer
             RowFooterView(editWorkoutViewModel: editWorkoutViewModel, exercise: $exercise)
-                .previewBorder(Color.blue)
-        }
-        .padding(.listRowContentInset)
-        .background {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.tertiary, lineWidth: 0.5)
-                .onTapGesture {
-                    // TODO: Open detailed view for editing
-                }
+                .zIndex(-1)
         }
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
@@ -163,11 +175,15 @@ fileprivate class ViewModel {
 }
 
 struct SetView: View {
+    private var position: Int
     
     @State fileprivate var viewModel: ViewModel
-        
-    init(set: ExerciseSet) {
+    @State private var interval: String = ""
+    @State private var weight: String = ""
+    
+    init(set: ExerciseSet, position: Int) {
         self.viewModel = .init(set: set)
+        self.position = position
     }
     
     var body: some View {
@@ -175,37 +191,38 @@ struct SetView: View {
             
             HStack(alignment: .center, spacing: 4) {
                 switch viewModel.set.type {
-                case .duration(let time):
+                case .duration:
                     
-                    TextField("", text:  Binding(
-                        get: { formatTime(time, allowedUnits: [.minute], unitsStyle: .positional) },
-                        set: { viewModel.set.update(type: .duration((Double($0) ?? 0.0) * 60.0 ))}
-                    ))
+                    TextFieldDynamicWidth(title: "0.0", onEditingChanged: { _ in
+                        
+                    }, onCommit: {
+                        guard let time = Double(interval)
+                        else {return}
+                        viewModel.set.update(type: .duration(time))
+                    }, text: $interval)
                     .keyboardType(.numberPad)
                     .textContentType(.none)
                     .font(.title.bold())
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            
-                            Button("Hide") {
-                                hideKeyboard()
-                            }
-                        }
-                    }
-                    
-//                    Text(formatTime(time, allowedUnits: [.minute], unitsStyle: .positional))
-//                        .font(.title.bold())
-//                        .onTapGesture {
-//                            viewModel.set.update(type: .duration(time + 5))
-//                        }
-                    
-                    Image(systemName: "timer")
+                 
+                    Text("min")
                         .font(.caption2)
                     
                 case .rep(let count):
-                    Text("\(count)")
-                        .font(.title.bold())
+                    //                    TextField("0.0", text:  Binding(
+                    //                        get: { formatTime(time, allowedUnits: [.minute], unitsStyle: .positional) },
+                    //                        set: { viewModel.set.update(type: .duration((Double($0) ?? 0.0) * 60.0 ))}
+                    //                    ))
+                    
+                    TextFieldDynamicWidth(title: "0", onEditingChanged: { _ in
+                        
+                    }, onCommit: {
+                        guard let count = Int(interval)
+                        else {return}
+                        viewModel.set.update(type: .rep(count))
+                    }, text: $interval)
+                    .keyboardType(.numberPad)
+                    .textContentType(.none)
+                    .font(.title.bold())
                     
                     Text("reps")
                         .font(.caption2)
@@ -219,15 +236,12 @@ struct SetView: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                 
-                                            
                 HStack(alignment: .center, spacing: 4) {
                     Text("\(viewModel.set.weight, specifier: "%0.1f")")
                         .font(.title.bold())
                     Text("\(viewModel.set.unit.symbol)")
                         .font(.caption2)
                 }
-                
-//                                Spacer()
             }
             .frame(width: 120, alignment: .leading)
             
@@ -241,20 +255,15 @@ struct SetView: View {
 
 #Preview {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
     
-    return VStack {
-        List {
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 5.5, rep: 10,failure: true)]))
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 15.5, rep: 10,failure: true)]))
-            ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 135, rep: 10,failure: true)]))
-        }
-        .listRowSpacing(.listRowVerticalSpacing)
+    return List {
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 5.5, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 15.5, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(weight: 135, rep: 10,failure: true)]))
+        
     }
+    .listRowSpacing(.listRowVerticalSpacing)
+    .withPreviewEnvironment()
     .environment(viewModel)
-    .environment(saveDataManager)
-    .environment(globalMessageQueue)
-    .withPreviewModelContainer()
     
 }

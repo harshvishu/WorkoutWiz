@@ -18,7 +18,7 @@ struct ListWorkoutView: View {
     
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
-    @Environment(ConcreteMessageQueue<ApplicationMessage>.self) private var globalMessageQueue
+    @Environment(AppState.self) private var appState
     
     @State var viewModel: ListWorkoutViewModel
     
@@ -57,7 +57,7 @@ struct ListWorkoutView: View {
 //                }
                 
             }
-            .onReceive(globalMessageQueue.signal) {
+            .onReceive(appState.signal) {
                 if case .workoutFinished = $0 {
                     Task {
                         await viewModel.listWorkouts()
@@ -79,7 +79,7 @@ struct ListWorkoutView: View {
                     Spacer()
                     
                     Button {
-                        globalMessageQueue.send(.openEditWorkoutSheet)
+                        appState.send(.openEditWorkoutSheet)
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -88,7 +88,7 @@ struct ListWorkoutView: View {
                 .foregroundStyle(.primary)
                 .font(.headline)
             }
-            .onReceive(globalMessageQueue.signal) {
+            .onReceive(appState.signal) {
                 if case .workoutFinished = $0 {
                     Task {
                         await viewModel.listWorkouts()
@@ -98,7 +98,7 @@ struct ListWorkoutView: View {
         case .empty:
             Section {
                 Button(action: {
-                    globalMessageQueue.send(.openEditWorkoutSheet)
+                    appState.send(.openEditWorkoutSheet)
                 }, label: {
                     VStack {
                         Text("No workouts for today!")
@@ -120,7 +120,7 @@ struct ListWorkoutView: View {
                     Spacer()
                     
                     Button {
-                        globalMessageQueue.send(.openEditWorkoutSheet)
+                        appState.send(.openEditWorkoutSheet)
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -128,7 +128,7 @@ struct ListWorkoutView: View {
                 }
             }
             .listRowSeparator(.hidden)
-            .onReceive(globalMessageQueue.signal) {
+            .onReceive(appState.signal) {
                 if case .workoutFinished = $0 {
                     Task {
                         await viewModel.listWorkouts()
@@ -151,10 +151,7 @@ fileprivate extension ListWorkoutView {
     }
 }
 
-#Preview {
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    
+#Preview {    
     return ListWorkoutView(filter: .none, grouping: false)
-        .environment(globalMessageQueue)
-        .withPreviewModelContainer()
+        .withPreviewEnvironment()
 }

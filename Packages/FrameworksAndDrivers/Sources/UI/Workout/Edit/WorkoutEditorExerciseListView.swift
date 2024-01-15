@@ -63,13 +63,7 @@ fileprivate extension WorkoutEditorExerciseListView {
 
 #Preview {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var globalMessageQueue: ConcreteMessageQueue<ApplicationMessage> = .init()
-    @State var routerPath: RouterPath = .init()
-    
     return WorkoutEditorExerciseListView()
-        .withPreviewModelContainer()
-        .environment(routerPath)
-        .environment(globalMessageQueue)
-        .environment(saveDataManager)
+        .withPreviewEnvironment()
+        .environment(viewModel)
 }

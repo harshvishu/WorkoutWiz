@@ -15,12 +15,11 @@ import Domain
 public enum RouterDestination: Hashable {
     case workoutDetails(workout: WorkoutRecord)
     case listExercise
+    case exerciseDetails(ExerciseTemplate)
 }
 
 /// View for Sheets
 public enum SheetDestination: Identifiable {
-    case recordWorkout
-    case listExercise
     
     public var id: String {
         String(describing: self)
@@ -48,19 +47,18 @@ public extension View {
             case .workoutDetails(let workout):
                 WorkoutRowView(workout: workout)
             case .listExercise:
-                ListExerciseTemplatesView()
+                // NO Entry point from here
+                EmptyView()
+            case .exerciseDetails(let template):
+                // TODO: Pending
+                Text(template.instructions, format: .list(type: .and))
             }
         }
     }
     
     func withSheetDestinations(sheetDestinations: Binding<SheetDestination?>) -> some View {
         sheet(item: sheetDestinations) { destination in
-            switch destination {
-            case .recordWorkout:
-                Text("Show Record Sheet Here")
-            case .listExercise:
-                ListExerciseTemplatesView()
-            }
+//            EmptyView()
         }
     }
 }
