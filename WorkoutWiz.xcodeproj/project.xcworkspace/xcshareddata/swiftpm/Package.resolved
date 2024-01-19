@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "customkeyboardkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/paescebu/CustomKeyboardKit",
+      "state" : {
+        "revision" : "44b0f20a256dfc944915dde59894647eb29f3af2",
+        "version" : "1.0.1"
+      }
+    },
+    {
       "identity" : "firebase-ios-sdk",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk.git",
@@ -106,6 +115,15 @@
       "state" : {
         "revision" : "07f7f26ded8df9645c072f220378879c4642e063",
         "version" : "1.25.1"
+      }
+    },
+    {
+      "identity" : "swiftui-introspect",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/siteline/SwiftUI-Introspect.git",
+      "state" : {
+        "revision" : "9e1cc02a65b22e09a8251261cccbccce02731fc5",
+        "version" : "1.1.1"
       }
     }
   ],

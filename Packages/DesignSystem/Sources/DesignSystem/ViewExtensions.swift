@@ -81,6 +81,15 @@ public extension View {
     func eraseToAnyView() -> AnyView {
         AnyView(self)
     }
+    
+    @ViewBuilder
+    func modifyIf<T: View>(_ bool: Bool, _ modifier: (Self) -> T) -> some View {
+        if bool {
+            modifier(self)
+        } else {
+            self
+        }
+    }
 }
 
 public extension CGSize {
@@ -259,7 +268,7 @@ struct ConditionalView: ViewModifier {
     
     func body(content: Content) -> some View {
         Group {
-            if show.filter({ $0 == false }).count == 0 {
+            if show.first(where: { $0 == false }) == nil {
                 content
             } else {
                 EmptyView()
@@ -286,4 +295,10 @@ public func withCustomSpring<T>(_ action: @escaping () -> T) -> T {
 
 public func withEaseOut<T>(_ duration: Double = 0.3, _ action: @escaping () -> T) -> T {
     withAnimation(.easeOut(duration: duration), action)
+}
+
+public extension UIView {
+    var allSubViews: [UIView] {
+        subviews.flatMap { [$0] + $0.subviews }
+    }
 }

@@ -178,7 +178,8 @@ struct SetView: View {
     private var position: Int
     
     @State fileprivate var viewModel: ViewModel
-    @State private var interval: String = ""
+    @State private var rep: String = ""
+    @State private var duration: String = ""
     @State private var weight: String = ""
     
     init(set: ExerciseSet, position: Int) {
@@ -193,35 +194,21 @@ struct SetView: View {
                 switch viewModel.set.type {
                 case .duration:
                     
-                    TextFieldDynamicWidth(title: "0.0", onEditingChanged: { _ in
-                        
-                    }, onCommit: {
-                        guard let time = Double(interval)
-                        else {return}
+                    TextFieldDynamicWidth(title: "0.0", keyboardType: .timeCounter(timeCounter: onTimeChange), onCommit: {
+                        guard let time = Double(duration) else {return}
                         viewModel.set.update(type: .duration(time))
-                    }, text: $interval)
-                    .keyboardType(.numberPad)
-                    .textContentType(.none)
+                    }, text: $rep)
                     .font(.title.bold())
                  
                     Text("min")
                         .font(.caption2)
                     
-                case .rep(let count):
-                    //                    TextField("0.0", text:  Binding(
-                    //                        get: { formatTime(time, allowedUnits: [.minute], unitsStyle: .positional) },
-                    //                        set: { viewModel.set.update(type: .duration((Double($0) ?? 0.0) * 60.0 ))}
-                    //                    ))
-                    
-                    TextFieldDynamicWidth(title: "0", onEditingChanged: { _ in
-                        
-                    }, onCommit: {
-                        guard let count = Int(interval)
-                        else {return}
-                        viewModel.set.update(type: .rep(count))
-                    }, text: $interval)
-                    .keyboardType(.numberPad)
-                    .textContentType(.none)
+                case .rep:
+                    TextFieldDynamicWidth(title: "0", keyboardType: .repCount(repCounter: onRepChange), onCommit: {
+                        let rep = SetType.rep(Int(rep) ?? 0)
+                        let weight = weight.double ?? 0.0
+                        viewModel.set.update(type: rep, weight: weight)
+                    }, text: $rep)
                     .font(.title.bold())
                     
                     Text("reps")
@@ -237,7 +224,7 @@ struct SetView: View {
                     .foregroundStyle(.secondary)
                 
                 HStack(alignment: .center, spacing: 4) {
-                    Text("\(viewModel.set.weight, specifier: "%0.1f")")
+                    Text("\(weight.double ?? 0.0, specifier: "%0.1f")")
                         .font(.title.bold())
                     Text("\(viewModel.set.unit.symbol)")
                         .font(.caption2)
@@ -250,6 +237,25 @@ struct SetView: View {
                     .foregroundStyle(.purple)
             }
         }
+    }
+    
+    
+    private func onTimeChange(_ newTime: TimeInterval) {
+        let updatedTime = (weight.double ?? 0.0) + newTime
+        guard updatedTime > 0.0 else {return}
+        duration = "\(updatedTime)"
+    }
+    
+    private func onWeightChange(_ newWeight: Double) {
+        let updatedWeight = (weight.double ?? 0.0) + newWeight
+        guard updatedWeight > 0.0 else {return}
+        weight = "\(updatedWeight)"
+    }
+    
+    private func onRepChange(_ newRep: Int) {
+        let updatedRep = (rep.int ?? 0) + newRep
+        guard updatedRep > 0 else {return}
+        rep = "\(updatedRep)"
     }
 }
 

@@ -70,6 +70,7 @@ public struct WorkoutEditorView: View {
                 .listRowSpacing(.listRowVerticalSpacing)
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .scrollDismissesKeyboard(.automatic) 
             }
             
             Spacer()
