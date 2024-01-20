@@ -13,8 +13,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 
 public enum CustomKeyboardType {
     case system(UIKeyboardType)
-    case repCount(repCounter: RepCounter?)
-    case timeCounter(timeCounter: TimeCounter?)
+    case counter(_ counter: Counter?, showPeriod: Bool)
     
     func isCustom() -> Bool {
         if case .system = self {
@@ -31,16 +30,14 @@ public extension TextField {
         switch keyboard {
         case .system(let type):
             self.keyboardType(type)
-        case .repCount(let repCounter):
-            self.customKeyboard(.repCounter(repCounter))
-        case .timeCounter(let timeCounter):
-            self.customKeyboard(.timeCounter(timeCounter))
+        case .counter(let repCounter, let showPeriod):
+            self.customKeyboard(.counter(repCounter, showPeriod: showPeriod))
         }
     }
 }
 
 public typealias WeightChange = (Double) -> ()
-public typealias RepCounter = (Int) -> ()
+public typealias Counter = (Int) -> ()
 public typealias TimeCounter = (TimeInterval) -> ()
 
 fileprivate enum Key {
@@ -76,12 +73,12 @@ fileprivate enum Key {
 }
 
 extension CustomKeyboard {
-    static func repCounter(_ repCounter: RepCounter?) -> CustomKeyboard {
+    static func counter(_ repCounter: Counter?, showPeriod: Bool = true) -> CustomKeyboard {
         CustomKeyboardBuilder { textDocumentProxy, submit, playSystemFeedback in
             let keys: [Key] = [.digit(1), .digit(2), .digit(3), .hideKeyboard,
                                .digit(4), .digit(5), .digit(6), .plus,
                                .digit(7), .digit(8), .digit(9), .minus,
-                               .empty, .digit(0), .delete, .submit]
+                               (showPeriod ? .period : .empty), .digit(0), .delete, .submit]
             
             let columns = [
                 GridItem(.flexible()),
@@ -94,8 +91,11 @@ extension CustomKeyboard {
                 ForEach(keys, id: \.sfSymbol) { k in
                     Button(action: {
                         switch k {
-                        case .period, .empty:
+                        case .empty:
                             break
+                        case .period:
+                            textDocumentProxy.insertText(".")
+                            playSystemFeedback?()
                         case .delete:
                             textDocumentProxy.deleteBackward()
                             playSystemFeedback?()
@@ -129,6 +129,7 @@ extension CustomKeyboard {
                             }
                         }
                     })
+                    .font(.title3)
                     .frame(maxWidth: .infinity)
                     .frame(height: 40)
                     .foregroundStyle(.primary)
@@ -139,80 +140,5 @@ extension CustomKeyboard {
             .backgroundStyle(.windowBackground)
         }
     }
-    
-    static func timeCounter(_ repCounter: TimeCounter?) -> CustomKeyboard {
-        CustomKeyboardBuilder { textDocumentProxy, submit, playSystemFeedback in
-            let keys: [Key] = [.digit(1), .digit(2), .digit(3), .hideKeyboard,
-                               .digit(4), .digit(5), .digit(6), .plus,
-                               .digit(7), .digit(8), .digit(9), .minus,
-                               .period, .digit(0), .delete, .submit]
-            
-            let columns = [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ]
-            
-            LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(keys, id: \.sfSymbol) { k in
-                    Button(action: {
-                        switch k {
-                        case .period, .empty:
-                            break
-                        case .delete:
-                            textDocumentProxy.deleteBackward()
-                            playSystemFeedback?()
-                        case .minus:
-                            repCounter?(-30)
-                            playSystemFeedback?()
-                        case .plus:
-                            repCounter?(30)
-                            playSystemFeedback?()
-                        case .hideKeyboard:
-                            submit?()
-                        case .submit:
-                            submit?()
-                            playSystemFeedback?()
-                        case .digit(let value):
-                            textDocumentProxy.insertText("\(value)")
-                            playSystemFeedback?()
-                        }
-                    }, label: {
-                        ZStack {
-                            Color.clear
-                            switch k {
-                            case .period:
-                                Text(".")
-                            case .digit(let value):
-                                Text("\(value)")
-                            case .empty:
-                                EmptyView()
-                            default:
-                                Image(systemName: k.sfSymbol)
-                            }
-                        }
-                    })
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .foregroundStyle(.primary)
-                    .buttonStyle(.borderless)
-                }
-            }
-            .padding()
-            .backgroundStyle(.windowBackground)
-        }
-    }
-
 }
 
-#Preview {
-    @State var text = ""
-    return TextFieldDynamicWidth(title: "0", keyboardType: .repCount(repCounter: { _ in
-        
-    }), onEditingChanged: { _ in
-        
-    }, onCommit: {
-        
-    }, text: $text)
-}

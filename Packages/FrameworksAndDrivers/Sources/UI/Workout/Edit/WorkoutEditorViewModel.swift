@@ -65,17 +65,17 @@ public final class WorkoutEditorViewModel {
     }
     
     func addSetToExercise(
-        withID id: UUID,
+        withID exerciseID: UUID,
         weight: Double,
         type: SetType,
         unit: Domain.Unit = .kg,
         failure: Bool = false
     ) -> ExerciseSet? {
-        guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return nil}
+        guard let index = workout.exercises.firstIndex(where: {$0.id == exerciseID}) else {return nil}
         let met = workout.exercises[index].template.category.met()
         
         let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
-        let set = ExerciseSet(weight: weight, type: type, unit: unit, failure: failure, calories: calories)
+        let set = ExerciseSet(exerciseID: exerciseID, weight: weight, type: type, unit: unit, failure: failure, calories: calories)
         workout.exercises[index].addSet(set: set)
         return set
     }
@@ -101,10 +101,9 @@ public final class WorkoutEditorViewModel {
         workout.exercises[exerciseIndex].sets[setIndex].calories = calories
     }
     
-//    func addSetToExercise(withID id: UUID, set: ExerciseSet) {
-//        guard let index = workout.exercises.firstIndex(where: {$0.id == id}) else {return}
-//        workout.exercises[index].addSet(set: set)
-//    }
+    func updateSet(_ set: ExerciseSet) {
+        updateSetFor(exerciseID: set.exerciseID, setID: set.id, weight: set.weight, type: set.type, failure: set.failure)
+    }
     
     var isWorkoutComplete: Bool {
         workout.exercises.isNotEmpty

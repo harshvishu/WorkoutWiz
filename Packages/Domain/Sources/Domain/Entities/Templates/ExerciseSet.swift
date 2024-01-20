@@ -9,13 +9,15 @@ import Foundation
 
 public struct ExerciseSet: Hashable, Equatable, Codable {
     public var id = UUID()
+    public var exerciseID: UUID
     public var weight: Double
     public var type: SetType
     public var unit: Unit
     public var failure: Bool
     public var calories: Double
     
-    public init(weight: Double = 0.0, type: SetType, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+    public init(exerciseID: UUID, weight: Double = 0.0, type: SetType, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+        self.exerciseID = exerciseID
         self.weight = weight
         self.type = type
         self.unit = unit
@@ -23,7 +25,8 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
         self.calories = calories
     }
     
-    public init(weight: Double = 0.0, duration: TimeInterval, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+    public init(exerciseID: UUID, weight: Double = 0.0, duration: TimeInterval, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+        self.exerciseID = exerciseID
         self.weight = weight
         self.type = .duration(duration)
         self.unit = unit
@@ -31,7 +34,8 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
         self.calories = calories
     }
     
-    public init(weight: Double = 0.0, rep: Int, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+    public init(exerciseID: UUID, weight: Double = 0.0, rep: Int, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+        self.exerciseID = exerciseID
         self.weight = weight
         self.type = .rep(rep)
         self.unit = unit
@@ -45,6 +49,10 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
     
     public mutating func update(type: SetType, weight: Double) {
         self.type = type
+        self.weight = weight
+    }    
+    
+    public mutating func update(weight: Double) {
         self.weight = weight
     }
 }

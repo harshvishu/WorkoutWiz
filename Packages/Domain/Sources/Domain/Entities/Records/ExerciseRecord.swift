@@ -40,7 +40,7 @@ extension ExerciseRecord: Hashable {
 public extension ExerciseRecord {
     static func withEmptySet(template: ExerciseTemplate) -> Self {
         var exercise: Self = .init(template: template)
-        exercise.sets.append(.init(type: .rep(0)))
+        exercise.sets.append(.init(exerciseID: UUID(), type: .rep(0)))
         return exercise
     }
     
