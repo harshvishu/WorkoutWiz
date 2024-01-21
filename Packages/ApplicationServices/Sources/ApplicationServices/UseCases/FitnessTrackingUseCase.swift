@@ -16,11 +16,11 @@ public class FitnessTrackingUseCase: FitnessTrackingIOPort {
         self.fitnessCalculatorService = fitnessCalculatorService
     }
 
-    public func trackCaloriesBurned(metValue: Double, weight: Double, type: SetType) -> Double {
+    public func trackCaloriesBurned(metValue: Double, weight: Double, type: SetType, duration: TimeInterval, rep: Int) -> Double {
         switch type {
-        case .duration(let duration):
+        case .duration:
             fitnessCalculatorService.calculateCaloriesBurned(metValue: metValue, weight: weight, duration: duration)
-        case .rep(let rep):
+        case .rep:
             fitnessCalculatorService.calculateCaloriesBurned(metValue: metValue, weight: weight, rep: rep)
         }
     }

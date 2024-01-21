@@ -41,21 +41,15 @@ struct ListWorkoutView: View {
                 }
         case .displayGrouped(let groupByDay):
             ForEach(groupByDay.sorted(by: { $0.key > $1.key }), id: \.key) { day, workouts in
-//                Section {
-                    Text(day, style: .date)
+                Text(day, style: .date)
                     .id(day.formatted(.dateTime))
                     .print(day.formatted(.dateTime))
-                    
-                    ForEach(workouts) {
-                        WorkoutRowView(workout: $0)
-                            .id($0.documentID)
-                    }
-                    .onDelete(perform: delete)
-                    
-//                } header: {
-//                    Text(day, style: .date)
-//                }
                 
+                ForEach(workouts) {
+                    WorkoutRowView(workout: $0)
+                        .id($0.documentID)
+                }
+                .onDelete(perform: delete)
             }
             .onReceive(appState.signal) {
                 if case .workoutFinished = $0 {
@@ -79,9 +73,10 @@ struct ListWorkoutView: View {
                     Spacer()
                     
                     Button {
-                        appState.send(.openEditWorkoutSheet)
+                        appState.send(.showLogs)
                     } label: {
-                        Image(systemName: "plus")
+                        Text("All Entries")
+                        // TODO: Fixme Should not be seen in Calnedar View
                     }
                     .foregroundStyle(.primary)
                 }
@@ -120,9 +115,9 @@ struct ListWorkoutView: View {
                     Spacer()
                     
                     Button {
-                        appState.send(.openEditWorkoutSheet)
+                        appState.send(.showLogs)
                     } label: {
-                        Image(systemName: "plus")
+                        Text("All Entries")
                     }
                     .foregroundStyle(.primary)
                 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Domain
 
 private let DayFormat = "dd"
 private let MonthFormat = "MM"
@@ -75,4 +76,22 @@ public func ==(lhs: Day, rhs: Date) -> Bool {
 
 public func ==(lhs: Date, rhs: Day) -> Bool {
     rhs == lhs
+}
+
+public extension Day {
+    static func +(lhs: Day, rhs: Int) -> Day {
+        return .init(date: Calendar.current.date(byAdding: .day, value: rhs, to: lhs.date) ?? lhs.date)
+    }
+    
+    static func +=(lhs: inout Day, rhs: Int) {
+        lhs = .init(date: lhs.date + rhs)
+    }
+    
+    static func -(lhs: Day, rhs: Int) -> Day {
+        return .init(date: Calendar.current.date(byAdding: .day, value: -rhs, to: lhs.date) ?? lhs.date)
+    }
+    
+    static func -=(lhs: inout Day, rhs: Int) {
+        lhs = .init(date: lhs.date - rhs)
+    }
 }

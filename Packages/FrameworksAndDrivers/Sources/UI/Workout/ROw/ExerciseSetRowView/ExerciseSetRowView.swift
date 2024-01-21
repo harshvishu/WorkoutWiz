@@ -20,6 +20,8 @@ public struct ExerciseSetRowView: View {
     @State private var exercise: ExerciseRecord
     @State private var showExpandedSetView = true
     
+    @State private var messageQueue: ConcreteMessageQueue<(ExerciseSet,Int)> = .init()
+    
     init(exercise: ExerciseRecord) {
         self._exercise = .init(initialValue: exercise)
     }
@@ -35,7 +37,7 @@ public struct ExerciseSetRowView: View {
                     if showExpandedSetView {
                         // Show all exercise sets
                         ForEachWithIndex(exercise.sets, id: \.self) { index, set in
-                            SetView(set: set, position: index)
+                            SetView(set: set, position: index, messageQueue: messageQueue)
                         }
                     } else {
                         // Show Summary View
@@ -46,6 +48,11 @@ public struct ExerciseSetRowView: View {
                     }
                 }
                 .padding(.leading, 8)
+                .onReceive(messageQueue.signal) { set, position in
+                    if let set = editWorkoutViewModel.updateSet(set) {
+                        exercise.sets[position] = set
+                    }
+                }
             }
             .padding(.listRowContentInset)
             .background {
@@ -71,9 +78,9 @@ public struct ExerciseSetRowView: View {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
     
     return List {
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 5.5, rep: 10,failure: true)]))
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 15.5, rep: 10,failure: true)]))
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 135, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 5.5, type: .rep, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 15.5, type: .rep, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 135, type: .rep, rep: 10,failure: true)]))
         
     }
     .listRowSpacing(.listRowVerticalSpacing)

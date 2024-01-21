@@ -61,20 +61,23 @@ public final class WorkoutEditorViewModel {
     
     func add(exerciesToWorkout exercises: [ExerciseTemplate]) async {
         await startTimer()
-        workout.exercises.append(contentsOf: exercises.map({ExerciseRecord.withEmptySet(template: $0)}))
+        workout.exercises.append(contentsOf: exercises.map({ExerciseRecord(template: $0)}))
+        workout.exercises.forEach { _ = addSetToExercise(withID: $0.id, weight: 0.0, type: .rep, duration: 0.0, rep: 0) }
     }
     
     func addSetToExercise(
         withID exerciseID: UUID,
         weight: Double,
         type: SetType,
+        duration: TimeInterval,
+        rep: Int,
         unit: Domain.Unit = .kg,
         failure: Bool = false
     ) -> ExerciseSet? {
         guard let index = workout.exercises.firstIndex(where: {$0.id == exerciseID}) else {return nil}
         let met = workout.exercises[index].template.category.met()
         
-        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
+        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type, duration: duration, rep: rep)
         let set = ExerciseSet(exerciseID: exerciseID, weight: weight, type: type, unit: unit, failure: failure, calories: calories)
         workout.exercises[index].addSet(set: set)
         return set
@@ -85,24 +88,23 @@ public final class WorkoutEditorViewModel {
         setID: UUID,
         weight: Double,
         type: SetType,
-        duration: Double = 0.0,
-        unit: Domain.Unit = .kg,
-        failure: Bool = false
-    ) {
-        guard let exerciseIndex = workout.exercises.firstIndex(where: {$0.id == exerciseID}) else {return}
-        guard let setIndex = workout.exercises[exerciseIndex].sets.firstIndex(where: {$0.id == setID}) else {return}
+        duration: Double,
+        rep: Int,
+        unit: Domain.Unit,
+        failure: Bool
+    ) -> ExerciseSet? {
+        guard let exerciseIndex = workout.exercises.firstIndex(where: {$0.id == exerciseID}) else {return nil}
+        guard let setIndex = workout.exercises[exerciseIndex].sets.firstIndex(where: {$0.id == setID}) else {return nil}
         
         let met = workout.exercises[exerciseIndex].template.category.met()
-        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type)
+        let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type, duration: duration , rep: rep)
         
-        workout.exercises[exerciseIndex].sets[setIndex].weight = weight
-        workout.exercises[exerciseIndex].sets[setIndex].unit = unit
-        workout.exercises[exerciseIndex].sets[setIndex].failure = failure
-        workout.exercises[exerciseIndex].sets[setIndex].calories = calories
+        workout.exercises[exerciseIndex].sets[setIndex].update(weight: weight, type: type, duration: duration, rep: rep, unit: unit, failure: failure, calories: calories)
+        return workout.exercises[exerciseIndex].sets[setIndex]
     }
     
-    func updateSet(_ set: ExerciseSet) {
-        updateSetFor(exerciseID: set.exerciseID, setID: set.id, weight: set.weight, type: set.type, failure: set.failure)
+    func updateSet(_ set: ExerciseSet) -> ExerciseSet? {
+        updateSetFor(exerciseID: set.exerciseID, setID: set.id, weight: set.weight, type: set.type, duration: set.duration, rep: set.rep, unit: set.unit, failure: set.failure)
     }
     
     var isWorkoutComplete: Bool {

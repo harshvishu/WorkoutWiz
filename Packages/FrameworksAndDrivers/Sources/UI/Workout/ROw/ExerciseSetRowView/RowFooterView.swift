@@ -19,11 +19,11 @@ struct RowFooterView: View {
     var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
-    @State var lastSavedSet: ExerciseSet = .init(exerciseID: UUID(), weight: 50, rep: 100)
+    @State var lastSavedSet: ExerciseSet = .init(exerciseID: UUID(), weight: 5, type: .rep, rep: 10)
     
     var body: some View {
             Button(action: {
-                if let addedSet = editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, unit: lastSavedSet.unit, failure: lastSavedSet.failure) {
+                if let addedSet = editWorkoutViewModel.addSetToExercise(withID: exercise.id, weight: lastSavedSet.weight, type: lastSavedSet.type, duration: lastSavedSet.duration, rep: lastSavedSet.rep, unit: lastSavedSet.unit, failure: lastSavedSet.failure) {
                     withCustomSpring {
                         exercise.sets.append(addedSet)
                     }

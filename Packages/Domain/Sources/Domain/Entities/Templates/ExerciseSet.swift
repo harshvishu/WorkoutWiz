@@ -1,6 +1,6 @@
 //
 //  ExerciseSet.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 18/12/23.
 //
@@ -12,52 +12,49 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
     public var exerciseID: UUID
     public var weight: Double
     public var type: SetType
+    public var duration: TimeInterval
+    public var rep: Int
     public var unit: Unit
     public var failure: Bool
     public var calories: Double
     
-    public init(exerciseID: UUID, weight: Double = 0.0, type: SetType, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+    public init(exerciseID: UUID, weight: Double = 0.0, type: SetType, duration: TimeInterval = 0.0, rep: Int = 0, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
         self.exerciseID = exerciseID
         self.weight = weight
         self.type = type
+        self.duration = duration
+        self.rep = rep
         self.unit = unit
         self.failure = failure
         self.calories = calories
     }
     
-    public init(exerciseID: UUID, weight: Double = 0.0, duration: TimeInterval, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
-        self.exerciseID = exerciseID
-        self.weight = weight
-        self.type = .duration(duration)
-        self.unit = unit
-        self.failure = failure
-        self.calories = calories
-    }
-    
-    public init(exerciseID: UUID, weight: Double = 0.0, rep: Int, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
-        self.exerciseID = exerciseID
-        self.weight = weight
-        self.type = .rep(rep)
-        self.unit = unit
-        self.failure = failure
-        self.calories = calories
-    }
-    
-    public mutating func update(type: SetType) {
-        self.type = type
-    }
-    
-    public mutating func update(type: SetType, weight: Double) {
-        self.type = type
-        self.weight = weight
-    }    
-    
-    public mutating func update(weight: Double) {
-        self.weight = weight
+    public mutating func update(weight: Double? = nil, type: SetType? = nil, duration: TimeInterval? = nil, rep: Int? = nil, unit: Unit? = nil, failure: Bool? = nil, calories: Double? = nil) {
+        if let weight = weight {
+            self.weight = weight
+        }
+        if let type = type {
+            self.type = type
+        }
+        if let duration = duration {
+            self.duration = duration
+        }
+        if let rep = rep {
+            self.rep = rep
+        }
+        if let unit = unit {
+            self.unit = unit
+        }
+        if let failure = failure {
+            self.failure = failure
+        }
+        if let calories = calories {
+            self.calories = calories
+        }
     }
 }
 
 public enum SetType: Codable, Hashable, Equatable {
-    case rep(Int)
-    case duration(Double)
+    case rep
+    case duration
 }

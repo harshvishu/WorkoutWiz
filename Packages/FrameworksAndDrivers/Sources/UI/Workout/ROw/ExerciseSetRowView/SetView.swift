@@ -1,6 +1,6 @@
 //
 //  SetView.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 20/01/24.
 //
@@ -18,18 +18,25 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 fileprivate class ViewModel {
     var set: ExerciseSet
     
+    var type: SetType
+    var timeDuration: TimeInterval
+    var repCount: Int
+    
     var rep: String = ""
     var duration: String = ""
     var weight: String = ""
     
     init(set: ExerciseSet) {
         self.set = set
+        self.timeDuration = set.duration
+        self.repCount = set.rep
         
+        self.type = set.type
         switch set.type {
-        case .duration(let time):
-            self.duration = time == .zero ? "" : "\(time)"
-        case .rep(let count):
-            self.rep = count == 0 ? "" :  "\(count)"
+        case .duration:
+            self.duration = timeDuration == .zero ? "" : "\(timeDuration)"
+        case .rep:
+            self.rep = repCount == 0 ? "" :  "\(repCount)"
         }
         
         self.weight = set.weight == .zero ? "" : "\(set.weight)"
@@ -39,13 +46,14 @@ fileprivate class ViewModel {
         switch set.type {
         case .duration:
             guard let duration = duration.double else {throw SetDataError.zeroDuration}
-            set.update(type: .duration(duration))
+            self.timeDuration = duration
         case .rep:
             guard let rep = rep.int else {throw SetDataError.zeroRep}
-            set.update(type: .rep(rep))
+            self.repCount = rep
         }
         guard let weight = weight.double else {throw SetDataError.zeroWeight}
-        set.update(weight: weight)
+        
+        set.update(weight: weight, type: type, duration: timeDuration, rep: repCount)
     }
     
     enum SetDataError: Error {
@@ -57,15 +65,25 @@ fileprivate class ViewModel {
 
 
 struct SetView: View {
+    
+    enum Field: Hashable {
+        case durationField
+        case repField
+        case weightField
+    }
+    
     @Environment(WorkoutEditorViewModel.self) private var editWorkoutViewModel
-        
+    
     @State fileprivate var viewModel: ViewModel
+    @FocusState private var focusedField: Field?
     
     private var position: Int
-   
-    init(set: ExerciseSet, position: Int) {
+    private var messageQueue: ConcreteMessageQueue<(ExerciseSet,Int)>
+    
+    init(set: ExerciseSet, position: Int, messageQueue: ConcreteMessageQueue<(ExerciseSet,Int)>) {
         self.viewModel = .init(set: set)
         self.position = position
+        self.messageQueue = messageQueue
     }
     
     var body: some View {
@@ -75,28 +93,20 @@ struct SetView: View {
                 switch viewModel.set.type {
                 case .duration:
                     
-                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onTimeChange, showPeriod: true), onCommit: {
-                        do {
-                            try viewModel.saveChanges()
-                            editWorkoutViewModel.updateSet(viewModel.set)
-                        } catch {
-                            logger.error("\(error)")
-                        }
-                    }, text: $viewModel.rep)
+                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onTimeChange, onNext: {
+                        focusedField = .weightField
+                    }, showPeriod: true), onCommit: onCommit, text: $viewModel.rep)
+                    .focused($focusedField, equals: Field.durationField)
                     .font(.title.bold())
-                 
+                    
                     Text("min")
                         .font(.caption2)
                     
                 case .rep:
-                    TextFieldDynamicWidth(title: "0", keyboardType: .counter(onRepChange, showPeriod: false), onCommit: {
-                        do {
-                            try viewModel.saveChanges()
-                            editWorkoutViewModel.updateSet(viewModel.set)
-                        } catch {
-                            logger.error("\(error)")
-                        }
-                    }, text: $viewModel.rep)
+                    TextFieldDynamicWidth(title: "0", keyboardType: .counter(onRepChange, onNext: {
+                        focusedField = .weightField
+                    }, showPeriod: false), onCommit: onCommit, text: $viewModel.rep)
+                    .focused($focusedField, equals: Field.repField)
                     .font(.title.bold())
                     
                     Text("reps")
@@ -114,14 +124,8 @@ struct SetView: View {
                 
                 HStack(alignment: .center, spacing: 4) {
                     
-                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onWeightChange, showPeriod: true), onCommit: {
-                        do {
-                            try viewModel.saveChanges()
-                            editWorkoutViewModel.updateSet(viewModel.set)
-                        } catch {
-                            logger.error("\(error)")
-                        }
-                    }, text: $viewModel.weight)
+                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onWeightChange, showPeriod: true), onCommit: onCommit, text: $viewModel.weight)
+                    .focused($focusedField, equals: Field.weightField)
                     .font(.title.bold())
                     
                     Text("\(viewModel.set.unit.symbol)")
@@ -140,31 +144,42 @@ struct SetView: View {
     
     private func onTimeChange(_ count: Int) {
         let newTime = count > 0 ? 30.0 : 30.0
-        let updatedTime = (viewModel.weight.double ?? 0.0) + newTime
+        let updatedTime = ((viewModel.weight.double ?? 0.0) + newTime)
         guard updatedTime > 0.0 else {return}
         viewModel.duration = "\(updatedTime)"
     }
     
     private func onWeightChange(_ count: Int) {
         let newWeight = count > 0 ? 2.5 : -2.5
-        let updatedWeight = (viewModel.weight.double ?? 0.0) + newWeight
+        let updatedWeight = ((viewModel.weight.double ?? 0.0) + newWeight).clamped(to: 0...999)
         guard updatedWeight > 0.0 else {return}
         viewModel.weight = "\(updatedWeight)"
     }
     
     private func onRepChange(_ count: Int) {
         let newRep = count > 0 ? 1 : -1
-        let updatedRep = (viewModel.rep.int ?? 0) + newRep
-        guard updatedRep > 0 else {return}
+        let updatedRep = ((viewModel.rep.int ?? 0) + newRep).clamped(to: 0...999)
         viewModel.rep = "\(updatedRep)"
+    }
+    
+    private func onCommit() {
+        do {
+            try viewModel.saveChanges()
+            messageQueue.send((viewModel.set, position))
+        } catch {
+            logger.error("\(error)")
+        }
+        focusedField = nil
     }
 }
 
 #Preview {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
+    @State var messageQueue: ConcreteMessageQueue<(ExerciseSet,Int)> = .init()
+
     
-    return SetView(set: ExerciseSet(exerciseID: UUID(), weight: 0.0, rep: 0,failure: true), position: 0)
-    .withPreviewEnvironment()
-    .environment(viewModel)
-    .previewBorder()
+    return SetView(set: ExerciseSet(exerciseID: UUID(), weight: 0.0, type: .rep, rep: 0,failure: true), position: 0, messageQueue: messageQueue)
+        .withPreviewEnvironment()
+        .environment(viewModel)
+        .previewBorder()
 }

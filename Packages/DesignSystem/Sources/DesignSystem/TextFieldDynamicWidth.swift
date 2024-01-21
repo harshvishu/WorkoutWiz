@@ -32,25 +32,18 @@ public struct TextFieldDynamicWidth: View {
     @State private var textRect = CGRect()
     @State private var keyboardType: CustomKeyboardType
     
-    @FocusState private var showKeyboard: Bool
-    
     public var body: some View {
         ZStack {
             Text(text == "" ? title : text).background(GlobalGeometryGetter(rect: $textRect)).layoutPriority(1).opacity(0)
             HStack {
                 TextField(title, text: $text, onEditingChanged: onEditingChanged, onCommit: onCommit)
                     .setKeyboard(keyboardType)
-                    .focused($showKeyboard)
                     .frame(width: textRect.width)
-                    .onSubmitCustomKeyboard {
-                        showKeyboard = false
-                        onCommit()
-                    }
+                    .onSubmitCustomKeyboard(action: onCommit)
             }
         }
     }
 }
-
 
 //
 //  GlobalGeometryGetter

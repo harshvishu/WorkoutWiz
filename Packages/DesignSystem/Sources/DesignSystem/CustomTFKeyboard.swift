@@ -13,7 +13,7 @@ private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: 
 
 public enum CustomKeyboardType {
     case system(UIKeyboardType)
-    case counter(_ counter: Counter?, showPeriod: Bool)
+    case counter(_ counter: Counter?, onNext: NextFieldHander? = nil, showPeriod: Bool)
     
     func isCustom() -> Bool {
         if case .system = self {
@@ -30,15 +30,14 @@ public extension TextField {
         switch keyboard {
         case .system(let type):
             self.keyboardType(type)
-        case .counter(let repCounter, let showPeriod):
-            self.customKeyboard(.counter(repCounter, showPeriod: showPeriod))
+        case .counter(let repCounter, let nextFieldHander, let showPeriod):
+            self.customKeyboard(.counter(repCounter, onNext: nextFieldHander, showPeriod: showPeriod))
         }
     }
 }
 
-public typealias WeightChange = (Double) -> ()
 public typealias Counter = (Int) -> ()
-public typealias TimeCounter = (TimeInterval) -> ()
+public typealias NextFieldHander = () -> ()
 
 fileprivate enum Key {
     case digit(Int)
@@ -49,6 +48,7 @@ fileprivate enum Key {
     case hideKeyboard
     case empty
     case delete
+    case next
     
     var sfSymbol: String {
         switch self {
@@ -66,19 +66,21 @@ fileprivate enum Key {
             "minus"
         case .submit:
             "arrow.turn.down.left"
+        case .next:
+            "arrow.forward.square"
         case .delete:
-            "delete.left"
+            "delete.left.fill"
         }
     }
 }
 
 extension CustomKeyboard {
-    static func counter(_ repCounter: Counter?, showPeriod: Bool = true) -> CustomKeyboard {
+    static func counter(_ repCounter: Counter?, onNext nextFieldHandler: NextFieldHander? = nil, showPeriod: Bool = true) -> CustomKeyboard {
         CustomKeyboardBuilder { textDocumentProxy, submit, playSystemFeedback in
             let keys: [Key] = [.digit(1), .digit(2), .digit(3), .hideKeyboard,
                                .digit(4), .digit(5), .digit(6), .plus,
                                .digit(7), .digit(8), .digit(9), .minus,
-                               (showPeriod ? .period : .empty), .digit(0), .delete, .submit]
+                               (showPeriod ? .period : .empty), .digit(0), .delete, (nextFieldHandler != nil ? .next : .submit)]
             
             let columns = [
                 GridItem(.flexible()),
@@ -92,28 +94,23 @@ extension CustomKeyboard {
                     Button(action: {
                         switch k {
                         case .empty:
-                            break
+                            return
                         case .period:
                             textDocumentProxy.insertText(".")
-                            playSystemFeedback?()
                         case .delete:
                             textDocumentProxy.deleteBackward()
-                            playSystemFeedback?()
                         case .minus:
                             repCounter?(-1)
-                            playSystemFeedback?()
                         case .plus:
                             repCounter?(1)
-                            playSystemFeedback?()
-                        case .hideKeyboard:
+                        case .hideKeyboard, .submit:
                             submit?()
-                        case .submit:
-                            submit?()
-                            playSystemFeedback?()
                         case .digit(let value):
                             textDocumentProxy.insertText("\(value)")
-                            playSystemFeedback?()
+                        case .next:
+                            nextFieldHandler?()
                         }
+                        playSystemFeedback?()
                     }, label: {
                         ZStack {
                             Color.clear
@@ -141,4 +138,3 @@ extension CustomKeyboard {
         }
     }
 }
-

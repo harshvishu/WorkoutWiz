@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol FitnessTrackingIOPort {
-    func trackCaloriesBurned(metValue: Double, weight: Double, type: SetType) -> Double
+    func trackCaloriesBurned(metValue: Double, weight: Double, type: SetType, duration: TimeInterval, rep: Int) -> Double
 }

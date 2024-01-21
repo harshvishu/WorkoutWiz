@@ -1,6 +1,6 @@
 //
 //  CalendarView.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 04/01/24.
 //
@@ -34,7 +34,7 @@ struct CalendarView: View {
                             currentDayRange: $selectedDateRange,
                             scrollTarget: $resetScroll,
                             selectedDate: $selectedDate,
-                            isTodayVisible: $isTodayVisible, 
+                            isTodayVisible: $isTodayVisible,
                             today: today
                         )
                         .frame(height: 90)
@@ -61,7 +61,12 @@ struct CalendarView: View {
             .scrollIndicators(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(action: {}, label: {
+                    Button(action: {
+                        withCustomSpring {
+                            selectedDate -= 1
+                            resetScroll = selectedDate
+                        }
+                    }, label: {
                         Image(systemName: "chevron.left")
                             .symbolEffect(.pulse.byLayer, value: isPresented)
                     })
@@ -74,7 +79,12 @@ struct CalendarView: View {
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: {}, label: {
+                    Button(action: {
+                        withCustomSpring {
+                            selectedDate += 1
+                            resetScroll = selectedDate
+                        }
+                    }, label: {
                         Image(systemName: "chevron.right")
                             .symbolEffect(.pulse.byLayer, value: isPresented)
                     })

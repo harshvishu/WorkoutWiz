@@ -30,7 +30,6 @@ struct WorkoutEditorExerciseListView: View {
             } else {
                 ForEach(viewModel.workout.exercises) {
                     ExerciseSetRowView(exercise: $0)
-//                                .environment(viewModel)
                 }
             }
             

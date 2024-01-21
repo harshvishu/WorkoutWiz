@@ -44,6 +44,22 @@ public extension Date {
         return calendar.date(from: components)!
     }
     
+    static func +(lhs: Date, rhs: Int) -> Date {
+        return Calendar.current.date(byAdding: .day, value: rhs, to: lhs) ?? lhs
+    }
+    
+    static func +=(lhs: inout Date, rhs: Int) {
+        lhs = lhs + rhs
+    }
+    
+    static func -(lhs: Date, rhs: Int) -> Date {
+        return Calendar.current.date(byAdding: .day, value: -rhs, to: lhs) ?? lhs
+    }
+    
+    static func -=(lhs: inout Date, rhs: Int) {
+        lhs = lhs - rhs
+    }
+    
 }
 
 public let hoursMinutesSecondsFormatter: DateComponentsFormatter = {

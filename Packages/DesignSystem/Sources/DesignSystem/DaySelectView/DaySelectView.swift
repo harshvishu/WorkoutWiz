@@ -1,6 +1,6 @@
 //
 //  DaySelectView.swift
-//  
+//
 //
 //  Created by harsh on 16/09/22.
 //
@@ -156,7 +156,7 @@ public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day]
                                        ]),
             scrollTarget: .constant(Day(date: Date().addingTimeInterval(-700000))),
             selectedDate: .constant(Day(date: Date().addingTimeInterval(-700000))),
-            isTodayVisible: .constant(true), 
+            isTodayVisible: .constant(true),
             today: Day(date: Date())
         )
         .padding()
