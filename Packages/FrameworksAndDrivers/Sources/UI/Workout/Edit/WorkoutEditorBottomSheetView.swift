@@ -101,10 +101,21 @@ public struct WorkoutEditorBottomSheetView: View {
 //                }
             }
             .onReceive(appState.signal) { signal in
-                if case .openEditWorkoutSheet = signal {
-                    exapand()
-                } else if case .closeWorkoutEditor = signal {
+                switch signal {
+                case .openEditWorkoutSheet:
+                    expand()
+                case .closeWorkoutEditor:
                     collapse()
+                case .openWorkout(let workout):
+                    if viewModel.isWorkoutInProgress {
+                        // TODO: What to do if one workout is already in progress
+                        // MAybe open in a new window/screen
+                    } else {
+                        viewModel.resume(workout: workout)
+                        expand()
+                    }
+                default:
+                    break
                 }
             }
             .task {
@@ -122,7 +133,7 @@ fileprivate extension WorkoutEditorBottomSheetView {
         }
     }
     
-    func exapand() {
+    func expand() {
         withEaseOut {
             selectedDetent = .ExpandedSheetDetent
         }

@@ -18,6 +18,7 @@ struct ListWorkoutView: View {
     
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
+    @Environment(RouterPath.self) var routerPath
     @Environment(AppState.self) private var appState
     
     @State var viewModel: ListWorkoutViewModel
@@ -45,9 +46,12 @@ struct ListWorkoutView: View {
                     .id(day.formatted(.dateTime))
                     .print(day.formatted(.dateTime))
                 
-                ForEach(workouts) {
-                    WorkoutRowView(workout: $0)
-                        .id($0.documentID)
+                ForEach(workouts, id: \.id) { workout in
+                    WorkoutRowView(workout: workout)
+                        .onTapGesture {
+                            routerPath.navigate(to: .workoutDetails(workout: workout))
+                        }
+//                        .id($0.documentID)
                 }
                 .onDelete(perform: delete)
             }
@@ -60,8 +64,11 @@ struct ListWorkoutView: View {
             }
         case .display(let workouts):
             Section {
-                ForEach(workouts) {
-                    WorkoutRowView(workout: $0)
+                ForEach(workouts, id: \.id) { workout in
+                    WorkoutRowView(workout: workout)
+                        .onTapGesture {
+                            appState.send(.openWorkout(workout))
+                        }
                 }
                 .onDelete(perform: delete)
                 

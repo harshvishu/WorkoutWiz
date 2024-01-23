@@ -28,7 +28,7 @@ public struct WorkoutRecord {
     }
     
     public init() {
-        self.documentID = UUID().uuidString
+        self.documentID = UUID().uuidString // TODO: improve 
         self.name = ""
         self.startDate = .now
         self.endDate = .now
@@ -83,14 +83,14 @@ public extension WorkoutRecord {
     static func mock(_ index: Int = 0) -> Self {
         WorkoutRecord(documentID: "Workout_\(index)", name: "Workout \(index)", startDate: .distantPast, endDate: .now, duration: 60 * 45, notes: "Workout_\(index) Notes", exercises: [
             ExerciseRecord(documentID: "Workout_Exercise_1_\(index)", template: .mock_1, sets: [
-                .init(exerciseID: UUID(), weight: 5, type: .rep, rep: 12),
-                .init(exerciseID: UUID(), weight: 7.5, type: .rep, rep: 10),
-                .init(exerciseID: UUID(), weight: 12.5, type: .duration, duration: 60)
+                .init(exerciseID: UUID(), weight: 5, type: .rep, duration: 0.0, rep: 12, calories: 100),
+                .init(exerciseID: UUID(), weight: 7.5, type: .rep, duration: 0.0, rep: 10, calories: 10),
+                .init(exerciseID: UUID(), weight: 12.5, type: .duration, duration: 60, rep: 0, calories: 2.5)
             ]),
             ExerciseRecord(documentID: "Workout_Exercise_2_\(index)", template: .mock_1, sets: [
-                .init(exerciseID: UUID(), weight: 135, type: .rep, rep: 10),
-                .init(exerciseID: UUID(), weight: 175, type: .rep, rep: 6),
-                .init(exerciseID: UUID(), weight: 200, type: .rep, rep: 4)
+                .init(exerciseID: UUID(), weight: 135, type: .rep, duration: 0.0, rep: 10, calories: 3.5),
+                .init(exerciseID: UUID(), weight: 175, type: .rep, duration: 0.0, rep: 6, calories: 15.3),
+                .init(exerciseID: UUID(), weight: 200, type: .rep, duration: 0.0, rep: 4, calories: 11)
             ])
         ])
     }

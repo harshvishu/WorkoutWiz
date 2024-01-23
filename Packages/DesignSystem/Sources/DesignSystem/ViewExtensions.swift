@@ -34,7 +34,7 @@ public extension View {
     
     @discardableResult
     func debugPrint(_ value: Any) -> Self {
-        debugAction { _ = print(value) }
+        debugAction { Swift.print(value) }
     }
     
     func debugModifier<T: View>(_ modifier: (Self) -> T) -> some View {

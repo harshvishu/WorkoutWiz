@@ -38,6 +38,9 @@ public struct ExerciseSetRowView: View {
                         // Show all exercise sets
                         ForEachWithIndex(exercise.sets, id: \.self) { index, set in
                             SetView(set: set, position: index, messageQueue: messageQueue)
+                                .task {
+                                    logger.trace("Render SetView \(index)")
+                                }
                         }
                     } else {
                         // Show Summary View
@@ -59,6 +62,7 @@ public struct ExerciseSetRowView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(.tertiary, lineWidth: 0.5)
                     .fill(.background)
+                    .padding(0.5)
                     .onTapGesture {
                         // TODO: Open detailed view for editing
                     }
@@ -71,16 +75,20 @@ public struct ExerciseSetRowView: View {
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
         .listRowInsets(.listRowInset)
+        .task {
+            logger.trace("Render ExerciseSetRowView")
+        }
     }
 }
 
 #Preview {
+    let exerciseID = UUID()
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
     
     return List {
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 5.5, type: .rep, rep: 10,failure: true)]))
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 15.5, type: .rep, rep: 10,failure: true)]))
-        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: UUID(), weight: 135, type: .rep, rep: 10,failure: true)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: exerciseID, weight: 5.5, type: .rep, duration: 0.0, rep: 10,failure: true, calories: 2.5)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: exerciseID, weight: 15.5, type: .rep, duration: 0.0, rep: 10,failure: true, calories: 2.5)]))
+        ExerciseSetRowView(exercise: ExerciseRecord(template: ExerciseTemplate.mock_1, sets: [ExerciseSet(exerciseID: exerciseID, weight: 135, type: .rep, duration: 0.0,rep: 10,failure: true, calories: 2.5)]))
         
     }
     .listRowSpacing(.listRowVerticalSpacing)

@@ -21,11 +21,11 @@ public struct WorkoutEditorView: View {
     @Environment(AppState.self) private var appState
     @Environment(RouterPath.self) private var routerPath
     @Environment(WorkoutEditorViewModel.self) private var viewModel
-//    @Environment(\.keyboardShowing) private var keyboardShowing
-    @State private var keyboardShowing = false
-
+    @Environment(\.keyboardShowing) private var keyboardShowing
+    
     @State private var editorMessageQueue: ConcreteMessageQueue<[ExerciseTemplate]> = .init()
-    @State private var showFinishAlert: Bool = false
+    @State private var alertOption: AlertOption?
+    @State private var showFinishWorkoutAlert: Bool = false
     
     public var body: some View {
         @Bindable var viewModel = viewModel
@@ -55,10 +55,15 @@ public struct WorkoutEditorView: View {
                                 }
                             }
                             
-                            TextField("Notes", text: $viewModel.workout.notes ?? "")
+                            Text(viewModel.workout.notes ?? "Notes")
+                                .truncationMode(.tail)
+                                .foregroundStyle(.tertiary)
                                 .font(.body)
+                                .onTapGesture {
+                                    logger.info("Add notes for workout: TODO: Pending implementation")
+                                }
                         }
-                       
+                        
                         WorkoutEditorExerciseListView()
                         
                     }
@@ -70,28 +75,31 @@ public struct WorkoutEditorView: View {
                 .listRowSpacing(.listRowVerticalSpacing)
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .scrollDismissesKeyboard(.automatic) 
+                .scrollDismissesKeyboard(.automatic)
             }
             
             Spacer()
             
             // MARK: - Add Exercise Action
-            Button(action: {
-                withCustomSpring {
-                    routerPath.navigate(to: .listExercise)
-                }
-            }, label: {
-                Text("Show All Exercises")
-                    .frame(maxWidth: .infinity)
-            })
-            .foregroundStyle(.primary)
-            .tint(.clear)
-            .buttonStyle(.bordered)
-            .overlay(
-                Capsule()
-                    .stroke(Color.secondary, lineWidth: 2) // Set the stroke color and width
-            )
-            .opacity(keyboardShowing ? 0 : 1)
+            if !keyboardShowing {
+                Button(action: {
+                    withCustomSpring {
+                        routerPath.navigate(to: .listExercise)
+                    }
+                }, label: {
+                    Text("Show All Exercises")
+                        .frame(maxWidth: .infinity)
+                })
+                .foregroundStyle(.primary)
+                .tint(.clear)
+                .buttonStyle(.bordered)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.secondary, lineWidth: 2) // Set the stroke color and width
+                )
+                .transition(.opacity)
+//                .opacity(keyboardShowing ? 0 : 1)
+            }
             
             if viewModel.workout.exercises.isNotEmpty && keyboardShowing == false {
                 HStack {
@@ -108,11 +116,22 @@ public struct WorkoutEditorView: View {
                     .buttonBorderShape(.capsule)
                     .buttonStyle(.bordered)
                     .foregroundStyle(.primary)
-                 
+                    
                     Button(action: {
-                        withAnimation {
-                            showFinishAlert.toggle()
+                        Task {
+                            let isCurrentWorkoutValid = await viewModel.isCurrentWorkoutValid()
+                            withCustomSpring {
+                                if isCurrentWorkoutValid {
+                                    logger.debug("showFinishAlert")
+                                    alertOption = AlertOption.finishWorkout
+                                } else {
+                                    logger.debug("showWorkoutInvalidAlert")
+                                    alertOption = AlertOption.invalidWorkout
+                                }
+                                showFinishWorkoutAlert = true
+                            }
                         }
+                        
                     }, label: {
                         Text("Finish Workout")
                             .frame(maxWidth: .infinity)
@@ -125,16 +144,25 @@ public struct WorkoutEditorView: View {
             }
         }
         // MARK: - Alerts
-        .alert(isPresented: $showFinishAlert, content: {
-            Alert(title: Text("Finish Workout?"), message: nil, primaryButton: .default(Text("Finish"), action: {
-                Task(priority: .userInitiated) {
-                    _ = await viewModel.finishWorkout()
-                    appState.send(.workoutFinished)
-                    viewModel.startEmptyWorkout()
-                    appState.send(.closeWorkoutEditor)
-                }
-            }), secondaryButton: .cancel())
-        })
+        .alert("Finish Workout", isPresented: $showFinishWorkoutAlert, presenting: alertOption) { options in
+            Button(action: {
+                _ = finishWorkoutTask()
+            }) {
+                Text("Yes")
+            }
+            Button(role: .cancel) {
+                // Handle the deletion.
+            } label: {
+                Text("Cancel")
+            }
+        } message: { options in
+            switch options {
+            case .invalidWorkout:
+                Text("You have some empty sets in your workout. Do you still want to save?")
+            case .finishWorkout:
+                EmptyView()
+            }
+        }
         // Add Selected Exercises to the workout
         .onReceive(editorMessageQueue.signal, perform: { message in
             Task(priority: .userInitiated) {
@@ -149,6 +177,15 @@ public struct WorkoutEditorView: View {
             default:
                 EmptyView()
             }
+        }
+    }
+    
+    private func finishWorkoutTask() -> Task<(), Never> {
+        Task(priority: .userInitiated) {
+            _ = await viewModel.finishWorkout()
+            appState.send(.workoutFinished)
+            viewModel.initWithEmptyWorkout()
+            appState.send(.closeWorkoutEditor)
         }
     }
 }
@@ -167,10 +204,17 @@ fileprivate extension WorkoutEditorBottomSheetView {
     }
 }
 
+enum AlertOption: Identifiable {
+    var id:  Self { self }
+    
+    case invalidWorkout
+    case finishWorkout
+}
+
 #Preview {
     @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-  
+    
     return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
         .withPreviewEnvironment()
 }

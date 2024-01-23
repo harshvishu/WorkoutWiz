@@ -21,7 +21,7 @@ public final class WorkoutEditorViewModel {
     var recordWorkoutUseCase: RecordWorkoutIOPort?
     var listExerciseUseCase: ListExerciseIOPort?
     var fitnessTrackingUseCase: FitnessTrackingIOPort
-        
+    
     public private(set) var isTimerRunning: Bool = false
     public private(set) var startTime: Date? = nil
     public var workout: WorkoutRecord
@@ -42,22 +42,10 @@ public final class WorkoutEditorViewModel {
         self.recordWorkoutUseCase = recordWorkoutUseCase
     }
     
-    // MARK: - Workout
-    private func recordWorkout() async {
-        do {
-            _ = try await recordWorkoutUseCase?.recordWorkout(workout)
-            logger.error("Workout saved")
-        } catch RecordWorkoutError.writeFailed {
-            logger.error("Failed to write workout to db")
-        } catch {
-            logger.error("\(error)")
-        }
-    }
-    
-    func add(exercise: ExerciseTemplate) async {
-        await startTimer()
-        workout.exercises.append(ExerciseRecord(template: exercise))
-    }
+//    func add(exercise: ExerciseTemplate) async {
+//        await startTimer()
+//        workout.exercises.append(ExerciseRecord(template: exercise))
+//    }
     
     func add(exerciesToWorkout exercises: [ExerciseTemplate]) async {
         await startTimer()
@@ -78,7 +66,7 @@ public final class WorkoutEditorViewModel {
         let met = workout.exercises[index].template.category.met()
         
         let calories = fitnessTrackingUseCase.trackCaloriesBurned(metValue: met, weight: weight, type: type, duration: duration, rep: rep)
-        let set = ExerciseSet(exerciseID: exerciseID, weight: weight, type: type, unit: unit, failure: failure, calories: calories)
+        let set = ExerciseSet(exerciseID: exerciseID, weight: weight, type: type, duration: duration, rep: rep, unit: unit, failure: failure, calories: calories)
         workout.exercises[index].addSet(set: set)
         return set
     }
@@ -107,8 +95,9 @@ public final class WorkoutEditorViewModel {
         updateSetFor(exerciseID: set.exerciseID, setID: set.id, weight: set.weight, type: set.type, duration: set.duration, rep: set.rep, unit: set.unit, failure: set.failure)
     }
     
-    var isWorkoutComplete: Bool {
-        workout.exercises.isNotEmpty
+    var isWorkoutInProgress: Bool {
+        // TODO: Add other conditions
+        workout.exercises.isNotEmpty || isTimerRunning
     }
     
     // MARK: - Timer
@@ -130,6 +119,21 @@ public final class WorkoutEditorViewModel {
         workout = WorkoutRecord.empty()  /// Reset with empty workout
     }
     
+    /// Validation rules for workout
+    /// 1. No set can be empty:
+    /// 2. Ak user to save with empty data
+    /// 3. Remove empty data
+    ///
+    func isCurrentWorkoutValid() async -> Bool {
+        logger.logDebug(workout)
+        let isWorkoutInvalid = workout.exercises.first { exercise in
+            exercise.sets.first { set in
+                !fitnessTrackingUseCase.isValid(set: set, forExercise: exercise)
+            } != nil
+        } != nil
+        return !isWorkoutInvalid
+    }
+    
     func finishWorkout() async -> Bool {
         guard isTimerRunning,
               let startTime = self.startTime
@@ -142,17 +146,34 @@ public final class WorkoutEditorViewModel {
         workout.duration = duration
         workout.endDate = endTime
         workout.duration = duration
-        await recordWorkout()    /// Save this workout
-
+        
+        // TODO: handle
+        do {
+            _ = try await recordWorkoutUseCase?.recordWorkout(workout)
+            logger.error("Workout saved")
+        } catch RecordWorkoutError.writeFailed {
+            logger.error("Failed to write workout to db")
+        } catch {
+            logger.error("\(error)")
+        }
+        
         self.isTimerRunning = false
         return true
     }
     
-    func startEmptyWorkout() {
+    func initWithEmptyWorkout() {
         guard !isTimerRunning else {return}
         
         self.startTime = nil
         self.workout = WorkoutRecord.empty()  /// Reset with empty workout
+    }
+    
+    func resume(workout: WorkoutRecord) {
+        guard !isTimerRunning else {return}
+        
+        self.startTime = workout.startDate
+        isTimerRunning = true
+        self.workout = workout
     }
     
 }
@@ -176,7 +197,7 @@ public struct ElapsedTime {
     public private(set) var minutes: Int
     public private(set) var seconds: Int
     public private(set) var milliseconds: Int
-
+    
     init(timeInterval: TimeInterval) {
         let totalMilliseconds = Int(timeInterval * 1000)
         

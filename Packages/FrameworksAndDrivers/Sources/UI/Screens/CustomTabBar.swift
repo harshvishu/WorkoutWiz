@@ -38,10 +38,10 @@ public struct CustomTabBar: View, KeyboardReadable {
                     })
                 }
             }
-            .frame(height: .customTabBarHeight)
+            .frame(height: showTabBar ? .customTabBarHeight : .zero)
         }
         .background(
-            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: 15, bottomLeading: 0, bottomTrailing: 0, topTrailing: 15))
+            UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: .sheetCornerRadius, bottomLeading: 0, bottomTrailing: 0, topTrailing: .sheetCornerRadius))
                 .fill(.black)
                 .ignoresSafeArea(.all)
         )

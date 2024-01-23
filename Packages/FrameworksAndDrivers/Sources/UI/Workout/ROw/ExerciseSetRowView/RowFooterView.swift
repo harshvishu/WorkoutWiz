@@ -19,7 +19,7 @@ struct RowFooterView: View {
     var editWorkoutViewModel: WorkoutEditorViewModel
     
     @Binding var exercise: ExerciseRecord
-    @State var lastSavedSet: ExerciseSet = .init(exerciseID: UUID(), weight: 5, type: .rep, rep: 10)
+    @State var lastSavedSet: ExerciseSet = .init(exerciseID: UUID(), weight: 0, type: .rep, duration: 0.0, rep: 0, calories: 0.0)
     
     var body: some View {
             Button(action: {

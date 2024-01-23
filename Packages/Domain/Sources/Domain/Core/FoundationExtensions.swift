@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 public extension String {
     var double: Double? {
@@ -20,5 +21,12 @@ public extension String {
 public extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
         return min(max(self, limits.lowerBound), limits.upperBound)
+    }
+}
+
+// MARK: Logger extensions
+public extension Logger {
+    func logDebug(_ object: Any) {
+        dump(object)
     }
 }

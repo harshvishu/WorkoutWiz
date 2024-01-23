@@ -93,21 +93,37 @@ struct SetView: View {
                 switch viewModel.set.type {
                 case .duration:
                     
-                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onTimeChange, onNext: {
-                        focusedField = .weightField
-                    }, showPeriod: true), onCommit: onCommit, text: $viewModel.rep)
-                    .focused($focusedField, equals: Field.durationField)
-                    .font(.title.bold())
+//                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onTimeChange, onNext: {
+//                        focusedField = .weightField
+//                    }, showPeriod: true), onCommit: onCommit, text: $viewModel.duration)
+//                    .focused($focusedField, equals: Field.durationField)
+//                    .font(.title.bold())
+                    
+                    TextField("0.0", text: $viewModel.duration)
+                        .setKeyboard(.counter(onTimeChange(_:), onNext: {
+                            focusedField = .weightField
+                        }, showPeriod: true))
+                        .onSubmitCustomKeyboard(action: onCommit)
+                        .focused($focusedField, equals: Field.durationField)
+                        .font(.title.bold())
                     
                     Text("min")
                         .font(.caption2)
                     
                 case .rep:
-                    TextFieldDynamicWidth(title: "0", keyboardType: .counter(onRepChange, onNext: {
-                        focusedField = .weightField
-                    }, showPeriod: false), onCommit: onCommit, text: $viewModel.rep)
-                    .focused($focusedField, equals: Field.repField)
-                    .font(.title.bold())
+//                    TextFieldDynamicWidth(title: "0", keyboardType: .counter(onRepChange, onNext: {
+//                        focusedField = .weightField
+//                    }, showPeriod: false), onCommit: onCommit, text: $viewModel.rep)
+//                    .focused($focusedField, equals: Field.repField)
+//                    .font(.title.bold())
+                    
+                    TextField("0.0", text: $viewModel.rep)
+                        .setKeyboard(.counter(onRepChange(_:), onNext: {
+                            focusedField = .weightField
+                        }, showPeriod: false))
+                        .onSubmitCustomKeyboard(action: onCommit)
+                        .focused($focusedField, equals: Field.repField)
+                        .font(.title.bold())
                     
                     Text("reps")
                         .font(.caption2)
@@ -124,9 +140,15 @@ struct SetView: View {
                 
                 HStack(alignment: .center, spacing: 4) {
                     
-                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onWeightChange, showPeriod: true), onCommit: onCommit, text: $viewModel.weight)
-                    .focused($focusedField, equals: Field.weightField)
-                    .font(.title.bold())
+//                    TextFieldDynamicWidth(title: "0.0", keyboardType: .counter(onWeightChange, showPeriod: true), onCommit: onCommit, text: $viewModel.weight)
+//                    .focused($focusedField, equals: Field.weightField)
+//                    .font(.title.bold())
+                    
+                    TextField("0.0", text: $viewModel.weight)
+                        .setKeyboard(.counter(onWeightChange(_:), onNext: nil, showPeriod: false))
+                        .onSubmitCustomKeyboard(action: onCommit)
+                        .focused($focusedField, equals: Field.weightField)
+                        .font(.title.bold())
                     
                     Text("\(viewModel.set.unit.symbol)")
                         .font(.caption2)
@@ -178,7 +200,7 @@ struct SetView: View {
     @State var messageQueue: ConcreteMessageQueue<(ExerciseSet,Int)> = .init()
 
     
-    return SetView(set: ExerciseSet(exerciseID: UUID(), weight: 0.0, type: .rep, rep: 0,failure: true), position: 0, messageQueue: messageQueue)
+    return SetView(set: ExerciseSet(exerciseID: UUID(), weight: 10.0, type: .rep, duration: 10.0, rep: 10,failure: true, calories: 2.5), position: 0, messageQueue: messageQueue)
         .withPreviewEnvironment()
         .environment(viewModel)
         .previewBorder()

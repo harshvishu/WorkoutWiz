@@ -18,7 +18,7 @@ public struct ExerciseSet: Hashable, Equatable, Codable {
     public var failure: Bool
     public var calories: Double
     
-    public init(exerciseID: UUID, weight: Double = 0.0, type: SetType, duration: TimeInterval = 0.0, rep: Int = 0, unit: Unit = .kg, failure: Bool = false, calories: Double = 0.0) {
+    public init(exerciseID: UUID, weight: Double, type: SetType, duration: TimeInterval, rep: Int, unit: Unit = .kg, failure: Bool = false, calories: Double) {
         self.exerciseID = exerciseID
         self.weight = weight
         self.type = type
