@@ -20,4 +20,8 @@ public final class FirebaseExerciseRepository: ExerciseRepository {
         return exersices
     }
     
+    public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
+        return nil
+    }
+    
 }

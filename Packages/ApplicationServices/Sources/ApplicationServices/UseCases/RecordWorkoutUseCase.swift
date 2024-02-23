@@ -18,11 +18,23 @@ public final class RecordWorkoutUseCase: RecordWorkoutIOPort {
         self.workoutRepository = workoutRepository
     }
     
-    public func recordWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
+    public func emptyWorkout() async throws -> Workout {
+        await workoutRepository.emptyWorkout()
+    }
+    
+    public func add(workout: Workout) async throws -> Bool {
         try await workoutRepository.createOrUpdateWorkout(workout)
     }
     
-    public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {
+    public func add(exercise: Exercise, toWorkout workout: Workout) async throws -> Bool {
+        try await workoutRepository.add(exercise: exercise, toWorkout: workout)
+    }
+    
+    public func add(set: Rep, toExercise exercise: Exercise, toWorkout workout: Workout) async throws -> Bool {
+        try await workoutRepository.add(set: set, toExercise: exercise, toWorkout: workout)
+    }
+    
+    public func deleteWorkout(_ workout: Workout) async throws -> Bool {
         try await workoutRepository.deleteWorkout(workout)
     }
 }

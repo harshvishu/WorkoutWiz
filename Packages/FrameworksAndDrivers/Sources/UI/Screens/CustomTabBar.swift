@@ -42,8 +42,10 @@ public struct CustomTabBar: View, KeyboardReadable {
         }
         .background(
             UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: .sheetCornerRadius, bottomLeading: 0, bottomTrailing: 0, topTrailing: .sheetCornerRadius))
+                .stroke(.tertiary, lineWidth: 1)    // TODO: improve
                 .fill(.black)
                 .ignoresSafeArea(.all)
+                .shadow(color: .secondary.opacity(0.1), radius: 20, x: 0.0, y: 2.0)
         )
         .opacity(showTabBar ? 1 : 0)
         .offset(y: showTabBar ? .zero : .customTabBarHeight)

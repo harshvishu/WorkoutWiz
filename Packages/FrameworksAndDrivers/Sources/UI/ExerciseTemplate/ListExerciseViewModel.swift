@@ -18,42 +18,33 @@ public final class ListExerciseViewModel {
     private var allExercies: [ExerciseTemplate] = []
     
     private let listExerciseUseCase: ListExerciseIOPort
-    private var messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>?
-    private(set) var viewState: ViewState = .loading
-    
-    var searchText = ""
-    
+    private var messageQueue: ConcreteMessageQueue<[ExerciseBluePrint]>?
+        
     public init(
         listExerciseUseCase: ListExerciseIOPort = ListExerciseUseCase(
             exerciseRepository: UserDefaultsExerciseTemplateRepository()
         ),
-        messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>? = nil
+        messageQueue: ConcreteMessageQueue<[ExerciseBluePrint]>? = nil
     ) {
         self.listExerciseUseCase = listExerciseUseCase
         self.messageQueue = messageQueue
     }
     
-    func listExercises() async {
-        let exercies = await listExerciseUseCase.listExercise()
-        if exercies.isNotEmpty {
-            self.allExercies = exercies
-            self.viewState = .display(templates: exercies)
-        } else {
-            self.viewState = .empty
-        }
-    }
-    
     /// Methods
-    func set(messageQueue: ConcreteMessageQueue<[ExerciseTemplate]>?) {
+    func set(messageQueue: ConcreteMessageQueue<[ExerciseBluePrint]>?) {
         self.messageQueue = messageQueue
     }
     
-    func didSelect(exercises: [ExerciseTemplate]) {
+    func didSelect(exercises: [ExerciseBluePrint]) {
         messageQueue?.send(exercises)
     }
     
     func imageUrlFor(exercise: ExerciseTemplate) -> [URL] {
         listExerciseUseCase.imageUrlFor(exercise: exercise)
+    }
+    
+    func imageUrlFor(exercise: ExerciseBluePrint) -> [URL] {
+        exercise.images.map({listExerciseUseCase.url(forImageName: $0)})
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  RowHeaderView.swift
+//  ExerciseRowHeaderView.swift
 //  
 //
 //  Created by harsh vishwakarma on 20/01/24.
@@ -13,11 +13,9 @@ import Persistence
 import OSLog
 
 // Header View
-struct RowHeaderView: View {
+struct ExerciseRowHeaderView: View {
     
-    var editWorkoutViewModel: WorkoutEditorViewModel
-    
-    @Binding var exercise: ExerciseRecord
+    var exerciseName: String
     @Binding var isExpanded: Bool
     
     var body: some View {
@@ -29,15 +27,18 @@ struct RowHeaderView: View {
                 }
             }) {
                 Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                    .frame(width: 25, height: 25)
             }
             .foregroundStyle(.tertiary)
             .symbolVariant(.circle)
             .contentTransition(.symbolEffect(.replace.downUp.byLayer))
             .buttonStyle(.plain)
             
-            Text(exercise.template.name)
+            Text(exerciseName)
                 .font(.headline)
                 .foregroundStyle(.primary)
+                .lineLimit(1)
+                .truncationMode(.tail)
             
             Spacer()
             
@@ -49,6 +50,6 @@ struct RowHeaderView: View {
             .buttonStyle(.plain)
         }
         .fixedSize(horizontal: false, vertical: true)
-        .frame(maxHeight: 24)
+        .frame(maxHeight: 25)
     }
 }

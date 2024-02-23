@@ -16,6 +16,7 @@ public extension CGFloat {
     static let exerciseTemplatePreviewImageCornerRadius: CGFloat = 16.0
     static let customTabBarHeight: CGFloat = 55.0
     static let sheetCornerRadius: CGFloat = 15.0
+    static let InitialSheetDetentHeight: CGFloat = 110.0
 }
 
 @MainActor

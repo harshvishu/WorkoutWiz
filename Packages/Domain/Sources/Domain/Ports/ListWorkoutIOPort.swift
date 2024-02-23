@@ -16,7 +16,7 @@ public enum ListWorkoutFilter {
 }
 
 public protocol ListWorkoutIOPort: AnyObject {
-    func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [WorkoutRecord]
+    func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [Workout]
 //    func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [Date: [WorkoutRecord]]
-    func deleteWorkouts(_ workouts: [WorkoutRecord]) async throws -> Bool
+    func deleteWorkouts(_ workouts: [Workout]) async throws -> Bool
 }

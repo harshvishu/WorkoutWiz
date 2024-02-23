@@ -24,7 +24,7 @@ public final class SaveDataManager {
         self.saveDataUseCase = saveDataUseCase
     }
     
-    public func createDataFor(exerciseName name: String, sets: [ExerciseSet]) async {
+    public func createDataFor(exerciseName name: String, sets: [Rep]) async {
         do {
             _ = try await saveDataUseCase?.createSaveDataFor(exerciseName: name, sets: sets)
         } catch (SaveDataError.createFailed(.duplicate)) {

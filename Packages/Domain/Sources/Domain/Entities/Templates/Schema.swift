@@ -57,6 +57,7 @@ public enum ExerciseMuscles: String, Hashable, Equatable, CaseIterable, Codable 
     case shoulders = "shoulders"
     case traps = "traps"
     case triceps = "triceps"
+    case none = "none"
 }
 
 public enum ExerciseCategory: String, Hashable, Equatable, CaseIterable, Codable {
@@ -67,12 +68,13 @@ public enum ExerciseCategory: String, Hashable, Equatable, CaseIterable, Codable
     case olympicWeightlifting = "olympic weightlifting"
     case strongman = "strongman"
     case plyometrics = "plyometrics"
+    case none = "none"
 }
 
 public extension ExerciseCategory {
     func met(vigorous: Bool = false) -> Double {
         switch self {
-        case .powerlifting, .strongman, .strength:
+        case .powerlifting, .strongman, .strength, .none:
             vigorous ? 6 : 3.5
         case .stretching:
             vigorous ? 2.8 : 2.3
@@ -95,16 +97,8 @@ public extension ExerciseCategory {
             "dumbbell"
         case .plyometrics:
             "figure.track.and.field"
-        case .strength, .powerlifting, .strongman:
+        case .strength, .powerlifting, .strongman, .none:
             "figure.strengthtraining.traditional"
         }
     }
 }
-
-//public func caloriesBurned(met: Double, weight: Double, rep: Int) -> Double {
-//    (met * 3.5 * weight * Double(rep)) / 200
-//}
-//
-//public func caloriesBurned(met: Double, weight: Double, duration: TimeInterval) -> Double {
-//    (met * 3.5 * weight * duration) / 200
-//}

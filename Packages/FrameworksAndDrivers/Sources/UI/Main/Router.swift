@@ -13,9 +13,10 @@ import Domain
 
 /// Navigation view for Router (NavigationStack)
 public enum RouterDestination: Hashable {
-    case workoutDetails(workout: WorkoutRecord)
+    case workoutDetails(workout: Workout)
     case listExercise
     case exerciseDetails(ExerciseTemplate)
+    case newWorkout
 }
 
 /// View for Sheets
@@ -26,8 +27,7 @@ public enum SheetDestination: Identifiable {
     }
 }
 
-
-@MainActor
+//@MainActor
 @Observable public final class RouterPath {
     public var path: [RouterDestination] = []
     public var presentedSheet: SheetDestination?
@@ -39,11 +39,13 @@ public enum SheetDestination: Identifiable {
     }
 }
 
-@MainActor
+//@MainActor
 public extension View {
     func withAppRouter() -> some View {
         navigationDestination(for: RouterDestination.self) { destination in
             switch destination {
+            case .newWorkout:
+                WorkoutEditorView()
             case .workoutDetails(let workout):
                 WorkoutRowView(workout: workout)
             case .listExercise:

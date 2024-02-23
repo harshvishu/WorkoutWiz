@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol SaveDataIOPort {
-    func createSaveDataFor(exerciseName name: String, sets: [ExerciseSet]) async throws -> SaveDataRecord?
+    func createSaveDataFor(exerciseName name: String, sets: [Rep]) async throws -> SaveDataRecord?
     func updateSaveDataFor(record: SaveDataRecord) async throws -> SaveDataRecord?
     func readSavedDataFor(exerciseName name: String) async -> SaveDataRecord?
     func readAllSavedData() async -> [SaveDataRecord]

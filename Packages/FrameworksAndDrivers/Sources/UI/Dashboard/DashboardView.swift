@@ -19,24 +19,43 @@ struct DashboardView: View {
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
     
-    @State private var resetScroll: Day? = nil
+    @Environment(AppState.self) private var appState
+    @Environment(RouterPath.self) private var routerPath
     
+    @State private var resetScroll: Day? = nil
+
     var body: some View {
         ZStack {
+            // Main Scroll View
             ScrollViewReader { proxy in
-                ZStack(alignment: .top) {
+                ZStack(alignment: .bottomTrailing) {
                     List {
                         ListWorkoutView(filter: .date(.now), grouping: false)
+                            .scrollContentBackground(.hidden)
                     }
+//                    Button(action: {
+//                        routerPath.navigate(to: .newWorkout)
+//                    }, label: {
+//                        Image(systemName: "plus")
+//                            .foregroundStyle(.secondary)
+////                            .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 360 + 45))
+//                    })
+//                    .font(.title)
+//                    .foregroundStyle(.primary)
+//                    .buttonStyle(.bordered)
+//                    .buttonBorderShape(.circle)
+//                    .padding([.trailing, .bottom])
                 }
             }
             .safeAreaInset(edge: .bottom, content: {
                 EmptyView()
-                    .frame(height: .customTabBarHeight)
+                    .frame(height: 0)
+//                    .frame(height: .customTabBarHeight)
             })
             .listStyle(.plain)
             .listSectionSeparator(.hidden)
             .scrollIndicators(.hidden)
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
                     Image(.equipment4)
@@ -60,19 +79,19 @@ struct DashboardView: View {
                         .symbolEffect(.pulse.byLayer, value: isPresented)
                 }
             }
-            .onChange(of: isPresented) { _, isPresented in
-                //            if !isPresented {
-                //                viewModel.didSelect(exercises: getSelectedExercises())
-                //            }
-            }
         }
     }
 }
 
 #Preview {
+    @State var appscreen = AppScreen.dashboard
+    
     return NavigationStack {
-        DashboardView()
-            .previewBorder()
-            .withPreviewEnvironment()
+        ZStack(alignment: .bottom) {
+            DashboardView()
+                .previewBorder()
+            CustomTabBar(selectedScreen: $appscreen, popToRootScreen: $appscreen)
+        }
+        .withPreviewEnvironment()
     }
 }

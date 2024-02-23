@@ -20,7 +20,7 @@ public final class SaveDataUseCase: SaveDataIOPort {
         await saveDataRepository.readSaveData()
     }
     
-    public func createSaveDataFor(exerciseName name: String, sets: [ExerciseSet]) async throws -> SaveDataRecord? {
+    public func createSaveDataFor(exerciseName name: String, sets: [Rep]) async throws -> SaveDataRecord? {
         return try await saveDataRepository.createRecord(exerciseName: name, sets: sets)
     }
     

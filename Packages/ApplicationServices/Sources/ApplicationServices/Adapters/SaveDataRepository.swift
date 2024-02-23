@@ -11,6 +11,6 @@ import Domain
 public protocol SaveDataRepository {
     func readSaveData() async -> [SaveDataRecord]
     func readSaveData(forExerciseName name: String) async -> SaveDataRecord?
-    func createRecord(exerciseName name: String, sets: [ExerciseSet]) async throws -> SaveDataRecord?
+    func createRecord(exerciseName name: String, sets: [Rep]) async throws -> SaveDataRecord?
     func update(record: SaveDataRecord) async throws -> SaveDataRecord?
 }

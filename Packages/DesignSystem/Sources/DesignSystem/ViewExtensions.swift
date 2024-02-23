@@ -20,8 +20,8 @@ public extension View {
         UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
     }
     
-    func print(_ value: Any) -> Self {
-        Swift.print(value)
+    func printView(_ value: Any) -> Self {
+        print(value)
         return self
     }
     
@@ -33,8 +33,8 @@ public extension View {
     }
     
     @discardableResult
-    func debugPrint(_ value: Any) -> Self {
-        debugAction { Swift.print(value) }
+    func debugPrintView(_ value: Any) -> Self {
+        debugAction { print(value) }
     }
     
     func debugModifier<T: View>(_ modifier: (Self) -> T) -> some View {
@@ -274,31 +274,5 @@ struct ConditionalView: ViewModifier {
                 EmptyView()
             }
         }
-    }
-}
-
-// MARK: - Animations
-
-public extension Animation {
-    static func customSpring() -> Animation {
-        return Animation.spring(response: 0.55, dampingFraction: 0.45, blendDuration: 0.25)
-    }
-    
-    static func easeOut(duration: Double = 0.3) -> Animation {
-        return Animation.timingCurve(0.17, 0.67, 0.83, 0.67, duration: duration)
-    }
-}
-
-public func withCustomSpring<T>(_ action: @escaping () -> T) -> T {
-    withAnimation(.customSpring(), action)
-}
-
-public func withEaseOut<T>(_ duration: Double = 0.3, _ action: @escaping () -> T) -> T {
-    withAnimation(.easeOut(duration: duration), action)
-}
-
-public extension UIView {
-    var allSubViews: [UIView] {
-        subviews.flatMap { [$0] + $0.subviews }
     }
 }

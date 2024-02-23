@@ -12,7 +12,7 @@ import DesignSystem
 struct WorkoutRowView: View {
     @Environment(RouterPath.self) var routerPath
     
-    var workout: WorkoutRecord
+    var workout: Workout
     
     var body: some View {
         VStack {
@@ -36,8 +36,8 @@ struct WorkoutRowView: View {
                 
                 
                 // MARK: Tags
-                if let primaryMuscle = workout.abbreviatedMuscle() {
-                    Text(primaryMuscle.rawValue)
+                if workout.abbreviatedMuscle != .none {
+                    Text(workout.abbreviatedMuscle.rawValue)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .previewBorder(.red.opacity(0.2))
@@ -57,7 +57,7 @@ struct WorkoutRowView: View {
             Divider()
             
             HStack(spacing: 0) {
-                let energy =  Measurement(value: workout.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
+                let energy =  Measurement(value: workout.calories, unit: UnitEnergy.kilocalories)
                 Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
                     .frame(maxWidth: .infinity)
                     .previewBorder(.red.opacity(0.2))
@@ -73,13 +73,14 @@ struct WorkoutRowView: View {
                     .frame(maxWidth: .infinity)
                     .previewBorder(.red.opacity(0.2))
                 
-                if let abbreviatedCategory = workout.abbreviatedCategory() {
+                // TODO: Fix
+                if workout.abbreviatedCategory != .none {
                     Circle()
                         .fill()
                         .frame(width: 4)
                         .previewBorder(.red.opacity(0.2))
                     
-                    Label(abbreviatedCategory.rawValue, systemImage: workout.iconForCategory())
+                    Label(workout.abbreviatedCategory.rawValue, systemImage: Workout.iconFor(category: workout.abbreviatedCategory))
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
                         .frame(maxWidth: .infinity)
@@ -100,10 +101,9 @@ struct WorkoutRowView: View {
         .padding(.listRowContentInset)
         .background {
             RoundedRectangle(cornerRadius: 16)
-                .fill(.windowBackground)
+                .fill(.background)
                 .stroke(.tertiary, lineWidth: 0.5)
-                .shadow(color: .secondary.opacity(0.1), radius: 20, x: 0.0, y: 2.0)
-
+                .shadow(color: .secondary.opacity(0.1), radius: 0, x: 0.0, y: 2.0)
         }
         .listRowBackground(Color.clear)
         .listRowSeparator(.hidden)
@@ -111,7 +111,7 @@ struct WorkoutRowView: View {
     }
 }
 
-#Preview {
-    WorkoutRowView(workout: .mock(0))
-        .withPreviewEnvironment()
-}
+//#Preview {
+//    WorkoutRowView(workout: .mock(0))
+//        .withPreviewEnvironment()
+//}

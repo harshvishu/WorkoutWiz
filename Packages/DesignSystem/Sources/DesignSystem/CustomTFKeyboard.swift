@@ -7,7 +7,6 @@
 
 import SwiftUI
 import OSLog
-import CustomKeyboardKit
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "\(#file)")
 
@@ -24,22 +23,11 @@ public enum CustomKeyboardType {
     }
 }
 
-public extension TextField {
-    @ViewBuilder
-    func setKeyboard(_ keyboard: CustomKeyboardType) -> some View {
-        switch keyboard {
-        case .system(let type):
-            self.keyboardType(type)
-        case .counter(let repCounter, let nextFieldHander, let showPeriod):
-            self.customKeyboard(.counter(repCounter, onNext: nextFieldHander, showPeriod: showPeriod))
-        }
-    }
-}
-
 public typealias Counter = (Int) -> ()
 public typealias NextFieldHander = () -> ()
+public typealias KeyInputValidaton = (UITextDocumentProxy, CustomKey) -> (Bool)
 
-fileprivate enum Key {
+public enum CustomKey: Equatable {
     case digit(Int)
     case period
     case submit
@@ -49,8 +37,10 @@ fileprivate enum Key {
     case empty
     case delete
     case next
+    case prev
+    case undo
     
-    var sfSymbol: String {
+    public var sfSymbol: String {
         switch self {
         case .period:
             "P"
@@ -67,74 +57,249 @@ fileprivate enum Key {
         case .submit:
             "arrow.turn.down.left"
         case .next:
-            "arrow.forward.square"
+            "arrow.forward"
+        case .prev:
+            "arrow.backward"
         case .delete:
             "delete.left.fill"
+        case .undo:
+            "arrow.uturn.backward"
         }
     }
 }
 
-extension CustomKeyboard {
-    static func counter(_ repCounter: Counter?, onNext nextFieldHandler: NextFieldHander? = nil, showPeriod: Bool = true) -> CustomKeyboard {
-        CustomKeyboardBuilder { textDocumentProxy, submit, playSystemFeedback in
-            let keys: [Key] = [.digit(1), .digit(2), .digit(3), .hideKeyboard,
-                               .digit(4), .digit(5), .digit(6), .plus,
-                               .digit(7), .digit(8), .digit(9), .minus,
-                               (showPeriod ? .period : .empty), .digit(0), .delete, (nextFieldHandler != nil ? .next : .submit)]
-            
-            let columns = [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ]
-            
-            LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(keys, id: \.sfSymbol) { k in
-                    Button(action: {
-                        switch k {
-                        case .empty:
-                            return
-                        case .period:
-                            textDocumentProxy.insertText(".")
-                        case .delete:
-                            textDocumentProxy.deleteBackward()
-                        case .minus:
-                            repCounter?(-1)
-                        case .plus:
-                            repCounter?(1)
-                        case .hideKeyboard, .submit:
-                            submit?()
-                        case .digit(let value):
-                            textDocumentProxy.insertText("\(value)")
-                        case .next:
-                            nextFieldHandler?()
-                        }
-                        playSystemFeedback?()
-                    }, label: {
-                        ZStack {
-                            Color.clear
-                            switch k {
-                            case .period:
-                                Text(".")
-                            case .digit(let value):
-                                Text("\(value)")
-                            case .empty:
-                                EmptyView()
-                            default:
-                                Image(systemName: k.sfSymbol)
-                            }
-                        }
+public typealias KeyPressHandler = (CustomKey) -> ()
+public typealias TimeChangeHandler = (TimeInterval) -> ()
+
+public enum RepInputMode {
+    case repCount
+    case timeCount
+}
+
+public struct RepInputKeyboard: View {
+    
+    @Binding private var value: String
+    @Binding private var mode: RepInputMode
+    @State private var timePickerModel = TimerPickerModel()
+
+    private var keyPressHandler : KeyPressHandler?
+    private var timeChangeHandler : TimeChangeHandler?
+    
+    public init(
+        value: Binding<String>,
+        mode: Binding<RepInputMode>,
+        keyPressHandler: KeyPressHandler? = nil,
+        timeChangeHandler: TimeChangeHandler? = nil
+    ) {
+        self._value = value
+        self._mode = mode
+        self.keyPressHandler = keyPressHandler
+        self.timeChangeHandler = timeChangeHandler
+    }
+    
+    public var body: some View {
+        Group {
+            switch mode {
+            case .repCount:
+                repInputControl
+            case .timeCount:
+                timeInputControl
+                    .onChange(of: timePickerModel.totalTimeForCurrentSelection, { oldValue, newValue in
+                        timeChangeHandler?(TimeInterval(newValue))
                     })
-                    .font(.title3)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .foregroundStyle(.primary)
-                    .buttonStyle(.borderless)
+            }
+        }
+        .foregroundStyle(.primary)
+        .frame(maxHeight: 240)
+        .padding([.leading, .bottom, .trailing])
+    }
+    
+    @ViewBuilder
+    var repInputControl: some View {
+        let keys: [CustomKey] = [.digit(1), .digit(2), .digit(3), .next,
+                                 .digit(4), .digit(5), .digit(6), .plus,
+                                 .digit(7), .digit(8), .digit(9), .minus,
+                                 .empty, .digit(0), .delete, .submit]
+        
+        let columns = [
+            GridItem(.flexible()),
+            GridItem(.flexible()),
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ]
+        
+        // TODO: Play feedback
+        LazyVGrid(columns: columns, spacing: 16) {
+            ForEach(keys, id: \.sfSymbol) { k in
+                Button(action: {
+                    keyPressHandler?(k)
+                }, label: {
+                    ZStack {
+                        Color.clear
+                        switch k {
+                        case .period:
+                            Text(".")
+                        case .digit(let value):
+                            Text("\(value)")
+                        case .empty:
+                            EmptyView()
+                        default:
+                            Image(systemName: k.sfSymbol)
+                        }
+                    }
+                })
+                .font(.title3)
+                .frame(maxWidth: .infinity)
+                .frame(height: 40)
+                .modifyIf(k != CustomKey.empty) {
+                    $0.buttonStyle(.bordered)
+                }
+                .modifyIf(k == CustomKey.empty) {
+                    $0.buttonStyle(.plain)
                 }
             }
-            .padding()
-            .backgroundStyle(.windowBackground)
+            .previewBorder()
         }
+    }
+    
+    
+    @ViewBuilder
+    var timeInputControl: some View {
+        let keys: [CustomKey] = [.next, .plus, .minus, .submit]
+        
+        let columns = [
+            GridItem(.flexible())
+        ]
+        
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            
+            HStack(spacing: 8) {
+                TimePickerView(model: $timePickerModel)
+                    .previewBorder()
+                
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(keys, id: \.sfSymbol) { k in
+                        Button(action: {
+                            keyPressHandler?(k)
+                        }, label: {
+                            ZStack {
+                                Color.clear
+                                switch k {
+                                case .period:
+                                    Text(".")
+                                case .digit(let value):
+                                    Text("\(value)")
+                                case .empty:
+                                    EmptyView()
+                                default:
+                                    Image(systemName: k.sfSymbol)
+                                }
+                            }
+                        })
+                        .font(.title3)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .modifyIf(k != CustomKey.empty) {
+                            $0.buttonStyle(.bordered)
+                        }
+                        .modifyIf(k == CustomKey.empty) {
+                            $0.buttonStyle(.plain)
+                        }
+                    }
+                }
+                .frame(width: (width - 24) / 4)
+                .previewBorder()
+            }
+        }
+    }
+}
+
+public struct TimeInputKeyboard: View {
+    
+    @Binding private var value: String
+    
+    private var keyPressHandler : KeyPressHandler?
+    private var timeChangeHandler : TimeChangeHandler?
+    
+    @State private var timePickerModel = TimerPickerModel()
+
+    public init(value: Binding<String>, keyPressHandler: KeyPressHandler? = nil) {
+        self._value = value
+        self.keyPressHandler = keyPressHandler
+    }
+    
+    public var body: some View {
+        timeInputControl
+            .onChange(of: timePickerModel.totalTimeForCurrentSelection, { oldValue, newValue in
+                timeChangeHandler?(TimeInterval(newValue))
+                print(newValue.asTimestamp)
+            })
+        .foregroundStyle(.primary)
+        .frame(maxHeight: 240)
+        .padding([.leading, .bottom, .trailing])
+    }
+    
+    
+    @ViewBuilder
+    var timeInputControl: some View {
+        let keys: [CustomKey] = [.next, .plus, .minus, .submit]
+        
+        let columns = [
+            GridItem(.flexible())
+        ]
+        
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            
+            HStack(spacing: 8) {
+                TimePickerView(model: $timePickerModel)
+                    .previewBorder()
+                
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(keys, id: \.sfSymbol) { k in
+                        Button(action: {
+                            keyPressHandler?(k)
+                        }, label: {
+                            ZStack {
+                                Color.clear
+                                switch k {
+                                case .period:
+                                    Text(".")
+                                case .digit(let value):
+                                    Text("\(value)")
+                                case .empty:
+                                    EmptyView()
+                                default:
+                                    Image(systemName: k.sfSymbol)
+                                }
+                            }
+                        })
+                        .font(.title3)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .modifyIf(k != CustomKey.empty) {
+                            $0.buttonStyle(.bordered)
+                        }
+                        .modifyIf(k == CustomKey.empty) {
+                            $0.buttonStyle(.plain)
+                        }
+                    }
+                }
+                .frame(width: (width - 24) / 4)
+                .previewBorder()
+            }
+        }
+    }
+}
+
+#Preview {
+    @State var value: String = "12"
+    @State var mode: RepInputMode = .timeCount
+    @State var mode2: RepInputMode = .repCount
+    
+    return VStack(spacing: 40) {
+        RepInputKeyboard(value: $value, mode: $mode)
+        RepInputKeyboard(value: $value, mode: $mode2)
     }
 }

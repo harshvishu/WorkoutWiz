@@ -11,24 +11,32 @@ import Foundation
 
 public final class MockWorkoutRepository: WorkoutRepository {
     
-    private var workouts: [WorkoutRecord] = [
-        WorkoutRecord(documentID: "100001", name: "Biceps", startDate: .distantPast, endDate: .distantFuture, duration: 500, notes: "best bicep workout", exercises: [
-            ExerciseRecord(documentID: "7000001", template: .mock_1, sets: [.init(exerciseID: UUID(), weight: 5, type: .rep, rep: 12), .init(exerciseID: UUID(), weight: 7.5, type: .rep, rep: 10), .init(exerciseID: UUID(), weight: 10, type: .rep, rep: 8)]),
-            ExerciseRecord(documentID: "7000002", template: .mock_1, sets: [.init(exerciseID: UUID(), weight: 5, type: .rep, rep: 12), .init(exerciseID: UUID(), weight: 7.5, type: .rep, rep: 10), .init(exerciseID: UUID(), weight: 10, type: .rep, rep: 8)])
-        ])
-    ]
+    private var workouts: [Workout] = []
     
     public init() {}
     
-    public func createOrUpdateWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord {
-        workouts.append(workout)
-        return workout
+    public func emptyWorkout() async -> Workout {
+        fatalError()
     }
-    public func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool {
-        workouts.removeAll(where: {$0.documentID == workout.documentID})
-        return true
+    
+    public func createOrUpdateWorkout(_ workout: Workout) async throws -> Bool {
+        return false
     }
-    public func fetchWorkouts(filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
+    public func deleteWorkout(_ workout: Workout) async throws -> Bool {
+        return false
+    }
+    public func add(set: Rep, toExercise exercise: Exercise, toWorkout workout: Workout) async throws -> Bool {
+        return false
+    }
+    
+    public func add(exercise: Exercise, toWorkout workout: Workout) async throws -> Bool {
+        return false
+    }
+    
+    public func update(exercise: Exercise) async throws -> Bool {
+        return false
+    }
+    public func fetchWorkouts(filter: ListWorkoutFilter) async throws -> [Workout] {
         workouts
     }
 }

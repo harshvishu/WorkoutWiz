@@ -9,7 +9,10 @@ import Foundation
 import Domain
 
 public protocol WorkoutRepository {
-    func createOrUpdateWorkout(_ workout: WorkoutRecord) async throws -> WorkoutRecord 
-    func deleteWorkout(_ workout: WorkoutRecord) async throws -> Bool
-    func fetchWorkouts(filter: ListWorkoutFilter) async throws -> [WorkoutRecord]
+    func emptyWorkout() async -> Workout 
+    func createOrUpdateWorkout(_ workout: Workout) async throws -> Bool
+    func add(exercise: Exercise, toWorkout workout: Workout) async throws -> Bool
+    func add(set: Rep, toExercise exercise: Exercise, toWorkout workout: Workout) async throws -> Bool
+    func deleteWorkout(_ workout: Workout) async throws -> Bool
+    func fetchWorkouts(filter: ListWorkoutFilter) async throws -> [Workout]
 }

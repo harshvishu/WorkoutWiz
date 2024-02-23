@@ -93,4 +93,3 @@ public struct VerticalLabeledContentStyle: LabeledContentStyle {
 public extension LabeledContentStyle where Self == VerticalLabeledContentStyle {
     static var vertical: VerticalLabeledContentStyle { .init() }
 }
-

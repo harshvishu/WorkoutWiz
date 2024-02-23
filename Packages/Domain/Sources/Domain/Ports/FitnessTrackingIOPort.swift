@@ -8,6 +8,6 @@
 import Foundation
 
 public protocol FitnessTrackingIOPort {
-    func trackCaloriesBurned(metValue: Double, weight: Double, type: SetType, duration: TimeInterval, rep: Int) -> Double
-    func isValid(set: ExerciseSet, forExercise exercise: ExerciseRecord) -> Bool
+    func trackCaloriesBurned(metValue: Double, weight: Double, repCountUnit: RepCountUnit, duration: TimeInterval, rep: Int) -> Double
+    func isValid(set: Rep, forExercise exercise: Exercise) -> Bool
 }

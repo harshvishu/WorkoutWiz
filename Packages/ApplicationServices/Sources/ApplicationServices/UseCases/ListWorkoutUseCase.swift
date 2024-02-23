@@ -19,7 +19,7 @@ public final class ListWorkoutUseCase: ListWorkoutIOPort {
     }
     
     @MainActor
-    public func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [WorkoutRecord] {
+    public func fetchWorkouts(_ filter: ListWorkoutFilter) async throws -> [Workout] {
         let workouts = try await workoutRepository.fetchWorkouts(filter: filter)
         /*
         logger.debug("Total workouts: \(workouts.count)")
@@ -45,7 +45,7 @@ public final class ListWorkoutUseCase: ListWorkoutIOPort {
     }
     
     @MainActor
-    public func deleteWorkouts(_ workouts: [WorkoutRecord]) async throws -> Bool {
+    public func deleteWorkouts(_ workouts: [Workout]) async throws -> Bool {
         var status = true
         for workout in workouts {
             let op = try await workoutRepository.deleteWorkout(workout)

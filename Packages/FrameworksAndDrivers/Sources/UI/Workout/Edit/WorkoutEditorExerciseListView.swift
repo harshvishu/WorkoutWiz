@@ -17,22 +17,25 @@ struct WorkoutEditorExerciseListView: View {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorExerciseListView.self))
     
     @Environment(WorkoutEditorViewModel.self) private var viewModel
-    @Environment(RouterPath.self) private var routerPath
+    
+    var exercises: [Exercise]
+    
+    init(exercises: [Exercise]) {
+        self.exercises = exercises
+    }
     
     var body: some View {    
-        @Bindable var viewModel = viewModel
+//        @Bindable var viewModel = viewModel
         
         Section {
             // TODO: replace with an enum to handle the states
-            
-            if viewModel.workout.exercises.isEmpty {
+            if exercises.isEmpty  {
                emptyStateView
             } else {
-                ForEach(viewModel.workout.exercises) {
-                    ExerciseSetRowView(exercise: $0)
+                ForEach(exercises) {
+                    ExerciseRowView(exercise: $0)
                 }
             }
-            
         }
         .listRowSeparator(.hidden)
         .listRowInsets(.listRowInset)
@@ -62,7 +65,7 @@ fileprivate extension WorkoutEditorExerciseListView {
 
 #Preview {
     @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    return WorkoutEditorExerciseListView()
+    return WorkoutEditorExerciseListView(exercises: [])
         .withPreviewEnvironment()
         .environment(viewModel)
 }

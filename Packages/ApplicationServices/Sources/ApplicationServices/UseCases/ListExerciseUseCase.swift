@@ -23,4 +23,12 @@ public final class ListExerciseUseCase: ListExerciseIOPort {
         exercise.images.map({exerciseRepository.imageBaseURL.appending(path: $0)})
     }
     
+    public func url(forImageName imageName: String) -> URL {
+        exerciseRepository.imageBaseURL.appending(path: imageName)
+    }
+    
+    public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
+        await exerciseRepository.fetchExercise(forID: id)
+    }
+    
 }

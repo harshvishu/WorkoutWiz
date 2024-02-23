@@ -18,6 +18,12 @@ public extension String {
     }
 }
 
+public extension Optional {
+    func orDefault(_ value: Wrapped) -> Wrapped {
+        self ?? value
+    }
+}
+
 public extension Comparable {
     func clamped(to limits: ClosedRange<Self>) -> Self {
         return min(max(self, limits.lowerBound), limits.upperBound)
@@ -28,5 +34,11 @@ public extension Comparable {
 public extension Logger {
     func logDebug(_ object: Any) {
         dump(object)
+    }
+}
+
+public extension Bool {
+    func not() -> Bool {
+        !self
     }
 }

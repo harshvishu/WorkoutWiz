@@ -10,24 +10,57 @@ import Domain
 import ApplicationServices
 import OSLog
 
+class StructWrapper<T>: NSObject {
+
+    let value: T
+
+    init(_ _struct: T) {
+        self.value = _struct
+    }
+}
+
 public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: UserDefaultsExerciseTemplateRepository.self))
     
-    public var imageBaseURL: URL = URL(string: "https://raw.githubusercontent.com/harshvishu/free-exercise-db/main/exercises/")!
+    public let imageBaseURL: URL = URL(string: "https://raw.githubusercontent.com/harshvishu/free-exercise-db/main/exercises/")!
 
+    // private properties
+    private var cache = NSCache<NSString, StructWrapper<ExerciseTemplate>>()
+    
     public init() {}
     
     public func fetchExercises() async -> [Domain.ExerciseTemplate] {
-        // TODO: Must Call SwiftData
         let exersices = await readJSONFromBundle()
+//        Task(priority: .background) {
+//            for exercise in exersices {
+//                cache.setObject(StructWrapper(exercise), forKey: NSString(string: exercise.id))
+//            }
+//        }
         return exersices
+    }
+    
+    public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
+        let key = NSString(string: id)
+        if let cachedVersion = cache.object(forKey: key) {
+            // use the cached version
+            return cachedVersion.value
+        } else {
+            // create it from scratch then store in the cache
+            let allExercises = await fetchExercises()
+            if let exercise = allExercises.first(where: {$0.id == id}) {
+                let wrappedVersion = StructWrapper(exercise)
+                cache.setObject(wrappedVersion, forKey: key)
+                return exercise
+            }
+        }
+        return nil
     }
 }
 
 fileprivate extension UserDefaultsExerciseTemplateRepository {
     func readJSONFromBundle() async -> [ExerciseTemplate] {
         let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
-        logger.debug("\(data)")
+//        logger.debug("\(data)")
 //        Swift.print(Set(data.compactMap(\.category)))
         return data
     }

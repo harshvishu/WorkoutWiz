@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CustomKeyboardKit
+//import CustomKeyboardKit
 
 public struct TextFieldDynamicWidth: View {
     public init(
@@ -36,10 +36,13 @@ public struct TextFieldDynamicWidth: View {
         ZStack {
             Text(text == "" ? title : text).background(GlobalGeometryGetter(rect: $textRect)).layoutPriority(1).opacity(0)
             HStack {
-                TextField(title, text: $text, onEditingChanged: onEditingChanged, onCommit: onCommit)
-                    .setKeyboard(keyboardType)
+                TextField(title, text: $text, onCommit: onCommit)
+//                    .setKeyboard(keyboardType)
+                    .onSubmit(of: .text) {
+                        onEditingChanged(true)
+                    }
                     .frame(width: textRect.width)
-                    .onSubmitCustomKeyboard(action: onCommit)
+//                    .onSubmitCustomKeyboard(action: onCommit)
             }
         }
     }

@@ -9,6 +9,7 @@ import SwiftUI
 import DesignSystem
 import Persistence
 import ApplicationServices
+import Domain
 
 struct WorkoutEditorSheetHeaderView: View {
     @Environment(WorkoutEditorViewModel.self) private var viewModel
@@ -20,7 +21,7 @@ struct WorkoutEditorSheetHeaderView: View {
         HStack(spacing: 0) {
             
             /// Show elapsed time if workout has satarted
-            if viewModel.isTimerRunning {
+            if viewModel.isWorkoutActive {
                 Button(action: {
                     /// Show a popup timer with options to reset the time
                     /// A Context Menu
@@ -32,15 +33,16 @@ struct WorkoutEditorSheetHeaderView: View {
                         switch viewState {
                         case .timer:
                             Group {
-                                Text(viewModel.workout.startDate, style: .timer)
-                                    .contentTransition(.numericText(value: 1))
+                                // TODO: Fix the timer
+                                Text(Date().timeIntervalSince(viewModel.startDate).formattedElapsedTime())
+                                    .contentTransition(.numericText(countsDown: true))
                                 Image(systemName: "timer")
                             }
                             .fixedSize()
                             .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         case .calories:
                             Group {
-                                let energy =  Measurement(value: viewModel.workout.estimatedCaloriesBurned(), unit: UnitEnergy.kilocalories)
+                                let energy =  Measurement(value: viewModel.calories, unit: UnitEnergy.kilocalories)
                                 Text(energy.formatted(.measurement(width: .abbreviated, usage: .workout)))
                                 Image(systemName: "bolt.fill")
                             }
@@ -76,7 +78,7 @@ struct WorkoutEditorSheetHeaderView: View {
                     .previewBorder()
             }
         }
-        .animation(.easeInOut, value:  viewModel.isTimerRunning)
+        .animation(.easeInOut, value:  viewModel.isWorkoutActive)
         .onAppear {
             isAnimating = true
         }
@@ -103,9 +105,4 @@ fileprivate enum ViewState {
     return WorkoutEditorSheetHeaderView()
         .withPreviewEnvironment()
         .environment(viewModel)
-        .onTapGesture {
-            Task {
-                await viewModel.startTimer()
-            }
-        }
 }

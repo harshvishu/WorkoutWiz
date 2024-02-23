@@ -30,6 +30,7 @@ public struct RootView: View {
             }
             .task {
                 initializeCustomTabBar()
+                initializePopupContainer()
             }
     }
 }
@@ -38,6 +39,11 @@ extension RootView {
     fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
         sceneDelegate.addTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, appState: appState)
+    }
+    
+    fileprivate func initializePopupContainer() {
+        guard sceneDelegate.popWindow == nil else {return}
+        sceneDelegate.addPopupContainerView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, appState: appState)
     }
 }
 

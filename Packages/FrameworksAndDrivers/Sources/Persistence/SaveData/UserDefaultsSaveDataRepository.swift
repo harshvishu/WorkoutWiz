@@ -14,7 +14,7 @@ public final class UserDefaultsSaveDataRepository: SaveDataRepository {
         return nil
     }
     
-    public func createRecord(exerciseName name: String, sets: [ExerciseSet]) async throws -> SaveDataRecord? {
+    public func createRecord(exerciseName name: String, sets: [Rep]) async throws -> SaveDataRecord? {
         return nil
     }
     

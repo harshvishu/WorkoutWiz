@@ -22,8 +22,8 @@ final class ListWorkoutViewModel {
 
     private var filter: ListWorkoutFilter
     private var listWorkoutUseCase: ListWorkoutIOPort?
-    private var messageQueue: ConcreteMessageQueue<[WorkoutRecord]>?
-    private var workouts: [WorkoutRecord] = []
+    private var messageQueue: ConcreteMessageQueue<[Workout]>?
+    private var workouts: [Workout] = []
     private var grouping: Bool
 
     public init(
@@ -91,7 +91,7 @@ extension ListWorkoutViewModel {
     enum ViewState {
         case loading
         case empty
-        case display(records: [WorkoutRecord])
-        case displayGrouped(records: [Date : [WorkoutRecord]])
+        case display(records: [Workout])
+        case displayGrouped(records: [Date : [Workout]])
     }
 }

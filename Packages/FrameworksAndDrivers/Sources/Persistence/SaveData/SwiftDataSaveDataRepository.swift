@@ -35,7 +35,7 @@ public final class SwiftDataSaveDataRepository: SaveDataRepository {
         return allRecords?.first.map(SaveDataRecord.init)
     }
     
-    public func createRecord(exerciseName name: String, sets: [ExerciseSet]) async throws -> SaveDataRecord? {
+    public func createRecord(exerciseName name: String, sets: [Rep]) async throws -> SaveDataRecord? {
         let record = SaveDataRecord(exerciseName: name, sets: sets)
         let descriptor = fetchDescriptor(filterByExerciseName: name, fetchLimit: 1)
         
@@ -93,9 +93,9 @@ class SD_SaveDataRecord {
     
     @Relationship(deleteRule: .cascade)
     var exerciseName: String
-    var sets: [ExerciseSet]
+    var sets: [Rep]
     
-    init(documentID: String, date: Date = .now, exerciseName: String, sets: [ExerciseSet]) {
+    init(documentID: String, date: Date = .now, exerciseName: String, sets: [Rep]) {
         self.documentID = documentID
         self.date = date
         self.exerciseName = exerciseName

@@ -8,17 +8,24 @@
 import Foundation
 
 /// Use this to save the information on the execise when last performed
-/// 
-public struct SaveDataRecord {
+
+public struct SaveDataRecord: Sendable {
     public let id: UUID = UUID()
     
     public var documentID: String
     public var date: Date
     public var exerciseName: String
-    public var sets: [ExerciseSet]
+    public var sets: [Rep]
     
-    public init(documentID: String = UUID().uuidString, date: Date = .now, exerciseName: String, sets: [ExerciseSet]) {
+    public init(documentID: String, date: Date = .now, exerciseName: String, sets: [Rep]) {
         self.documentID = documentID
+        self.date = date
+        self.exerciseName = exerciseName
+        self.sets = sets
+    }   
+    
+    public init(date: Date = .now, exerciseName: String, sets: [Rep]) {
+        self.documentID = id.uuidString
         self.date = date
         self.exerciseName = exerciseName
         self.sets = sets
