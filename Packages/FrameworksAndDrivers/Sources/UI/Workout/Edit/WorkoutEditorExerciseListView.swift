@@ -14,19 +14,13 @@ import SwiftData
 import OSLog
 
 struct WorkoutEditorExerciseListView: View {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorExerciseListView.self))
-    
-    @Environment(WorkoutEditorViewModel.self) private var viewModel
-    
     var exercises: [Exercise]
     
     init(exercises: [Exercise]) {
         self.exercises = exercises
     }
     
-    var body: some View {    
-//        @Bindable var viewModel = viewModel
-        
+    var body: some View {            
         Section {
             // TODO: replace with an enum to handle the states
             if exercises.isEmpty  {
@@ -64,8 +58,6 @@ fileprivate extension WorkoutEditorExerciseListView {
 }
 
 #Preview {
-    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
     return WorkoutEditorExerciseListView(exercises: [])
         .withPreviewEnvironment()
-        .environment(viewModel)
 }

@@ -8,6 +8,7 @@
 import UIKit
 import SwiftUI
 import DesignSystem
+import ComposableArchitecture
 
 // MARK: Scene Delegate
 @Observable
@@ -21,15 +22,16 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     public func addTabBar(
-        selectedScreen: Binding<AppScreen>,
-        popToRootScreen: Binding<AppScreen>,
+//        selectedScreen: Binding<AppScreen>,
+//        popToRootScreen: Binding<AppScreen>,
+        store: StoreOf<TabBarFeature>,
         appState: AppState
     ) {
         guard let scene = windowScene else {return}
         
         let tabBarController = UIHostingController(
             rootView:
-                CustomTabBar(selectedScreen: selectedScreen, popToRootScreen: popToRootScreen)
+                CustomTabBar(store: store)
                 .frame(maxHeight: .infinity, alignment: .bottom)
                 .environment(appState)
                 .addKeyboardVisibilityToEnvironment()
@@ -43,8 +45,6 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }   
     
     public func addPopupContainerView(
-        selectedScreen: Binding<AppScreen>,
-        popToRootScreen: Binding<AppScreen>,
         appState: AppState
     ) {
         guard let scene = windowScene else {return}

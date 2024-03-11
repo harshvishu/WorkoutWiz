@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class Workout: Identifiable {
+public final class Workout: Identifiable, Equatable {
     @Attribute(.unique) public var id: UUID = UUID()
     
     public var name: String = ""
@@ -53,6 +53,7 @@ extension Workout: Hashable {
     }
 }
 
+// TODO: Move it to comply with Architecture pattern
 public extension Workout {
     static func estimatedCaloriesBurned(exercises: [Exercise]) -> Double {
         exercises.reduce(0.0, {$0 + $1.calories})

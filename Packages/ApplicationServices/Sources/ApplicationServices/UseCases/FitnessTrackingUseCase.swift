@@ -50,4 +50,29 @@ public class FitnessTrackingUseCase: FitnessTrackingIOPort {
 //        
 //        return weightValidation && repValidation && timeValidation
     }
+    
+    public func estimatedCaloriesBurned(exercises: [Exercise]) -> Double {
+        exercises.reduce(0.0, {$0 + $1.calories})
+    }
+    
+    public func abbreviatedCategory(exercises: [Exercise]) -> ExerciseCategory? {
+        let wordCounts = exercises.reduce(into: [:]) { counts, word in
+            counts[word.template?.category ?? .none, default: 0] += 1
+        }
+        
+        return wordCounts.max { $0.value < $1.value }?.key
+    }
+    
+    public func iconFor(category: ExerciseCategory?) -> String {
+        category?.iconForCategory() ?? "figure.core.training"
+    }
+
+    public func abbreviatedMuscle(exercises: [Exercise]) -> ExerciseMuscles? {
+        let wordCounts = exercises
+            .flatMap({$0.template?.primaryMuscles ?? [ExerciseMuscles.none]})
+            .reduce(into: [:]) { counts, word in
+                counts[word, default: 0] += 1
+            }
+        return wordCounts.max { $0.value < $1.value }?.key
+    }
 }

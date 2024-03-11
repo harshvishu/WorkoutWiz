@@ -15,13 +15,15 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Domain"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.9.2")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "DesignSystem",
-            dependencies: ["Domain"],
+            dependencies: ["Domain",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")],
             resources: [.copy("Resources/Colors.xcassets")]
         ),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),

@@ -27,6 +27,7 @@ fileprivate struct ModelContainerModifier: ViewModifier {
         } else {
             self.configurationProvider = SwiftDataModelConfigurationProvider.shared
         }
+        self.configurationProvider.container.mainContext.autosaveEnabled = true
     }
     
     func body(content: Content) -> some View {

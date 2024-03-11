@@ -1,5 +1,5 @@
 //
-//  ListWorkoutView.swift
+//  WorkoutsListView.swift
 //
 //
 //  Created by harsh vishwakarma on 23/12/23.
@@ -12,37 +12,102 @@ import Persistence
 import DesignSystem
 import OSLog
 import SwiftData
+import ComposableArchitecture
 
-struct ListWorkoutView: View {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: ListWorkoutView.self))
+
+enum Filter: Equatable {
+    case none(limit: Int? = nil)
+    case today(limit: Int? = nil)
+    case date(Date, limit: Int? = nil)
+    case dates(date1: Date, date2: Date, limit: Int? = nil)
+}
+
+@Reducer
+public struct WorkoutsListFeature {
+    @ObservableState
+    public struct State: Equatable {
+        var workouts: [Workout] = []
+        var grouping: Bool = false
+        
+        public init() {
+            fetchWorkouts()
+        }
+        
+//        public init(workouts: [Workout]) {
+//            self.workouts = workouts
+//        }
+        
+        // Database ops
+        mutating func fetchWorkouts() {
+            @Dependency(\.workoutDatabase.fetchAll) var context
+            do {
+                self.workouts = try context()
+            } catch {
+                print(error)
+                self.workouts = []
+            }
+        }
+        
+        mutating func deleteWorkout(_ workout: Workout) {
+            @Dependency(\.workoutDatabase.delete) var delete
+            do {
+                try delete(workout)
+            } catch {
+                print(error)
+                self.workouts = []
+            }
+        }
+    }
+    
+    public enum Action {
+        case delegate(Delegate)
+        case fetchWorkouts
+        case delete(workout: Workout)
+        
+        @CasePathable
+        public enum Delegate {
+            case editWorkout(Workout)
+            case workoutListInvalidated
+        }
+    }
+    
+    public var body: some Reducer<State, Action> {
+        Reduce { state, action in
+            switch action {
+            case let .delegate(action):
+                switch action {
+                case .workoutListInvalidated:
+                    return .send(.fetchWorkouts)
+                case .editWorkout(_):
+                    // update that particular workout
+                    return .none
+                }
+            case .fetchWorkouts:
+                state.fetchWorkouts()
+                return .none
+            case let .delete(workout):
+                state.deleteWorkout(workout)
+                return .send(.delegate(.workoutListInvalidated), animation: .default)
+            }
+        }
+    }
+}
+
+struct WorkoutsListView: View {
     
     @Environment(\.isPresented) var isPresented
-    @Environment(\.modelContext) private var modelContext
     @Environment(RouterPath.self) var routerPath
     @Environment(AppState.self) private var appState
     
-    @State var viewModel: ListWorkoutViewModel
-    
-    @Query(sort: [SortDescriptor(\Workout.startDate, order: .reverse)], transaction: Transaction(animation: .easeInOut)) var workouts: [Workout]
-    @State private var viewState: ViewState = .loading
-    
-    public init(
-        filter: ListWorkoutFilter,
-        grouping: Bool
-    ) {
-        self._viewModel = .init(
-            initialValue: ListWorkoutViewModel(filter: filter, grouping: grouping)
-        )
-    }
+    let store: StoreOf<WorkoutsListFeature>
     
     var body: some View {
             
             Section {
-                
-                ForEach(workouts, id: \.id) { workout in
+                ForEach(store.workouts, id: \.id) { workout in
                     WorkoutRowView(workout: workout)
                         .onTapGesture {
-                            appState.send(.openWorkout(workout))
+                            store.send(.delegate(.editWorkout(workout)), animation: .default)
                         }
                 }
                 .onDelete(perform: delete)
@@ -63,7 +128,7 @@ struct ListWorkoutView: View {
                 })
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
-                .opacity(workouts.isEmpty ? 1 : 0)
+                .opacity(store.workouts.isEmpty ? 1 : 0)
                 
             } header: {
                 HStack {
@@ -80,6 +145,9 @@ struct ListWorkoutView: View {
                 }
             }
             .listRowSeparator(.hidden)
+            .onAppear {
+                store.send(.fetchWorkouts)
+            }
             
             /*
              switch viewState {
@@ -191,23 +259,23 @@ struct ListWorkoutView: View {
     }
 }
 
-fileprivate extension ListWorkoutView {
+fileprivate extension WorkoutsListView {
     func delete(at indexSet: IndexSet) {
         for index in indexSet {
-            let workout = workouts[index]
-            modelContext.delete(workout)
+            let workout = store.workouts[index]
+            store.send(.delete(workout: workout))
         }
     }
 }
 
-#Preview {    
-    return ListWorkoutView(filter: .none, grouping: false)
-        .withPreviewEnvironment()
-}
-
-fileprivate enum ViewState {
-    case loading
-    case empty
-    case display(records: [Workout])
-    case displayGrouped(records: [Date : [Workout]])
+#Preview {
+    return WorkoutsListView(
+        store: StoreOf<WorkoutsListFeature>(
+            initialState: WorkoutsListFeature.State(),
+            reducer: {
+                WorkoutsListFeature()
+            }
+        )
+    )
+    .withPreviewEnvironment()
 }

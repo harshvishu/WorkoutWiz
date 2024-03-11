@@ -12,7 +12,6 @@
 //import Persistence
 //import OSLog
 //
-//private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "\(#file)")
 //
 //@Observable
 //fileprivate class ViewModel {

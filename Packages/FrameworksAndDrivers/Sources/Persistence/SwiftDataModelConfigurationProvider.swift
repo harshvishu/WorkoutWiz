@@ -27,7 +27,7 @@ public class SwiftDataModelConfigurationProvider {
         self.autosaveEnabled = autosaveEnabled
     }
     
-    @MainActor
+//    @MainActor
     public lazy var container: ModelContainer = {
         let schema = Schema(
             [
@@ -40,7 +40,7 @@ public class SwiftDataModelConfigurationProvider {
         )
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)
         let container = try! ModelContainer(for: schema, configurations: [configuration])
-        container.mainContext.autosaveEnabled = autosaveEnabled
+//        container.mainContext.autosaveEnabled = autosaveEnabled
         return container
     }()
 }

@@ -30,7 +30,6 @@ public extension EnvironmentValues {
 
 private struct KeyboardVisibility: ViewModifier {
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: KeyboardVisibility.self))
-
 #if os(macOS)
     
     fileprivate func body(content: Content) -> some View {

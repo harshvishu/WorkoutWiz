@@ -9,6 +9,7 @@ import SwiftUI
 import Persistence
 import ApplicationServices
 import DesignSystem
+import ComposableArchitecture
 
 public struct RootView: View {
     
@@ -16,18 +17,10 @@ public struct RootView: View {
     @Environment(SceneDelegate.self) var sceneDelegate
     @Environment(AppState.self) var appState
     
-    @State var selectedScreen: AppScreen = .dashboard
-    @State var popToRootScreen: AppScreen = .other
+    @Bindable var store: StoreOf<TabBarFeature>
     
     public var body: some View {
-        TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-            .onReceive(appState.signal) { newValue in
-                if case .showLogs = newValue {
-                    withCustomSpring {
-                        selectedScreen = .logs
-                    }
-                }
-            }
+        TabBarView(store: store)
             .task {
                 initializeCustomTabBar()
                 initializePopupContainer()
@@ -38,16 +31,18 @@ public struct RootView: View {
 extension RootView {
     fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
-        sceneDelegate.addTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, appState: appState)
+        sceneDelegate.addTabBar(store: store, appState: appState)
     }
     
     fileprivate func initializePopupContainer() {
         guard sceneDelegate.popWindow == nil else {return}
-        sceneDelegate.addPopupContainerView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen, appState: appState)
+        sceneDelegate.addPopupContainerView(appState: appState)
     }
 }
 
 #Preview {
-    return RootView()
-        .withPreviewEnvironment()
+    return RootView(store: StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+        TabBarFeature()
+    }))
+    .withPreviewEnvironment()
 }

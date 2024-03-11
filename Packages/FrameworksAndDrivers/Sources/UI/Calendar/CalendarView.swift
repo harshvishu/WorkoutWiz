@@ -12,9 +12,9 @@ import Persistence
 import DesignSystem
 import OSLog
 import SwiftData
+import ComposableArchitecture
 
 struct CalendarView: View {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: CalendarView.self))
     
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
@@ -25,10 +25,15 @@ struct CalendarView: View {
     @State private var selectedDate: Day = Day(date: .now)
     @State private var today: Day = Day(date: .now)
     
+    // TODO: Pending Move
+    let store = StoreOf<WorkoutsListFeature>(initialState: WorkoutsListFeature.State()) {
+        WorkoutsListFeature()
+    }
+    
     var body: some View {
         ZStack {
             ScrollViewReader { proxy in
-                ZStack(alignment: .top) {
+                ZStack {
                     List {
                         DaySelectView(
                             currentDayRange: $selectedDateRange,
@@ -41,24 +46,21 @@ struct CalendarView: View {
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                         
-                        ListWorkoutView(filter: .none, grouping: true)
+                        WorkoutsListView(store: store)
                     }
+                    .listStyle(.plain)
+                    .listSectionSeparator(.hidden)
                 }
                 // MARK: Day Select View Bindings
                 .onChange(of: selectedDate) { _, newValue in
                     withEaseOut {
                         proxy.scrollTo(newValue.date.formatted(.dateTime), anchor: .top)
                     }
-                    logger.info("Day Change \(newValue.date.formatted(.dateTime))")
+                    Logger.ui.info("Day Change \(newValue.date.formatted(.dateTime))")
                 }
             }
-            .safeAreaInset(edge: .bottom, content: {
-                EmptyView()
-                    .frame(height: .customTabBarHeight)
-            })
-            .listStyle(.plain)
-            .listSectionSeparator(.hidden)
             .scrollIndicators(.hidden)
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: {

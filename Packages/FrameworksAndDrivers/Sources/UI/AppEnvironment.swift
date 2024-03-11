@@ -18,13 +18,11 @@ struct AppEnvironment: ViewModifier {
     
     @State var saveDataManager = SaveDataManager(saveDataUseCase: nil)
     @State var appState = AppState()
-    @State var listExerciseViewModel = ListExerciseViewModel(listExerciseUseCase: ListExerciseUseCase(exerciseRepository: UserDefaultsExerciseTemplateRepository()))
     
     func body(content: Content) -> some View {
         content
             .environment(appState)
             .environment(saveDataManager)
-            .environment(listExerciseViewModel)
             .withModelContainer(preview: false)
             .addKeyboardVisibilityToEnvironment()
             .task {
@@ -55,7 +53,6 @@ struct PreviewAppEnvironment: ViewModifier {
     
     @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
     @State var appState = AppState()
-    @State var listExerciseViewModel = ListExerciseViewModel(listExerciseUseCase: ListExerciseUseCase(exerciseRepository: UserDefaultsExerciseTemplateRepository()))
     @State var routerPath: RouterPath = .init()
     
     func body(content: Content) -> some View {
@@ -63,7 +60,6 @@ struct PreviewAppEnvironment: ViewModifier {
             .withModelContainer(preview: true)
             .environment(appState)
             .environment(saveDataManager)
-            .environment(listExerciseViewModel)
             .environment(routerPath)
             .environment(SceneDelegate())
             .addKeyboardVisibilityToEnvironment()

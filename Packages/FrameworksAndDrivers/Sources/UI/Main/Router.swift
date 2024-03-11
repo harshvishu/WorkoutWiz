@@ -45,7 +45,9 @@ public extension View {
         navigationDestination(for: RouterDestination.self) { destination in
             switch destination {
             case .newWorkout:
-                WorkoutEditorView()
+//                WorkoutEditorView(store: <#T##StoreOf<WorkoutEditorFeature>#>)
+                // TODO: Check
+                EmptyView()
             case .workoutDetails(let workout):
                 WorkoutRowView(workout: workout)
             case .listExercise:

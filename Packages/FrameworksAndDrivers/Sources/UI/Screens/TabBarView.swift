@@ -10,44 +10,132 @@ import DesignSystem
 import ApplicationServices
 import Persistence
 import SwiftData
+import ComposableArchitecture
+import Domain
 
 fileprivate struct Constants {
     static let InitialSheetHeight = CGFloat(110.0)
     static let EligibleBottomSheetScreens: [AppScreen] = [.dashboard]
 }
 
-@MainActor
-public struct TabBarView: View {
-    
-    /// navigation properties
-    @Binding var selectedScreen: AppScreen
-    @Binding var popToRootScreen: AppScreen
-    
-    public init(selectedScreen: Binding<AppScreen>, popToRootScreen: Binding<AppScreen>) {
-        _selectedScreen = selectedScreen
-        _popToRootScreen = popToRootScreen
+@Reducer
+public struct TabBarFeature {
+    @ObservableState
+    public struct State: Equatable {
+        var availableTabs = AppScreen.availableTabs
+        var currentTab = AppScreen.dashboard
+        var bottomSheetPresentationDetent = PresentationDetent.InitialSheetDetent
+        var showTabBottomSheet = false
+        var resizable = true
+        var isKeyboardVisible = false
+        
+        // Child States
+        var dashboard = DashboardTab.State()
+        var workoutEditor = WorkoutEditorFeature.State(isWorkoutSaved: false, isWorkoutInProgress: false)
+        
+        init(availableTabs: [AppScreen] = AppScreen.availableTabs, currentTab: AppScreen = AppScreen.dashboard) {
+            self.availableTabs = availableTabs
+            self.currentTab = currentTab
+            self.showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(currentTab)
+        }
     }
     
-    /// view properties
-    @State private var showTabBottomSheet = false
-    @State var selectedDetent: PresentationDetent = .InitialSheetDetent
+    public enum Action {
+        case selectTab(AppScreen)
+        case toggleTabBottomSheet(Bool)
+        case setBottomSheetPresentationDetent(PresentationDetent)
+        case toggleKeyboardVisiblity(Bool)
+        case toggleResizable(Bool)
+        case delegate(Delegate)
+        case dashboard(DashboardTab.Action)
+        case workoutEditor(WorkoutEditorFeature.Action)
+        
+        @CasePathable
+        public enum Delegate {
+          case showLogs
+        }
+    }
     
-    /// internal properties
-    private var availableSheetDetents: Set<PresentationDetent> = [.InitialSheetDetent, .ExpandedSheetDetent]
+    public var body: some ReducerOf<Self> {
+        Scope(state: \.dashboard, action: \.dashboard) {
+            DashboardTab()
+        }
+        
+        Scope(state: \.workoutEditor, action: \.workoutEditor) {
+            WorkoutEditorFeature()
+        }
+        
+        Reduce<State,Action> { state, action in
+            switch action {
+            case let .selectTab(tab):
+                state.currentTab = tab
+                return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .customSpring())
+            case let .toggleTabBottomSheet(show):
+                state.showTabBottomSheet = show
+                return .none
+            case let .setBottomSheetPresentationDetent(detent):
+                state.bottomSheetPresentationDetent = detent
+                return .none
+            case let .toggleKeyboardVisiblity(visibility):
+                state.isKeyboardVisible = visibility
+                return .none
+            case let .toggleResizable(resizable):
+                state.resizable = resizable
+                return .none
+            case .delegate:
+                return .none
+            case .dashboard:
+                return .none
+            case let .workoutEditor(.delegate(delegateAction)):
+                switch delegateAction {
+                case .collapse:
+                    return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .default)
+                case .expand:
+                    return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)
+                case .workoutSaved:
+                    return .send(.dashboard(.dashboard(.workoutsList(.fetchWorkouts))))
+                case .navigationStackNonEmpty:
+                    state.resizable = false
+                    return .none
+                case .navigationStackIsEmpty:
+                    state.resizable = true
+                    return .none
+                }
+            case .workoutEditor:
+                // TODO: handle workout editor
+                return .none
+            }
+        }
+        .onChange(of: \.currentTab) { _, tab in
+            Reduce { state, action in
+                state.showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(tab)
+                return .none
+            }
+        }
+        .onChange(of: \.bottomSheetPresentationDetent) { _, detent in
+            Reduce { state, action in
+                // TODO:
+                return .none
+            }
+        }
+    }
+}
+
+public struct TabBarView: View {
+    @Bindable var store: StoreOf<TabBarFeature>
     
+    public init(store: StoreOf<TabBarFeature>) {
+        self.store = store
+    }
+
     public var body: some View {
         TabView(selection: .init(get: {
-            selectedScreen
+            store.state.currentTab
         }, set: { newTab in
-            /// Stupid hack to trigger onChange binding in tab views.
-            popToRootScreen = .other
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                popToRootScreen = selectedScreen
-            }
-            selectedScreen = newTab
+            store.send(.selectTab(newTab))
         }), content:  {
-            ForEach(AppScreen.availableTabs) { tab in
-                tab.makeContentView(popToRootScreen: $popToRootScreen)
+            ForEach(store.availableTabs) { tab in
+                tab.makeContentView(store: store)
                     .hideNativeTabBar() /// Hides the native TabBarView we use `CustomTabBar`
                     .tabItem {
                         tab.label
@@ -55,39 +143,31 @@ public struct TabBarView: View {
                     .tag(tab)
             }
         })
-        .tabSheet(initialHeight: Constants.InitialSheetHeight, sheetCornerRadius: .sheetCornerRadius, showSheet: $showTabBottomSheet, detents: availableSheetDetents, selectedDetent: $selectedDetent, bottomPadding: .customTabBarHeight, content: tabSheetContent)
-        .onChange(of: selectedScreen, initial: true, { _, newValue in
-            /// Make it more dynamic
-            showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(newValue)
-            /// Reset `selectedDetent` on change of screen
-            selectedDetent = .InitialSheetDetent
-        })
-//        .onAppear {
-//            let tempScreen = selectedScreen
-//            selectedScreen = AppScreen.other
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-//                selectedScreen = tempScreen
-//            }
-//        }
+        .tabSheet(initialHeight: Constants.InitialSheetHeight, sheetCornerRadius: .sheetCornerRadius, showSheet: $store.showTabBottomSheet.sending(\.toggleTabBottomSheet), resizable: $store.resizable.sending(\.toggleResizable), detents: Self.AvailableSheetDetents, selectedDetent: $store.bottomSheetPresentationDetent.sending(\.setBottomSheetPresentationDetent), bottomPadding: .customTabBarHeight, content: tabSheetContent)
     }
+    
+    static var AvailableSheetDetents: Set<PresentationDetent> = [.InitialSheetDetent, .ExpandedSheetDetent]
 }
 
 fileprivate extension TabBarView {
     
     @ViewBuilder func tabSheetContent() -> some View {
-        switch selectedScreen {
+        switch store.currentTab {
         case .dashboard:
-            WorkoutEditorBottomSheetView(selectedDetent: $selectedDetent)
+            WorkoutEditorBottomSheetView(
+                store: store.scope(state: \.workoutEditor, action: \.workoutEditor),
+                selectedDetent: $store.bottomSheetPresentationDetent.sending(\.setBottomSheetPresentationDetent)
+            )
         default:
             EmptyView()
         }
     }
 }
 
-#Preview {
-    @State var selectedScreen: AppScreen = .dashboard
-    @State var popToRootScreen: AppScreen = .other
-    
-    return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-        .withPreviewEnvironment()
-}
+//#Preview {
+//    @State var selectedScreen: AppScreen = .dashboard
+//    @State var popToRootScreen: AppScreen = .other
+//    
+//    return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
+//        .withPreviewEnvironment()
+//}

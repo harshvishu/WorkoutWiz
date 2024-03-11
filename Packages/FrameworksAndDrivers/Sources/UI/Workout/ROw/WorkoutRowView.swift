@@ -10,8 +10,6 @@ import Domain
 import DesignSystem
 
 struct WorkoutRowView: View {
-    @Environment(RouterPath.self) var routerPath
-    
     var workout: Workout
     
     var body: some View {
@@ -112,6 +110,5 @@ struct WorkoutRowView: View {
 }
 
 //#Preview {
-//    WorkoutRowView(workout: .mock(0))
-//        .withPreviewEnvironment()
+//    WorkoutRowView(workout: .mock)
 //}

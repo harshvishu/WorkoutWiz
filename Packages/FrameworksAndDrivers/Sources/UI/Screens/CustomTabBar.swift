@@ -7,24 +7,24 @@
 
 import SwiftUI
 import DesignSystem
+import ComposableArchitecture
 
 public struct CustomTabBar: View, KeyboardReadable {
     @Environment(AppState.self) var appState
     @Environment(\.keyboardShowing) var keyboardShowing
     
-    @Binding var selectedScreen: AppScreen
-    @Binding var popToRootScreen: AppScreen
+    @Bindable var store: StoreOf<TabBarFeature>
+    
+    public init(store: StoreOf<TabBarFeature>) {
+        self.store = store
+    }
     
     public var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                ForEach(AppScreen.availableTabs) { tab in
+                ForEach(store.state.availableTabs) { tab in
                     Button( action: {
-                        popToRootScreen = .other
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                            popToRootScreen = selectedScreen
-                        }
-                        selectedScreen = tab
+                        store.send(.selectTab(tab))
                     }, label: {
                         VStack {
                             tab.image
@@ -32,7 +32,7 @@ public struct CustomTabBar: View, KeyboardReadable {
                             Text(tab.title)
                                 .font(.caption)
                         }
-                        .foregroundStyle(selectedScreen == tab ? .white : .gray)
+                        .foregroundStyle(store.state.currentTab == tab ? .white : .gray)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .contentShape(.rect)
                     })
@@ -51,19 +51,22 @@ public struct CustomTabBar: View, KeyboardReadable {
         .offset(y: showTabBar ? .zero : .customTabBarHeight)
         .transition(.slide)
         .animation(.customSpring(), value: showTabBar)
+        .onChange(of: keyboardShowing) { _, visibility in
+            store.send(.toggleKeyboardVisiblity(visibility))
+        }
     }
     
     // Accessor property for showing tab bar
     private var showTabBar: Bool {
-        appState.showTabBar && !keyboardShowing
+        appState.showTabBar && store.state.isKeyboardVisible.not()
     }
 }
 
-#Preview {
-    @State var selectedScreen: AppScreen = .dashboard
-    @State var popToRootScreen: AppScreen = .other
-    
-    return CustomTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-        .frame(maxHeight: .infinity, alignment: .bottom)
-        .withPreviewEnvironment()
-}
+//#Preview {
+//    @State var selectedScreen: AppScreen = .dashboard
+//    @State var popToRootScreen: AppScreen = .other
+//    
+//    return CustomTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
+//        .frame(maxHeight: .infinity, alignment: .bottom)
+//        .withPreviewEnvironment()
+//}

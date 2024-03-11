@@ -20,7 +20,7 @@ let package = Package(
         .package(path: "../ApplicationServices"),
         .package(path: "../DesignSystem"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.17.0"), // Firebase
-        .package(url: "https://github.com/exyte/PopupView.git", from: "2.8.4")
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.9.2")    // swift-composable-architecture
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -33,12 +33,13 @@ let package = Package(
                                .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
                                .product(name: "FirebaseFirestoreSwift", package: "firebase-ios-sdk"),
                                .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
+                               .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 ],
                 resources: [.copy("Resources/exercises.json")]),
         .target(name: "Preferences", dependencies: ["Domain", "ApplicationServices"]),
         .target(name: "UI",
                 dependencies: ["Domain", "ApplicationServices", "DesignSystem", "Persistence",
-                               .product(name: "PopupView", package: "PopupView")],
+                               .product(name: "ComposableArchitecture", package: "swift-composable-architecture")],
                 resources: [.process("Resources/Assets.xcassets")]),
         .testTarget(name: "FrameworksAndDriversTests", dependencies: ["Persistence", "Preferences", "UI"]),
     ]

@@ -12,7 +12,6 @@ import ApplicationServices
 import Persistence
 import OSLog
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "\(#file)")
 
 public struct ExerciseRowView: View {
     @Environment(AppState.self) private var appState

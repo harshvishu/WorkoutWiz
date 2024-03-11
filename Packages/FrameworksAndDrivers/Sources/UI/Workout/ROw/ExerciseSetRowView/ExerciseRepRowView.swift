@@ -13,7 +13,6 @@ import Persistence
 import Combine
 import OSLog
 
-private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "\(#file)")
 
 struct ExerciseRepRowView: View {
     

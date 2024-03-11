@@ -16,7 +16,6 @@ import OSLog
 
 @Observable
 public final class SaveDataManager {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: SaveDataManager.self))
     
     var saveDataUseCase: SaveDataIOPort?
     
@@ -28,9 +27,9 @@ public final class SaveDataManager {
         do {
             _ = try await saveDataUseCase?.createSaveDataFor(exerciseName: name, sets: sets)
         } catch (SaveDataError.createFailed(.duplicate)) {
-            logger.error("Save data already exists for \(name). Try updating instead")
+            Logger.ui.error("Save data already exists for \(name). Try updating instead")
         } catch {
-            logger.error("\(error)")
+            Logger.ui.error("\(error)")
         }
     }
     
@@ -38,9 +37,9 @@ public final class SaveDataManager {
         do {
             _ = try await saveDataUseCase?.updateSaveDataFor(record: record)
         } catch (SaveDataError.updateFailed(.noRecordFound)) {
-            logger.error("No save data exists for \(record.exerciseName). Try creating a new")
+            Logger.ui.error("No save data exists for \(record.exerciseName). Try creating a new")
         } catch {
-            logger.error("\(error)")
+            Logger.ui.error("\(error)")
         }
     }
     

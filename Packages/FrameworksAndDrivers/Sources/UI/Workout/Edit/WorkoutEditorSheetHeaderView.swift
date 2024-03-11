@@ -10,9 +10,10 @@ import DesignSystem
 import Persistence
 import ApplicationServices
 import Domain
+import ComposableArchitecture
 
 struct WorkoutEditorSheetHeaderView: View {
-    @Environment(WorkoutEditorViewModel.self) private var viewModel
+    @Bindable var store: StoreOf<WorkoutEditorFeature>
     
     @State private var viewState: ViewState = .timer
     @State private var isAnimating: Bool = false
@@ -21,7 +22,7 @@ struct WorkoutEditorSheetHeaderView: View {
         HStack(spacing: 0) {
             
             /// Show elapsed time if workout has satarted
-            if viewModel.isWorkoutActive {
+            if store.isWorkoutInProgress {
                 Button(action: {
                     /// Show a popup timer with options to reset the time
                     /// A Context Menu
@@ -34,15 +35,16 @@ struct WorkoutEditorSheetHeaderView: View {
                         case .timer:
                             Group {
                                 // TODO: Fix the timer
-                                Text(Date().timeIntervalSince(viewModel.startDate).formattedElapsedTime())
-                                    .contentTransition(.numericText(countsDown: true))
+                                let elapsedTime = Date().timeIntervalSince(store.workout.startDate)
+                                Text("\(elapsedTime)")
+                                    .contentTransition(.numericText(value: elapsedTime))
                                 Image(systemName: "timer")
                             }
                             .fixedSize()
                             .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         case .calories:
                             Group {
-                                let energy =  Measurement(value: viewModel.calories, unit: UnitEnergy.kilocalories)
+                                let energy =  Measurement(value: store.workout.calories, unit: UnitEnergy.kilocalories)
                                 Text(energy.formatted(.measurement(width: .abbreviated, usage: .workout)))
                                 Image(systemName: "bolt.fill")
                             }
@@ -78,7 +80,7 @@ struct WorkoutEditorSheetHeaderView: View {
                     .previewBorder()
             }
         }
-        .animation(.easeInOut, value:  viewModel.isWorkoutActive)
+        .animation(.easeInOut, value:  store.isWorkoutInProgress)
         .onAppear {
             isAnimating = true
         }
@@ -99,10 +101,7 @@ fileprivate enum ViewState {
     }
 }
 
-#Preview {
-    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-  
-    return WorkoutEditorSheetHeaderView()
-        .withPreviewEnvironment()
-        .environment(viewModel)
-}
+//#Preview {
+//    return WorkoutEditorSheetHeaderView()
+//        .withPreviewEnvironment()
+//}

@@ -14,14 +14,9 @@ import Domain
 @MainActor
 public struct CalendarScreen: View {
     @State private var routerPath = RouterPath()
-    @Binding var popToRootScreen: AppScreen
-    
-    init(popToRootScreen: Binding<AppScreen>) {
-        _popToRootScreen = popToRootScreen
-    }
     
     public var body: some View {
-        NavigationStack(path: $routerPath.path) {
+        NavigationStack {
             CalendarView()
                 .withAppRouter()
                 .withSheetDestinations(sheetDestinations: $routerPath.presentedSheet)
@@ -30,9 +25,9 @@ public struct CalendarScreen: View {
     }
 }
 
-#Preview {
-    @State var popToRootScreen: AppScreen = .other
-    
-    return DashboardScreen(popToRootScreen: $popToRootScreen)
-        .withPreviewEnvironment()
-}
+//#Preview {
+//    @State var popToRootScreen: AppScreen = .other
+//    
+//    return DashboardScreen()
+//        .withPreviewEnvironment()
+//}

@@ -151,17 +151,17 @@ public extension View {
 }
 
 public extension View {
-    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
+    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, resizable: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         self
-            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, detents: detents, selectedDetent: selectedDetent, bottomPadding: bottomPadding, sheetView: content))
+            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, resizable: resizable, detents: detents, selectedDetent: selectedDetent, bottomPadding: bottomPadding, sheetView: content))
     }
 }
 
 /// Helper View Modifiers
 fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     
-   
     @Binding private var showSheet: Bool
+    @Binding private var resizable: Bool
     @Binding private var selectedDetent: PresentationDetent
     
     private var detents: Set<PresentationDetent>
@@ -170,10 +170,11 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     private var sheetView: SheetContent
     private var bottomPadding: CGFloat
     
-    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, sheetView: @escaping () -> SheetContent) {
+    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, resizable: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, sheetView: @escaping () -> SheetContent) {
         self.initialHeight = initialHeight
         self.sheetCornerRadius = sheetCornerRadius
         self._showSheet = showSheet
+        self._resizable = resizable
         self.detents = detents
         self._selectedDetent = selectedDetent
         self.sheetView = sheetView()
@@ -192,7 +193,7 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
                         .fill(.clear)
                         .frame(height: bottomPadding)
                 }
-                .presentationDetents([.InitialSheetDetent, .ExpandedSheetDetent], selection: $selectedDetent)
+                .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
                 .presentationCornerRadius(sheetCornerRadius)
                 .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
                 .presentationBackground(.background)

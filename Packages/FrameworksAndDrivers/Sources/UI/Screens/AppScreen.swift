@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import ComposableArchitecture
 
 /// Screens
 public enum AppScreen: Hashable, Identifiable , CaseIterable {
@@ -67,14 +68,14 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
     
     @ViewBuilder
     @MainActor
-    func makeContentView(popToRootScreen: Binding<AppScreen>) -> some View {
+    func makeContentView(store: StoreOf<TabBarFeature>) -> some View {
         switch self {
         case .dashboard:
-            DashboardScreen(popToRootScreen: popToRootScreen)
+            DashboardTabView(store: store.scope(state: \.dashboard, action: \.dashboard))
         case .profile:
             Text("Profile")
         case .logs:
-            CalendarScreen(popToRootScreen: popToRootScreen)
+            CalendarScreen()
         case .settings:
             Text("Settings")
         case .other:

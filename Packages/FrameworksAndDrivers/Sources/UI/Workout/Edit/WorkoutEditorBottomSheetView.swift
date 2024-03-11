@@ -12,67 +12,47 @@ import Persistence
 import ApplicationServices
 import SwiftData
 import OSLog
+import ComposableArchitecture
 
-@MainActor
-public struct WorkoutEditorBottomSheetView: View {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: WorkoutEditorBottomSheetView.self))
+struct WorkoutEditorBottomSheetView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     
-    @State private var viewModel: WorkoutEditorViewModel
     @State private var routerPath: RouterPath = .init()
     
+    @Bindable var store: StoreOf<WorkoutEditorFeature>
     @Binding var selectedDetent: PresentationDetent
-        
-    public init(selectedDetent: Binding<PresentationDetent>) {
-        self._viewModel = .init(initialValue: WorkoutEditorViewModel())
+    
+    init(store: StoreOf<WorkoutEditorFeature>, selectedDetent: Binding<PresentationDetent>) {
+        self.store = store
         self._selectedDetent = selectedDetent
     }
     
-    public init(viewModel: WorkoutEditorViewModel, selectedDetent: Binding<PresentationDetent>) {
-        self._viewModel = .init(initialValue: viewModel)
-        self._selectedDetent = selectedDetent
-    }
-    
-    public var body: some View {
-        NavigationStack(path: $routerPath.path) {
+    var body: some View {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             VStack {
                 
-                WorkoutEditorView()
+                WorkoutEditorView(store: store)
                     .opacity(selectedDetent.isCollapsed ? 0 : 1)
-                    .environment(viewModel)
                     .environment(routerPath)
                 
                 Spacer()
                 
-//                // Collapsed View
-//                if selectedDetent.isCollapsed {
-//                    Spacer()
-//                } else {
-//                    
-//                    // Expanded View
-//                    WorkoutEditorView()
-//                        .environment(viewModel)
-//                        .environment(routerPath)
-//                    
-//                }
             }
             .padding()
             .scrollIndicators(.hidden)
             .toolbar {
                 
                 ToolbarItemGroup(placement: .topBarLeading) {
-                    WorkoutEditorSheetHeaderView()
-                        .environment(viewModel)
-                        .environment(routerPath)
+                    WorkoutEditorSheetHeaderView(store: store)
                 }
                 
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button(action: {
                         selectedDetent.toggle()
                     }, label: {
-                        if viewModel.isWorkoutActive {
+                        if  store.isWorkoutInProgress {
                             Image(systemName: "chevron.up")
                                 .foregroundStyle(.secondary)
                                 .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 180))
@@ -87,49 +67,57 @@ public struct WorkoutEditorBottomSheetView: View {
                     .buttonBorderShape(.circle)
                 }
             }
-            .onReceive(appState.signal) { signal in
-                switch signal {
-                case .openEditWorkoutSheet:
-                    expand()
-                case .closeWorkoutEditor:
-                    collapse()
-                default:
-                    break
-                }
-            }
-          
-            /*
-            .onChange(of: selectedDetent) { _, newValue in
-                // Sheet collapsed and ListExerciseView is visible
-                // Hide the header but do not close the sheet
-//                if routerPath.path.last == .listExercise && newValue == .InitialSheetDetent {
-//                    routerPath.path = []
-//                }
-            }
-            .onReceive(appState.signal) { signal in
-                switch signal {
-                case .openEditWorkoutSheet:
-                    expand()
-                case .closeWorkoutEditor:
-                    collapse()
-                case .openWorkout(let workout):
-                    if viewModel.isWorkoutInProgress {
-                        // TODO: What to do if one workout is already in progress
-                        // MAybe open in a new window/screen
-                    } else {
-                        viewModel.resume(workout: workout)
-                        expand()
-                    }
-                default:
-                    break
-                }
-            }
-            .task {
-                viewModel.bind(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: SwiftDataWorkoutRepository(modelContext: modelContext.container.mainContext)))
-            }
-            */
+            // TODO: remove this
+            //            .onReceive(appState.signal) { signal in
+            //                switch signal {
+            //                case .openEditWorkoutSheet:
+            //                    expand()
+            //                case .closeWorkoutEditor:
+            //                    collapse()
+            //                default:
+            //                    break
+            //                }
+            //            }
             
+            /*
+             .onChange(of: selectedDetent) { _, newValue in
+             // Sheet collapsed and ListExerciseView is visible
+             // Hide the header but do not close the sheet
+             //                if routerPath.path.last == .listExercise && newValue == .InitialSheetDetent {
+             //                    routerPath.path = []
+             //                }
+             }
+             .onReceive(appState.signal) { signal in
+             switch signal {
+             case .openEditWorkoutSheet:
+             expand()
+             case .closeWorkoutEditor:
+             collapse()
+             case .openWorkout(let workout):
+             if viewModel.isWorkoutInProgress {
+             // TODO: What to do if one workout is already in progress
+             // MAybe open in a new window/screen
+             } else {
+             viewModel.resume(workout: workout)
+             expand()
+             }
+             default:
+             break
+             }
+             }
+             .task {
+             viewModel.bind(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: SwiftDataWorkoutRepository(modelContext: modelContext.container.mainContext)))
+             }
+             */
+            
+        } destination: { store in
+            switch store.case {
+            case let .exerciseLists(store):
+                ExerciseBluePrintsListView(store: store)
+                    .opacity(selectedDetent.isCollapsed ? 0 : 1)
+            }
         }
+        
     }
 }
 
@@ -147,10 +135,10 @@ fileprivate extension WorkoutEditorBottomSheetView {
     }
 }
 
-#Preview {
-    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
-    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-    
-    return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
-        .withPreviewEnvironment()
-}
+//#Preview {
+//    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
+//    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
+//
+//    return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
+//        .withPreviewEnvironment()
+//}
