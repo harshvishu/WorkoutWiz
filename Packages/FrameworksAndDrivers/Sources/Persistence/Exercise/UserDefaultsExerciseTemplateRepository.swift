@@ -8,19 +8,8 @@
 import Foundation
 import Domain
 import ApplicationServices
-import OSLog
-
-class StructWrapper<T>: NSObject {
-
-    let value: T
-
-    init(_ _struct: T) {
-        self.value = _struct
-    }
-}
 
 public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
-    private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: String(describing: UserDefaultsExerciseTemplateRepository.self))
     
     public let imageBaseURL: URL = URL(string: "https://raw.githubusercontent.com/harshvishu/free-exercise-db/main/exercises/")!
 
@@ -31,11 +20,6 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
     
     public func fetchExercises() async -> [Domain.ExerciseTemplate] {
         let exersices = await readJSONFromBundle()
-//        Task(priority: .background) {
-//            for exercise in exersices {
-//                cache.setObject(StructWrapper(exercise), forKey: NSString(string: exercise.id))
-//            }
-//        }
         return exersices
     }
     
@@ -60,8 +44,6 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
 fileprivate extension UserDefaultsExerciseTemplateRepository {
     func readJSONFromBundle() async -> [ExerciseTemplate] {
         let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
-//        logger.debug("\(data)")
-//        Swift.print(Set(data.compactMap(\.category)))
         return data
     }
 }

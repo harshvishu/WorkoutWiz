@@ -17,7 +17,6 @@ import ComposableArchitecture
 struct WorkoutEditorBottomSheetView: View {
     
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppState.self) private var appState
     
     @State private var routerPath: RouterPath = .init()
     
@@ -115,6 +114,8 @@ struct WorkoutEditorBottomSheetView: View {
             case let .exerciseLists(store):
                 ExerciseBluePrintsListView(store: store)
                     .opacity(selectedDetent.isCollapsed ? 0 : 1)
+            case .exerciseDetails:
+                Text("TODO: Pending Exercise Details")
             }
         }
         

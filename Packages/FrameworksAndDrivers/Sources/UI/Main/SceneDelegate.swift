@@ -22,10 +22,7 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     public func addTabBar(
-//        selectedScreen: Binding<AppScreen>,
-//        popToRootScreen: Binding<AppScreen>,
-        store: StoreOf<TabBarFeature>,
-        appState: AppState
+        store: StoreOf<TabBarFeature>
     ) {
         guard let scene = windowScene else {return}
         
@@ -33,7 +30,6 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             rootView:
                 CustomTabBar(store: store)
                 .frame(maxHeight: .infinity, alignment: .bottom)
-                .environment(appState)
                 .addKeyboardVisibilityToEnvironment()
         )
         tabBarController.view.backgroundColor = .clear
@@ -44,16 +40,13 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.tabWindow = tabWindow
     }   
     
-    public func addPopupContainerView(
-        appState: AppState
-    ) {
+    public func addPopupContainerView() {
         guard let scene = windowScene else {return}
         
         let popupContainerController = UIHostingController(
             rootView:
                 PopupPresenterView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .environment(appState)
                 .addKeyboardVisibilityToEnvironment()
         )
         popupContainerController.view.backgroundColor = .clear

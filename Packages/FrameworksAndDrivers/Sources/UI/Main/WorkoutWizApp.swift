@@ -50,7 +50,6 @@ public struct AppFeature {
 }
 
 public protocol WorkoutWizApp : App {
-    var appState: AppState {get}
     var store: StoreOf<AppFeature> {get}
 }
 

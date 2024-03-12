@@ -15,14 +15,14 @@ import OSLog
 // Footer View
 struct ExerciseRowFooterView: View {
     @Environment(SaveDataManager.self) private var saveDataManager
-    @Environment(AppState.self) var appState
     
     var exercise: Exercise
     @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, position: 0, repType: .none)
     
     var body: some View {
             Button(action: {
-                appState.send(.popup(.addSetToExercise(exercise)))
+                // TODO: 
+//                appState.send(.popup(.addSetToExercise(exercise)))
             }, label: {
                 HStack(alignment: .lastTextBaseline, spacing: 4) {
                     if exercise.reps.isEmpty  {

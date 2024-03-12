@@ -19,7 +19,6 @@ struct AddRep {
 }
 
 struct PopupPresenterView: View {
-    @Environment(AppState.self) var appState
     @Environment(\.keyboardShowing) var keyboardShowing
     
     @State private var state: PopupMessage?
@@ -45,13 +44,14 @@ struct PopupPresenterView: View {
             }
             .transition(.move(edge: .bottom))
         }
-        .onReceive(appState.signal){ message in
-            if case .popup(let message) = message {
-                withAnimation {
-                    self.state = message
-                }
-            }
-        }
+        // TODO:
+//        .onReceive(appState.signal){ message in
+//            if case .popup(let message) = message {
+//                withAnimation {
+//                    self.state = message
+//                }
+//            }
+//        }
     }
     
     private func dismiss() {

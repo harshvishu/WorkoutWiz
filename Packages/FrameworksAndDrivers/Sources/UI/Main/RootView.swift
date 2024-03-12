@@ -15,7 +15,6 @@ public struct RootView: View {
     
     /// Navigation Properties    
     @Environment(SceneDelegate.self) var sceneDelegate
-    @Environment(AppState.self) var appState
     
     @Bindable var store: StoreOf<TabBarFeature>
     
@@ -31,12 +30,12 @@ public struct RootView: View {
 extension RootView {
     fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
-        sceneDelegate.addTabBar(store: store, appState: appState)
+        sceneDelegate.addTabBar(store: store)
     }
     
     fileprivate func initializePopupContainer() {
         guard sceneDelegate.popWindow == nil else {return}
-        sceneDelegate.addPopupContainerView(appState: appState)
+        sceneDelegate.addPopupContainerView()
     }
 }
 

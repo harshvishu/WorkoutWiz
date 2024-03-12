@@ -18,7 +18,6 @@ struct WorkoutEditorView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.keyboardShowing) private var keyboardShowing
-    @Environment(AppState.self) private var appState
     @Environment(RouterPath.self) private var routerPath
 
     @State private var exerciseSelector: ConcreteMessageQueue<[ExerciseBluePrint]> = .init()

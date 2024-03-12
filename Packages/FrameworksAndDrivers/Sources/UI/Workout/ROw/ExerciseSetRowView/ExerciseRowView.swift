@@ -14,8 +14,6 @@ import OSLog
 
 
 public struct ExerciseRowView: View {
-    @Environment(AppState.self) private var appState
-    
     var exercise: Exercise
     
     @State private var showExpandedSetView = true
@@ -35,7 +33,9 @@ public struct ExerciseRowView: View {
                         ExerciseRepRowView(set: set, position: set.position)
                             .transition(.move(edge: .bottom))
                             .onTapGesture {
-                                appState.send(.popup(.editSetForExercise(exercise, set)))
+                                
+                                // TODO: 
+//                                appState.send(.popup(.editSetForExercise(exercise, set)))
                             }
                     }
                     

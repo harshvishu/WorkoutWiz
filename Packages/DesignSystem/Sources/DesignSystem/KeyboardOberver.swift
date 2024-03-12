@@ -9,6 +9,7 @@ import Foundation
 import Combine
 import SwiftUI
 import OSLog
+import Dependencies
 
 public extension View {
     /// @Environment(\.keyboardShowing) var keyboardShowing
@@ -40,6 +41,7 @@ private struct KeyboardVisibility: ViewModifier {
 #else
     
     @State var isKeyboardShowing: Bool = false
+    @Dependency(\.keyboardShowing) var keyboardShowing
     
     fileprivate func body(content: Content) -> some View {
         content
@@ -47,12 +49,14 @@ private struct KeyboardVisibility: ViewModifier {
             .task {
                 for await _ in NotificationCenter.default.notifications(named: UIResponder.keyboardWillShowNotification) {
                     isKeyboardShowing =  true
+                    keyboardShowing.isKeyboardShowing = true
                     logger.info("set isKeyboardShowing : \(isKeyboardShowing)")
                 }
             }
             .task {
                 for await _ in NotificationCenter.default.notifications(named: UIResponder.keyboardWillHideNotification) {
                     isKeyboardShowing =  false
+                    keyboardShowing.isKeyboardShowing = false
                     logger.info("set isKeyboardShowing : \(isKeyboardShowing)")
                 }
             }
@@ -62,3 +66,23 @@ private struct KeyboardVisibility: ViewModifier {
 }
 
 extension Notification: @unchecked Sendable { }
+
+public class KeyboardVisibilityDependency {
+    private init() {}
+    
+    public static let shared = KeyboardVisibilityDependency()
+    
+    public var isKeyboardShowing = false
+}
+
+// MARK: Dependency
+public extension DependencyValues {
+    var keyboardShowing: KeyboardVisibilityDependency {
+        get { self[KeyboardVisibilityDependency.self] }
+        set { self[KeyboardVisibilityDependency.self] = newValue }
+    }
+}
+
+extension KeyboardVisibilityDependency: DependencyKey {
+    public static let liveValue: KeyboardVisibilityDependency = .shared
+}

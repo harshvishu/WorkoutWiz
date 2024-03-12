@@ -14,7 +14,6 @@ import DesignSystem
 @MainActor
 struct RepInputView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppState.self) var appState
     
     @State private var fitnessTrackingUseCase: FitnessTrackingIOPort = FitnessTrackingUseCase()
     

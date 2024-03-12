@@ -16,6 +16,7 @@ public struct WorkoutEditorFeature {
     @Reducer(state: .equatable)
     public enum Path {
         case exerciseLists(ExerciseBluePrintsList)
+        case exerciseDetails
     }
     
     @ObservableState

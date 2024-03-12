@@ -173,40 +173,69 @@ struct ExerciseBluePrintsListView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
-                Button {
-                    if store.isSearchFieldFocused.not() {
-                        store.send(.searchButtonTapped)
-                    } else {
-                        // TODO: Show Filter Menu
-                    }
-                } label: {
-                    Image(systemName: isSearchFieldFocused ? "line.3.horizontal.decrease" : "magnifyingglass")
-                }
-                .buttonStyle(.plain)
-                
-                TextField(
-                    "Back, Biceps, Run ...", text: $store.searchQuery.sending(\.searchQueryChanged)
-                )
-                .textFieldStyle(.roundedBorder)
-                .autocapitalization(.none)
-                .disableAutocorrection(true)
-                .focused($isSearchFieldFocused)
-            }
-            .padding(.horizontal, .listRowContentHorizontalSpacing)
-            
+//            HStack {
+//                Button {
+//                    if store.isSearchFieldFocused.not() {
+//                        store.send(.searchButtonTapped)
+//                    } else {
+//                        // TODO: Show Filter Menu
+//                    }
+//                } label: {
+//                    Image(systemName: isSearchFieldFocused ? "line.3.horizontal.decrease" : "magnifyingglass")
+//                }
+//                .buttonStyle(.plain)
+//                
+//                TextField(
+//                    "Back, Biceps, Run ...", text: $store.searchQuery.sending(\.searchQueryChanged)
+//                )
+//                .textFieldStyle(.roundedBorder)
+//                .autocapitalization(.none)
+//                .disableAutocorrection(true)
+//                .focused($isSearchFieldFocused)
+//            }
+//            .padding(.horizontal, .listRowContentHorizontalSpacing)
+//            
+//            List(store.results, selection: $store.selectedBluePrints) { bluePrint in
+//                let isSelected = store.selectedBluePrints.contains(bluePrint)
+//                NavigationLink(state: WorkoutEditorFeature.Path.State.exerciseDetails) {
+//                    
+//                    ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
+//                        .onTapGesture {
+//                            if isSelected {
+//                                store.send(.deSelectTemplate(bluePrint))
+//                            } else {
+//                                store.send(.selectTemplate(bluePrint))
+//                            }
+//                        }
+//                }
+//                .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
+//                .listRowInsets(EdgeInsets(top: 0,
+//                                          leading: 0,
+//                                          bottom: 0,
+//                                          trailing: 16))
+//            }
+            // TODO: try to add lazy
             List {
                 ForEach(store.results) { bluePrint in
                     let isSelected = store.selectedBluePrints.contains(bluePrint)
-                    ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
-                        .listRowSeparator(.hidden)
-                        .onTapGesture {
-                            if isSelected {
-                                store.send(.deSelectTemplate(bluePrint))
-                            } else {
-                                store.send(.selectTemplate(bluePrint))
+                    NavigationLink(state: WorkoutEditorFeature.Path.State.exerciseDetails) {
+                        
+                        ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
+//                            .listRowSeparator(.hidden)
+                            .onTapGesture {
+                                if isSelected {
+                                    store.send(.deSelectTemplate(bluePrint))
+                                } else {
+                                    store.send(.selectTemplate(bluePrint))
+                                }
                             }
-                        }
+                    }
+                    .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
+                    .listRowInsets(EdgeInsets(top: 0,
+                                              leading: 0,
+                                              bottom: 0,
+                                              trailing: 16))
+                   
                 }
                 
                 if store.state.canFetchMore {
@@ -215,6 +244,7 @@ struct ExerciseBluePrintsListView: View {
                     }
                 }
             }
+            .searchable(text: $store.searchQuery.sending(\.searchQueryChanged))
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .safeAreaPadding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))

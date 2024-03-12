@@ -97,7 +97,6 @@ struct WorkoutsListView: View {
     
     @Environment(\.isPresented) var isPresented
     @Environment(RouterPath.self) var routerPath
-    @Environment(AppState.self) private var appState
     
     let store: StoreOf<WorkoutsListFeature>
     
@@ -113,7 +112,8 @@ struct WorkoutsListView: View {
                 .onDelete(perform: delete)
                 
                 Button(action: {
-                    appState.send(.openEditWorkoutSheet)
+                    // TODO:
+//                    appState.send(.openEditWorkoutSheet)
                 }, label: {
                     VStack {
                         Text("No workouts for today!")
@@ -137,7 +137,8 @@ struct WorkoutsListView: View {
                     Spacer()
                     
                     Button {
-                        appState.send(.showLogs)
+                        // TODO: 
+//                        appState.send(.showLogs)
                     } label: {
                         Text("All Entries")
                     }

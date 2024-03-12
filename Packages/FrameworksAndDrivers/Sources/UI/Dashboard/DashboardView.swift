@@ -51,7 +51,6 @@ struct DashboardView: View {
     
     @Environment(\.isPresented) var isPresented
     @Environment(\.modelContext) private var modelContext
-    @Environment(AppState.self) private var appState
     
     var body: some View {
         ZStack {

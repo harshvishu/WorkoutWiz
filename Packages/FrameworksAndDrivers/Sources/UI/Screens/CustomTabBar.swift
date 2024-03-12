@@ -10,10 +10,10 @@ import DesignSystem
 import ComposableArchitecture
 
 public struct CustomTabBar: View, KeyboardReadable {
-    @Environment(AppState.self) var appState
     @Environment(\.keyboardShowing) var keyboardShowing
     
     @Bindable var store: StoreOf<TabBarFeature>
+    @Dependency(\.keyboardShowing.isKeyboardShowing) var isKeyboardShowing
     
     public init(store: StoreOf<TabBarFeature>) {
         self.store = store
@@ -50,7 +50,7 @@ public struct CustomTabBar: View, KeyboardReadable {
         .opacity(showTabBar ? 1 : 0)
         .offset(y: showTabBar ? .zero : .customTabBarHeight)
         .transition(.slide)
-        .animation(.customSpring(), value: showTabBar)
+        .animation(.easeInOut, value: showTabBar)
         .onChange(of: keyboardShowing) { _, visibility in
             store.send(.toggleKeyboardVisiblity(visibility))
         }
@@ -58,7 +58,8 @@ public struct CustomTabBar: View, KeyboardReadable {
     
     // Accessor property for showing tab bar
     private var showTabBar: Bool {
-        appState.showTabBar && store.state.isKeyboardVisible.not()
+        // TODO:
+        /*store.showTabBar &&*/ isKeyboardShowing.not()
     }
 }
 
