@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Domain
 
 private let DayFormat = "dd"
 private let MonthFormat = "MM"
@@ -94,4 +93,37 @@ public extension Day {
     static func -=(lhs: inout Day, rhs: Int) {
         lhs = .init(date: lhs.date - rhs)
     }
+}
+
+extension Date {
+    func isSameDay(_ rhs: Date) -> Bool {
+        Calendar.current.isDate(self, equalTo: rhs, toGranularity: .day)
+    }
+    
+    func setMidnight() -> Date {
+        let calendar = Calendar.current
+        
+        // Extract the date components (year, month, and day)
+        let components = calendar.dateComponents([.year, .month, .day], from: self)
+        
+        // Create a new date with the extracted components and set the time to midnight
+        return calendar.date(from: components)!
+    }
+    
+    static func +(lhs: Date, rhs: Int) -> Date {
+        return Calendar.current.date(byAdding: .day, value: rhs, to: lhs) ?? lhs
+    }
+    
+    static func +=(lhs: inout Date, rhs: Int) {
+        lhs = lhs + rhs
+    }
+    
+    static func -(lhs: Date, rhs: Int) -> Date {
+        return Calendar.current.date(byAdding: .day, value: -rhs, to: lhs) ?? lhs
+    }
+    
+    static func -=(lhs: inout Date, rhs: Int) {
+        lhs = lhs - rhs
+    }
+    
 }

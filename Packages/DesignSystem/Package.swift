@@ -14,7 +14,6 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
     ],
     dependencies: [
-        .package(path: "../Domain"),
         .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.9.2")
     ],
     targets: [
@@ -22,8 +21,7 @@ let package = Package(
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
             name: "DesignSystem",
-            dependencies: ["Domain",
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")],
+            dependencies: [.product(name: "ComposableArchitecture", package: "swift-composable-architecture")],
             resources: [.copy("Resources/Colors.xcassets")]
         ),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),

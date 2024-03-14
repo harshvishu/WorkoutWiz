@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import Domain
 
 @Observable
 public final class TimerPickerModel {
@@ -42,10 +41,6 @@ public final class TimerPickerModel {
         (selectedHoursAmount,
          selectedMinutesAmount,
          selectedSecondsAmount)
-    }
-    
-    public var totalElapsedTime: ElapsedTime {
-        ElapsedTime(timeInSeconds: totalTimeForCurrentSelection)
     }
 }
 
