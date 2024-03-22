@@ -19,3 +19,10 @@ struct Logger {
     static let state = os.Logger(subsystem: uiBundle.bundleIdentifier!, category: "UI/State")
     static let action = os.Logger(subsystem: uiBundle.bundleIdentifier!, category: "UI/Action")
 }
+
+// MARK: Logger extensions
+extension Logger {
+    static func logDebug(_ object: Any) {
+        dump(object)
+    }
+}

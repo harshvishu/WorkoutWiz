@@ -16,10 +16,11 @@ public struct RootView: View {
     /// Navigation Properties    
     @Environment(SceneDelegate.self) var sceneDelegate
     
-    @Bindable var store: StoreOf<TabBarFeature>
+    @Bindable var tabBarStore: StoreOf<TabBarFeature>
+    @Bindable var popupStore: StoreOf<PopupPresenter>
     
     public var body: some View {
-        TabBarView(store: store)
+        TabBarView(store: tabBarStore)
             .task {
                 initializeCustomTabBar()
                 initializePopupContainer()
@@ -30,18 +31,20 @@ public struct RootView: View {
 extension RootView {
     fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
-        sceneDelegate.addTabBar(store: store)
+        sceneDelegate.addTabBar(store: tabBarStore)
     }
     
     fileprivate func initializePopupContainer() {
         guard sceneDelegate.popWindow == nil else {return}
-        sceneDelegate.addPopupContainerView()
+        sceneDelegate.addPopupContainerView(store: popupStore)
     }
 }
 
 #Preview {
-    return RootView(store: StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+    return RootView(tabBarStore: StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
         TabBarFeature()
+    }), popupStore: StoreOf<PopupPresenter>(initialState: PopupPresenter.State(), reducer: {
+        PopupPresenter()
     }))
     .withPreviewEnvironment()
 }

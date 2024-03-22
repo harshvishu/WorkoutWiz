@@ -26,11 +26,13 @@ public struct WorkoutEditorFeature {
         var isWorkoutInProgress: Bool   // To tell if workout is currently active
         
         var path = StackState<Path.State>()
+        var exercisesList = ExercisesList.State()
         
-        init(workout: Workout? = nil, isWorkoutSaved: Bool, isWorkoutInProgress: Bool) {
+        
+        init(isWorkoutSaved: Bool, isWorkoutInProgress: Bool) {
             @Dependency(\.workoutDatabase.fetchAll) var fetchAll
             _ = try? fetchAll()
-            self.workout = workout ?? Workout()
+            self.workout = Workout()
             self.isWorkoutSaved = isWorkoutSaved
             self.isWorkoutInProgress = isWorkoutInProgress
         }
@@ -53,6 +55,7 @@ public struct WorkoutEditorFeature {
     public enum Action {
         case cancelButtonTapped
         case addSelectedBluePrints(bluePrints: [ExerciseBluePrint])
+        case exercisesList(ExercisesList.Action)
         case finishButtonTapped
         case nameChanged(String)
         case path(StackAction<Path.State, Path.Action>)
@@ -74,6 +77,10 @@ public struct WorkoutEditorFeature {
     @Dependency(\.workoutDatabase) var database
     
     public var body: some ReducerOf<Self> {
+        Scope(state: \.exercisesList, action: \.exercisesList) {
+            ExercisesList()
+        }
+        
         Reduce<State, Action> {
             state,
             action in
@@ -90,6 +97,8 @@ public struct WorkoutEditorFeature {
                     exercise.repCountUnit = item.preferredRepCountUnit()
                     exercise.workout = state.workout
                     item.frequency += 1 // Improving the search results
+                    
+                    state.exercisesList.exercises.append(ExerciseRow.State(exercise: exercise))
                 }
                 
                 return .none
@@ -99,6 +108,9 @@ public struct WorkoutEditorFeature {
                     .send(.reset),              // Reset the state
                     .send(.delegate(.collapse)) // Collapse the bottom sheet
                 )
+            case .exercisesList:
+                
+                return .none
             case .finishButtonTapped:
                 state.workout.endDate = self.now
                 state.workout.duration = state.workout.startDate.distance(to: self.now)

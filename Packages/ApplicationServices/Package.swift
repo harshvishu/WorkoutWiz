@@ -15,11 +15,18 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../Domain"),
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.9.2")    // swift-composable-architecture
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
-        .target(name: "ApplicationServices", dependencies: ["Domain"]),
+        .target(
+            name: "ApplicationServices",
+            dependencies: [
+                "Domain",
+                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+            ]
+        ),
         .testTarget(name: "ApplicationServicesTests", dependencies: ["ApplicationServices"]),
     ]
 )

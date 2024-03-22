@@ -10,31 +10,31 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
-import OSLog
+import ComposableArchitecture
 
 // Footer View
 struct ExerciseRowFooterView: View {
     @Environment(SaveDataManager.self) private var saveDataManager
     
-    var exercise: Exercise
-    @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, position: 0, repType: .none)
+    let store: StoreOf<ExerciseRow>
     
+    @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, position: 0, repType: .none)
+
     var body: some View {
             Button(action: {
-                // TODO: 
-//                appState.send(.popup(.addSetToExercise(exercise)))
+                store.send(.delegate(.addNewSet), animation: .default)
             }, label: {
                 HStack(alignment: .lastTextBaseline, spacing: 4) {
-                    if exercise.reps.isEmpty  {
+                    if store.exercise.reps.isEmpty  {
                         Label("No sets for this exercise.", systemImage: "lightbulb.circle.fill")
                             .foregroundStyle(.secondary)
                             .transition(.opacity)
                     } else {
-                        let energy =  Measurement(value: exercise.calories, unit: UnitEnergy.kilocalories)
+                        let energy =  Measurement(value: store.exercise.calories, unit: UnitEnergy.kilocalories)
                         Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
                             .foregroundStyle(.primary)
                         
-                        if let maxWeightLifted = exercise.maxWeightLifted , !maxWeightLifted.isZero {
+                        if let maxWeightLifted = store.exercise.maxWeightLifted , !maxWeightLifted.isZero {
                             let weight = Measurement(value: maxWeightLifted, unit: UnitMass.kilograms)
                             Label(weight.formatted(.measurement(width: .narrow, usage: .general)), systemImage: "scalemass.fill")
                                 .foregroundStyle(.primary)

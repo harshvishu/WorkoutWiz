@@ -11,23 +11,38 @@ import DesignSystem
 import Persistence
 import ApplicationServices
 import SwiftData
-import OSLog
+import ComposableArchitecture
 
-struct WorkoutEditorExerciseListView: View {
-    var exercises: [Exercise]
-    
-    init(exercises: [Exercise]) {
-        self.exercises = exercises
+@Reducer
+public struct ExercisesList {
+    @ObservableState
+    public struct State: Equatable {
+        var exercises: IdentifiedArrayOf<ExerciseRow.State> = []
     }
     
-    var body: some View {            
+    public enum Action {
+        case exercises(IdentifiedActionOf<ExerciseRow>)
+    }
+    
+    public var body: some ReducerOf<Self> {
+        EmptyReducer()
+            .forEach(\.exercises, action: \.exercises) {
+                ExerciseRow()
+            }
+    }
+}
+
+struct ExercisesListView: View {
+    let store: StoreOf<ExercisesList>
+    
+    var body: some View {
         Section {
             // TODO: replace with an enum to handle the states
-            if exercises.isEmpty  {
-               emptyStateView
+            if store.exercises.isEmpty  {
+                emptyStateView
             } else {
-                ForEach(exercises) {
-                    ExerciseRowView(exercise: $0)
+                ForEach(store.scope(state: \.exercises, action: \.exercises)) {
+                    ExerciseRowView(store: $0)
                 }
             }
         }
@@ -36,7 +51,7 @@ struct WorkoutEditorExerciseListView: View {
     }
 }
 
-fileprivate extension WorkoutEditorExerciseListView {
+fileprivate extension ExercisesListView {
     @ViewBuilder
     private var emptyStateView: some View {
         GeometryReader { proxy in
@@ -58,6 +73,7 @@ fileprivate extension WorkoutEditorExerciseListView {
 }
 
 #Preview {
-    return WorkoutEditorExerciseListView(exercises: [])
-        .withPreviewEnvironment()
+    ExercisesListView(store: StoreOf<ExercisesList>(initialState: ExercisesList.State(), reducer: {
+        ExercisesList()
+    }))
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 import DesignSystem
 import Domain
+import ComposableArchitecture
 
 struct EditRep {
     var exercise: Exercise?
@@ -18,45 +19,65 @@ struct AddRep {
     var exercise: Exercise?
 }
 
-struct PopupPresenterView: View {
-    @Environment(\.keyboardShowing) var keyboardShowing
+@Reducer
+public struct PopupPresenter {
     
-    @State private var state: PopupMessage?
+    @Reducer(state: .equatable)
+    public enum Destination {
+        case alert(AlertState<Alert>)
+        case repInput(RepInput)
+        
+        public enum Alert {
+            case confirmDeletion
+            case continueWithoutRecording
+            case openSettings
+        }
+    }
+    
+    @ObservableState
+    public struct State: Equatable {
+        @Presents var destination: Destination.State? = nil
+    }
+    
+    public enum Action {
+        case destination(PresentationAction<Destination.Action>)
+        case addNewSet(toExercise: Exercise)
+        case editSet(forExercise: Exercise, rep: Rep)
+    }
+    
+    public var body: some ReducerOf<Self> {
+        Reduce<State, Action> { state, action in
+            switch action {
+            case let .addNewSet(exercise):
+                state.destination = .repInput(RepInput.State(exercise: exercise))
+                return .none
+            case let .editSet(exercise, rep):
+                state.destination = .repInput(RepInput.State(exercise: exercise, rep: rep))
+                return .none
+            case .destination(.presented(.repInput(.delegate(.close)))):
+                state.destination = nil
+                return .none
+            case .destination:
+                return .none
+            }
+        }
+        .ifLet(\.$destination, action: \.destination)
+    }
+}
+
+struct PopupPresenterView: View {
+    @Bindable var store: StoreOf<PopupPresenter>
+    
+    @Environment(\.keyboardShowing) var keyboardShowing
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            if state != nil {
-                TransparentBlurView(removeAllFilters: true)
-                    .blur(radius: 9, opaque: true)
-                    .background(.background.opacity(0.05))
-                    .ignoresSafeArea(.all)
-                    .transition(.opacity.animation(.easeInOut))
-                    .onTapGesture {
-                        dismiss()
-                    }
-            }
-            Group {
-                if case let .addSetToExercise(exercise) = state {
-                    RepInputView(exercise: exercise, onClose: dismiss)
-                } else if case let .editSetForExercise(exercise, rep) = state {
-                    RepInputView(exercise: exercise, rep: rep, onClose: dismiss)
-                }
-            }
-            .transition(.move(edge: .bottom))
+            Color.clear
         }
-        // TODO:
-//        .onReceive(appState.signal){ message in
-//            if case .popup(let message) = message {
-//                withAnimation {
-//                    self.state = message
-//                }
-//            }
-//        }
-    }
-    
-    private func dismiss() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            state = nil
+        .sheet(item: $store.scope(state: \.destination?.repInput, action: \.destination.repInput)) { store in
+            RepInputView(store: store)
+                .presentationDetents([.medium])
+                .presentationContentInteraction(.resizes)
         }
     }
 }

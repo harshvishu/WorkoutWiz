@@ -40,12 +40,12 @@ public final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.tabWindow = tabWindow
     }   
     
-    public func addPopupContainerView() {
+    public func addPopupContainerView(store: StoreOf<PopupPresenter>) {
         guard let scene = windowScene else {return}
         
         let popupContainerController = UIHostingController(
             rootView:
-                PopupPresenterView()
+                PopupPresenterView(store: store)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .addKeyboardVisibilityToEnvironment()
         )

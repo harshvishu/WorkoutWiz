@@ -20,16 +20,15 @@ public struct AppFeature {
     
     @ObservableState
     public struct State: Equatable {
-        // TODO: check
-        var tabs = TabBarFeature.State()
+        public init() {}
         
-        public init() {
-            self.tabs = TabBarFeature.State()
-        }
+        var tabs = TabBarFeature.State()
+        var popup = PopupPresenter.State()
     }
     
     public enum Action {
         case tabs(TabBarFeature.Action)
+        case popup(PopupPresenter.Action)
     }
     
     public var body: some ReducerOf<Self> {
@@ -37,8 +36,27 @@ public struct AppFeature {
             TabBarFeature()
         }
         
+        Scope(state: \.popup, action: \.popup) {
+            PopupPresenter()
+        }
+        
         Reduce { state, action in
             switch action {
+            case .popup:
+                return .none
+            case let .tabs(.workoutEditor(.exercisesList(.exercises(exercises)))):
+                switch exercises {
+                case let .element(id: exerciseID, action: .delegate(.addNewSet)):
+                    if let exercise = state.tabs.workoutEditor.exercisesList.exercises[id: exerciseID]?.exercise {
+                        return .send(.popup(.addNewSet(toExercise: exercise)))
+                    }
+                    return .none
+                case let .element(id: exerciseID, action: .delegate(.editSet(rep))):
+                    if let exercise = state.tabs.workoutEditor.exercisesList.exercises[id: exerciseID]?.exercise {
+                        return .send(.popup(.editSet(forExercise: exercise, rep: rep)))
+                    }
+                    return .none
+                }
             case .tabs(.delegate(.showLogs)):
                 state.tabs.currentTab = .logs
                 return .none
@@ -57,10 +75,13 @@ public protocol WorkoutWizApp : App {
 /// The concrete implementation is in the WorkoutWizApp parent app.
 public extension WorkoutWizApp {
     
+    var tabBarStore: StoreOf<TabBarFeature> { store.scope(state: \.tabs, action: \.tabs) }
+    var popupStore: StoreOf<PopupPresenter> { store.scope(state: \.popup, action: \.popup) }
+    
     @MainActor
     var body: some Scene {
         WindowGroup {
-            RootView(store: store.scope(state: \.tabs, action: \.tabs))
+            RootView(tabBarStore: tabBarStore, popupStore: popupStore)
                 .task {Logger.ui.log("Welcome to WorkoutWiz!")}
                 .withAppEnvironment()
         }

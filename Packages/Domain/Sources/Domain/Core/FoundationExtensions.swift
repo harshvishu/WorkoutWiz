@@ -31,13 +31,6 @@ public extension Comparable {
     }
 }
 
-// MARK: Logger extensions
-public extension Logger {
-    func logDebug(_ object: Any) {
-        dump(object)
-    }
-}
-
 public extension Bool {
     func not() -> Bool {
         !self

@@ -60,7 +60,7 @@ struct WorkoutEditorView: View {
                             }
                         
                         if store.workout.exercises.isNotEmpty {
-                            WorkoutEditorExerciseListView(exercises: store.workout.exercises)
+                            ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList))
                         } else {
                             emptyStateView
                         }

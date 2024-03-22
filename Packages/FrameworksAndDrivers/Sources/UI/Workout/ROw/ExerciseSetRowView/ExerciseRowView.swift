@@ -10,11 +10,30 @@ import SwiftUI
 import DesignSystem
 import ApplicationServices
 import Persistence
-import OSLog
+import ComposableArchitecture
 
+@Reducer
+public struct ExerciseRow {
+    @ObservableState
+    public struct State: Equatable, Identifiable {
+        public var id: ObjectIdentifier {
+            exercise.id
+        }
+        var exercise: Exercise
+    }
+    
+    public enum Action {
+        case delegate(Delegate)
+        
+        public enum Delegate {
+            case addNewSet
+            case editSet(Rep)
+        }
+    }
+}
 
 public struct ExerciseRowView: View {
-    var exercise: Exercise
+    let store: StoreOf<ExerciseRow>
     
     @State private var showExpandedSetView = true
     @State private var messageQueue: ConcreteMessageQueue<(Rep,Int)> = .init()
@@ -23,26 +42,24 @@ public struct ExerciseRowView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
                 // Header
-                ExerciseRowHeaderView(exerciseName: exercise.template?.name ?? "", isExpanded: $showExpandedSetView)
+                ExerciseRowHeaderView(store: store, isExpanded: $showExpandedSetView)
                     .padding(.bottom, 4)
                 
                 // Sets
 //                Group {
                     // Show all exercise reps
-                    ForEach(exercise.reps) { set in
-                        ExerciseRepRowView(set: set, position: set.position)
+                ForEach(store.exercise.reps) { rep in
+                        ExerciseRepRowView(set: rep, position: rep.position)
                             .transition(.move(edge: .bottom))
                             .onTapGesture {
-                                
-                                // TODO: 
-//                                appState.send(.popup(.editSetForExercise(exercise, set)))
+                                store.send(.delegate(.editSet(rep)))
                             }
                     }
                     
                     // TODO: Use this instead 
-                if exercise.reps.isNotEmpty {
+                if store.exercise.reps.isNotEmpty {
                     HStack {
-                        Text("\(exercise.repCountUnit.description)")
+                        Text("\(store.exercise.repCountUnit.description)")
                             .font(.caption2)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
@@ -65,7 +82,7 @@ public struct ExerciseRowView: View {
             }
             
             // Footer
-            ExerciseRowFooterView(exercise: exercise)
+            ExerciseRowFooterView(store: store)
                 .zIndex(-1)
         }
         .listRowBackground(Color.clear)
