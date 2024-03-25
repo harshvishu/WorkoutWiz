@@ -101,3 +101,30 @@ public func getDateComponentsFormatter(_ timeInterval: TimeInterval) -> DateComp
         return secondsFormatter
     }
 }
+
+public func timeInterval(from timeString: String) -> TimeInterval? {
+    let components = timeString.components(separatedBy: ":")
+    guard !components.isEmpty else {
+        return nil
+    }
+    
+    var totalSeconds = 0
+    for (index, component) in components.reversed().enumerated() {
+        if let value = Int(component) {
+            switch index {
+            case 0: // seconds
+                totalSeconds += value
+            case 1: // minutes
+                totalSeconds += value * 60
+            case 2: // hours
+                totalSeconds += value * 3600
+            default:
+                break
+            }
+        } else {
+            return nil // Unable to convert component to integer
+        }
+    }
+    
+    return TimeInterval(totalSeconds)
+}

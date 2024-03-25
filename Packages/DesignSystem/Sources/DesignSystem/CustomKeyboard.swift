@@ -74,25 +74,23 @@ public typealias TimeChangeHandler = (TimeInterval) -> ()
 public enum RepInputMode {
     case repCount
     case timeCount
+    case weight
 }
 
 public struct RepInputKeyboard: View {
     
-    @Binding private var value: String
-    @Binding private var mode: RepInputMode
     @State private var timePickerModel = TimerPickerModel()
 
+    private var mode: RepInputMode
     private var keyPressHandler : KeyPressHandler?
     private var timeChangeHandler : TimeChangeHandler?
     
     public init(
-        value: Binding<String>,
-        mode: Binding<RepInputMode>,
+        mode: RepInputMode,
         keyPressHandler: KeyPressHandler? = nil,
         timeChangeHandler: TimeChangeHandler? = nil
     ) {
-        self._value = value
-        self._mode = mode
+        self.mode = mode
         self.keyPressHandler = keyPressHandler
         self.timeChangeHandler = timeChangeHandler
     }
@@ -100,10 +98,10 @@ public struct RepInputKeyboard: View {
     public var body: some View {
         Group {
             switch mode {
-            case .repCount:
-                repInputControl
+            case .repCount, .weight:
+                keypadInputView
             case .timeCount:
-                timeInputControl
+                wheelInputView
                     .onChange(of: timePickerModel.totalTimeForCurrentSelection, { oldValue, newValue in
                         timeChangeHandler?(TimeInterval(newValue))
                     })
@@ -114,12 +112,26 @@ public struct RepInputKeyboard: View {
         .padding([.leading, .bottom, .trailing])
     }
     
+    private var keysSet: [CustomKey] {
+        switch mode {
+        case .repCount:
+            [.digit(1), .digit(2), .digit(3), .next,
+             .digit(4), .digit(5), .digit(6), .plus,
+             .digit(7), .digit(8), .digit(9), .minus,
+             .empty, .digit(0), .delete, .submit]
+        case .timeCount:
+            []
+        case .weight:
+            [.digit(1), .digit(2), .digit(3), .next,
+             .digit(4), .digit(5), .digit(6), .plus,
+             .digit(7), .digit(8), .digit(9), .minus,
+             .period, .digit(0), .delete, .submit]
+        }
+    }
+    
     @ViewBuilder
-    var repInputControl: some View {
-        let keys: [CustomKey] = [.digit(1), .digit(2), .digit(3), .next,
-                                 .digit(4), .digit(5), .digit(6), .plus,
-                                 .digit(7), .digit(8), .digit(9), .minus,
-                                 .empty, .digit(0), .delete, .submit]
+    var keypadInputView: some View {
+        let keys: [CustomKey] = keysSet
         
         let columns = [
             GridItem(.flexible()),
@@ -162,9 +174,8 @@ public struct RepInputKeyboard: View {
         }
     }
     
-    
     @ViewBuilder
-    var timeInputControl: some View {
+    var wheelInputView: some View {
         let keys: [CustomKey] = [.next, .plus, .minus, .submit]
         
         let columns = [
@@ -299,7 +310,7 @@ public struct TimeInputKeyboard: View {
     @State var mode2: RepInputMode = .repCount
     
     return VStack(spacing: 40) {
-        RepInputKeyboard(value: $value, mode: $mode)
-        RepInputKeyboard(value: $value, mode: $mode2)
+        RepInputKeyboard(mode: mode)
+        RepInputKeyboard(mode: mode2)
     }
 }

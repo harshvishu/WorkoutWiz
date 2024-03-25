@@ -58,6 +58,19 @@ public extension String {
     }
 }
 
+public func hasFraction(_ value: Double) -> Bool {
+    return value != Double(Int(value))
+}
+
+public func getTwoNumbersAfterDecimal(from value: Double) -> Int {
+    let fractionalPart = Int((value.truncatingRemainder(dividingBy: 1)) * 100)
+    return fractionalPart
+}
+
+public func endsWithZero(_ number: Int) -> Bool {
+    return number % 10 == 0
+}
+
 // Extension to find all ranges of a substring in a string
 extension String {
     func ranges(of searchString: String, options: String.CompareOptions = .literal) -> [Range<String.Index>] {

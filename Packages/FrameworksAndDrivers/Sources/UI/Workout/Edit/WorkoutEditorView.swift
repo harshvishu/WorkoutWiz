@@ -105,21 +105,6 @@ struct WorkoutEditorView: View {
                         
                         Button(action: {
                             store.send(.finishButtonTapped)
-                            // Add alert
-//                            Task {
-//                                let isCurrentWorkoutValid = await isCurrentWorkoutValid()
-//                                withCustomSpring {
-//                                    if isCurrentWorkoutValid {
-//                                        Logger.ui.debug("showFinishAlert")
-//                                        alertOption = AlertOption.finishWorkout
-//                                    } else {
-//                                        Logger.ui.debug("showWorkoutInvalidAlert")
-//                                        alertOption = AlertOption.invalidWorkout
-//                                    }
-//                                    showFinishWorkoutAlert = true
-//                                }
-//                            }
-                            
                         }, label: {
                             Text("Finish Workout")
                                 .frame(maxWidth: .infinity)

@@ -34,5 +34,11 @@ public extension EdgeInsets {
         top: 4,
         leading: 0,
         bottom: 4,
-        trailing: 0)
+        trailing: 0)  
+    
+    static let buttonContentInsets = EdgeInsets(
+        top: 8,
+        leading: 16,
+        bottom: 8,
+        trailing: 16)
 }
