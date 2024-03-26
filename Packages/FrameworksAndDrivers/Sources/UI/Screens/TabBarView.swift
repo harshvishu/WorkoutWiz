@@ -31,7 +31,7 @@ public struct TabBarFeature {
         
         // Child States
         var dashboard = DashboardTab.State()
-        var workoutEditor = WorkoutEditorFeature.State(isWorkoutSaved: false, isWorkoutInProgress: false)
+        var workoutEditor = WorkoutEditorFeature.State()
         
         init(availableTabs: [AppScreen] = AppScreen.availableTabs, currentTab: AppScreen = AppScreen.dashboard) {
             self.availableTabs = availableTabs
@@ -83,6 +83,12 @@ public struct TabBarFeature {
                 state.resizable = resizable
                 return .none
             case .delegate:
+                return .none
+                
+            case let .dashboard(.dashboard(.workoutsList(.delegate(.editWorkout(workout))))):
+                guard state.workoutEditor.isWorkoutInProgress.not() else {return .none}
+                state.workoutEditor = WorkoutEditorFeature.State(isWorkoutSaved: true, isWorkoutInProgress: true, workout: workout)
+                state.bottomSheetPresentationDetent = .ExpandedSheetDetent
                 return .none
             case .dashboard:
                 return .none

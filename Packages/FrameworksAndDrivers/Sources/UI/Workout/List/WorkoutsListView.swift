@@ -33,10 +33,6 @@ public struct WorkoutsListFeature {
             fetchWorkouts()
         }
         
-//        public init(workouts: [Workout]) {
-//            self.workouts = workouts
-//        }
-        
         // Database ops
         mutating func fetchWorkouts() {
             @Dependency(\.workoutDatabase.fetchAll) var context

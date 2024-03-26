@@ -28,13 +28,20 @@ public struct WorkoutEditorFeature {
         var path = StackState<Path.State>()
         var exercisesList = ExercisesList.State()
         
-        
-        init(isWorkoutSaved: Bool, isWorkoutInProgress: Bool) {
+        init() {
             @Dependency(\.workoutDatabase.fetchAll) var fetchAll
             _ = try? fetchAll()
             self.workout = Workout()
+            self.isWorkoutSaved = false
+            self.isWorkoutInProgress = false
+            self.fetchExercises()
+        }
+        
+        init(isWorkoutSaved: Bool, isWorkoutInProgress: Bool, workout: Workout) {
+            self.workout = workout
             self.isWorkoutSaved = isWorkoutSaved
             self.isWorkoutInProgress = isWorkoutInProgress
+            self.fetchExercises()
         }
         
         mutating func saveChanges() {
@@ -49,6 +56,11 @@ public struct WorkoutEditorFeature {
                     Logger.action.error("\(error)")
                 }
             }
+        }
+        
+        fileprivate mutating func fetchExercises() {
+            let exercises = IdentifiedArray(uniqueElements: workout.exercises.map({ExerciseRow.State(exercise: $0)}))
+            exercisesList = ExercisesList.State(exercises: exercises)
         }
     }
     
@@ -77,6 +89,7 @@ public struct WorkoutEditorFeature {
     @Dependency(\.workoutDatabase) var database
     
     public var body: some ReducerOf<Self> {
+        
         Scope(state: \.exercisesList, action: \.exercisesList) {
             ExercisesList()
         }
@@ -109,7 +122,6 @@ public struct WorkoutEditorFeature {
                     .send(.delegate(.collapse)) // Collapse the bottom sheet
                 )
             case .exercisesList:
-                
                 return .none
             case .finishButtonTapped:
                 state.workout.endDate = self.now
@@ -167,6 +179,12 @@ public struct WorkoutEditorFeature {
                 } else {
                     return .send(.delegate(.navigationStackNonEmpty))
                 }
+            }
+        }
+        .onChange(of: \.workout) { _, _ in
+            Reduce {state, _ in
+                state.fetchExercises()
+                return .none
             }
         }
     }

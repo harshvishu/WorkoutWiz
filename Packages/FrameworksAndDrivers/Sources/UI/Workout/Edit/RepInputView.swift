@@ -102,7 +102,8 @@ public struct RepInput {
                 guard state.exercise.reps.isEmpty else {return .none}
                 state.repCountUnit = repCountUnit
                 state.exercise.repCountUnit = repCountUnit
-                return .none
+                let focusField: FocusField = repCountUnit == .rep ? .rep : .time
+                return .send(.focusedFieldChanged(focusField))
                 
             case .deleteButtonTapped:
                 if let id = state.rep?.id, state.isRepSaved {
@@ -272,7 +273,7 @@ struct RepInputView: View {
                     
                     let weight = store.weightText.double ?? 0.0
                     let repCount = store.repCountText.int ?? 0
-                    let repTime = store.repTimeText.double ?? 0.0
+                    let repTime = timeInterval(from: store.repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
                     
                     let calories = fitnessTrackingUseCase.trackCaloriesBurned(
                         metValue: store.exercise.template?.category.met() ?? 0.0,

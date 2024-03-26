@@ -102,29 +102,44 @@ public func getDateComponentsFormatter(_ timeInterval: TimeInterval) -> DateComp
     }
 }
 
-public func timeInterval(from timeString: String) -> TimeInterval? {
+public func timeInterval(from timeString: String, formatter: DateComponentsFormatter) -> TimeInterval? {
     let components = timeString.components(separatedBy: ":")
     guard !components.isEmpty else {
         return nil
     }
     
-    var totalSeconds = 0
-    for (index, component) in components.reversed().enumerated() {
-        if let value = Int(component) {
-            switch index {
-            case 0: // seconds
-                totalSeconds += value
-            case 1: // minutes
-                totalSeconds += value * 60
-            case 2: // hours
-                totalSeconds += value * 3600
-            default:
-                break
-            }
-        } else {
-            return nil // Unable to convert component to integer
+    var hour = 0
+    var minute = 0
+    var second = 0
+    
+    switch formatter {
+    case hoursMinutesSecondsFormatter:
+        guard components.count >= 3,
+              let hours = Int(components[0]),
+              let minutes = Int(components[1]),
+              let seconds = Int(components[2]) else {
+            return nil
         }
+        hour = hours
+        minute = minutes
+        second = seconds
+    case minutesSecondsFormatter:
+        guard components.count >= 2,
+              let minutes = Int(components[0]),
+              let seconds = Int(components[1]) else {
+            return nil
+        }
+        minute = minutes
+        second = seconds
+    case secondsFormatter:
+        guard components.count >= 1,
+              let seconds = Int(components[0]) else {
+            return nil
+        }
+        second = seconds
+    default:
+        return nil
     }
     
-    return TimeInterval(totalSeconds)
+    return TimeInterval(hour * 3600 + minute * 60 + second)
 }
