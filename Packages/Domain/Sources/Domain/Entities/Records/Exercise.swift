@@ -14,32 +14,61 @@ public final class Exercise: Identifiable {
     
     public var template: ExerciseBluePrint?
     public var workout: Workout?
-    
-    @Relationship(deleteRule: .cascade, inverse: \Rep.exercise)
-    public var reps: [Rep] = []
+    public var sortOrder: Int = 0
+        
+    @Relationship(deleteRule: .cascade, inverse: \Rep.exercise) private var _reps: [Rep] = []
+    public var reps: [Rep] {
+        _reps.sorted(using: KeyPathComparator(\Rep.sortOrder))
+    }
     
     public var calories: Double = 0.0
     public var maxWeightLifted: Double? // Not needed for ody weight exercises
     
     private var _repCountUnit: Int = RepCountUnit.rep.rawValue
-   
-    public init() {}
-    
     public var repCountUnit: RepCountUnit {
-        set {
-            self._repCountUnit = newValue.rawValue
-        }
-        get {
-            RepCountUnit(rawValue: _repCountUnit) ?? .rep
-        }
+        set {_repCountUnit = newValue.rawValue}
+        get {RepCountUnit(rawValue: _repCountUnit) ?? .rep}
     }
     
     public var isBodyWeightOnly: Bool {
         template?.equipment == .bodyOnly
     }  
     
-    public func preferredRepCountUnit() -> RepCountUnit {
+    public var preferredRepCountUnit: RepCountUnit {
         template?.preferredRepCountUnit() ?? .rep
+    }
+
+    public init() {}
+    
+    // MARK: Public Methods
+    public func appendRep(_ rep: Rep) {
+        var tempArray = reps
+        rep.sortOrder = tempArray.count
+        tempArray.append(rep)
+        _reps = tempArray
+    }
+    
+    public func deleteRep(rep: Rep) {
+        _reps.removeAll { $0 == rep }
+    }
+    
+    public func deleteRep(fromOffsets: IndexSet) {
+        var tempArray = reps
+        tempArray.remove(atOffsets: fromOffsets)
+        setReps(orderedReps: tempArray)
+    }
+    
+    public func setReps(orderedReps: [Rep]) {
+        for (index, rep) in orderedReps.enumerated() {
+            rep.sortOrder = index
+        }
+        _reps = orderedReps
+    }
+    
+    public func moveRep(fromOffsets: IndexSet, toOffset: Int) {
+        var tempArray = reps
+        tempArray.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        setReps(orderedReps: tempArray)
     }
 }
 

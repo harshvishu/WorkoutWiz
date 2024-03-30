@@ -9,10 +9,6 @@ import Domain
 import SwiftUI
 import DesignSystem
 import ApplicationServices
-import Persistence
-import Combine
-import OSLog
-
 
 struct ExerciseRepRowView: View {
     
@@ -39,13 +35,9 @@ struct ExerciseRepRowView: View {
             case .time:
                 HStack(alignment: .top) {
                     
-                    let elapsedTime = set.time.elapsedTime
-                    
-                    Text(elapsedTime.formattedString)
+                    let elapsedTime = set.time.formattedElapsedTime()
+                    Text(elapsedTime)
                         .font(.title.bold())
-                    
-//                    Text(elapsedTime.formattedTimeNotation)
-//                        .font(.caption2)
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 

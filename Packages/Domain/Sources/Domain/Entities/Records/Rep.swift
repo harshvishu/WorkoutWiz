@@ -19,19 +19,17 @@ public final class Rep: Identifiable {
     public var time: TimeInterval
     public var count: Int
     public var calories: Double
-    public var position: Int
+    public var sortOrder: Int = 0
     
     private var _weightUnit: Int
     private var _countUnit: Int
     private var _repType: Int
     
-    public init(weight: Double, countUnit: RepCountUnit, time: TimeInterval, count: Int, weightUnit: WeightUnit, calories: Double, position: Int, repType: RepType) {
+    public init(weight: Double, countUnit: RepCountUnit, time: TimeInterval, count: Int, weightUnit: WeightUnit, calories: Double, repType: RepType) {
         self.weight = weight
         self.time = time
         self.count = count
         self.calories = calories
-        self.position = position
-        
         self._weightUnit = weightUnit.rawValue
         self._countUnit = countUnit.rawValue
         self._repType = repType.rawValue

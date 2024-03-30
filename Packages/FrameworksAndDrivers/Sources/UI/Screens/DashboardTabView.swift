@@ -40,12 +40,9 @@ public struct DashboardTab {
 struct DashboardTabView: View {
     let store: StoreOf<DashboardTab>
     
-    @State private var routerPath = RouterPath()
-    
     public var body: some View {
         NavigationStack {
             DashboardView(store: store.scope(state: \.dashboard, action: \.dashboard))
-                .environment(routerPath)
         }
     }
 }

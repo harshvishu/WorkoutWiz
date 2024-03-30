@@ -70,6 +70,14 @@ public let hoursMinutesSecondsFormatter: DateComponentsFormatter = {
     return formatter
 }()
 
+public let hoursMinutesFormatter: DateComponentsFormatter = {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute]
+    formatter.unitsStyle = .positional
+    formatter.zeroFormattingBehavior = .pad
+    return formatter
+}()
+
 public let minutesSecondsFormatter: DateComponentsFormatter = {
     let formatter = DateComponentsFormatter()
     formatter.allowedUnits = [.minute, .second]
@@ -92,13 +100,17 @@ public let ordinalFormatter:  NumberFormatter = {
     return formatter
 }()
 
-public func getDateComponentsFormatter(_ timeInterval: TimeInterval) -> DateComponentsFormatter {
+public func getDateComponentsFormatter(_ timeInterval: TimeInterval, short: Bool = false) -> DateComponentsFormatter {
     if timeInterval > 3600 {
-        return hoursMinutesSecondsFormatter
+        if short {
+            hoursMinutesFormatter
+        } else {
+            hoursMinutesSecondsFormatter
+        }
     } else if timeInterval > 60 {
-        return minutesSecondsFormatter
+        minutesSecondsFormatter
     } else {
-        return secondsFormatter
+        secondsFormatter
     }
 }
 

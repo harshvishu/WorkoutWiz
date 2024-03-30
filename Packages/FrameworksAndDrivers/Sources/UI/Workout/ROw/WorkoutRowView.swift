@@ -25,7 +25,6 @@ struct WorkoutRowView: View {
                     
                     Text(workout.startDate, style: .date)
                         .font(.caption)
-                    //                        .foregroundStyle(.secondary)
                         .previewBorder(.red.opacity(0.2))
                 }
                 .previewBorder(.green.opacity(0.2))
@@ -67,7 +66,7 @@ struct WorkoutRowView: View {
                 
                 // TODO: Fix Time Duration
                 
-                Label(formatTime(workout.duration), systemImage: "timer")
+                Label(workout.duration.formattedElapsedTime(allowedUnits: [.hour, .minute, .second], unitsStyle: .positional), systemImage: "timer")
                     .frame(maxWidth: .infinity)
                     .previewBorder(.red.opacity(0.2))
                 

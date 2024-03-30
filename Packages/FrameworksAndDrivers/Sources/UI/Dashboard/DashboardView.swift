@@ -18,7 +18,7 @@ import ComposableArchitecture
 public struct DashboardFeature {
     
     public struct State: Equatable {
-        var workoutsList = WorkoutsListFeature.State()
+        var workoutsList = WorkoutsListFeature.State(filter: .today(limit: 1))
     }
     
     public enum Action {
@@ -32,7 +32,7 @@ public struct DashboardFeature {
         
         Reduce<State, Action> { state, action in
             switch action {
-            case let .workoutsList(.delegate(.editWorkout(workout))):
+            case let .workoutsList(.delegate(.editWorkout(_))):
                 return .none
             case .workoutsList:
                 return .none

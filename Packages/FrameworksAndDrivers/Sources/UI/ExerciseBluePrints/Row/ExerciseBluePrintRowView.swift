@@ -18,7 +18,6 @@ struct ExerciseBluePrintRowView: View {
     @Dependency(\.exerciseThumbnailFetcher) var imageFetcher
 
     var body: some View {
-//        VStack(spacing: 0) {
             HStack(alignment: .center) {
                 if let url = imageFetcher.imageUrlFor(imageNames: exercise.images).first {
                     AsyncImage(url: url, transaction: Transaction(animation: .easeInOut)) { phase in
@@ -80,28 +79,9 @@ struct ExerciseBluePrintRowView: View {
                     .lineLimit(1)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                                
-//                Button(action: {
-//                    // TODO: pending
-//                    //                                routerPath.navigate(to: .exerciseDetails(exercise))
-//                }, label: {
-//                    Image(systemName: "info.circle")
-//                })
-//                .tint(.primary)
-//                .buttonStyle(.borderless)
             }
             .contentShape(Rectangle())
-            //        .onTapGesture {
-            //            selectionMap[exercise] = !isSelected
-            //        }
             .selectableRow(isSelected: isSelected, edge: .trailing)
             .padding(.listRowContentInset)
-//            Divider()
-//                .padding(.leading)
-//                .opacity(isSelected ? 0 : 1)
-//        }
-//        .listRowInsets(.listRowInset)
-//        .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
-//        .listRowSeparator(.hidden)
     }
 }

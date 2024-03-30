@@ -14,6 +14,10 @@ public let uiBundle = Bundle.module
 public let appBackgroundColor = Color("background", bundle: uiBundle)
 public let appAccentColor = Color("accent", bundle: uiBundle)
 
+// Shared UserDefaults suite name using the App Group identifier
+let suiteName = "group." + (Bundle.main.bundleIdentifier ?? "") + ".SharedStorage"
+let sharedDefaults = UserDefaults(suiteName: suiteName) ?? .standard
+
 struct Logger {
     static let ui = os.Logger(subsystem: uiBundle.bundleIdentifier!, category: "UI/View")
     static let state = os.Logger(subsystem: uiBundle.bundleIdentifier!, category: "UI/State")

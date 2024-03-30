@@ -24,9 +24,10 @@ public struct WorkoutEditorFeature {
         var workout: Workout
         var isWorkoutSaved: Bool        // To tell if workout is persisted in database
         var isWorkoutInProgress: Bool   // To tell if workout is currently active
+        var sessionStartDate: Date
         
         var path = StackState<Path.State>()
-        var exercisesList = ExercisesList.State()
+        var exercisesList: ExercisesList.State
         
         init() {
             @Dependency(\.workoutDatabase.fetchAll) var fetchAll
@@ -34,14 +35,21 @@ public struct WorkoutEditorFeature {
             self.workout = Workout()
             self.isWorkoutSaved = false
             self.isWorkoutInProgress = false
-            self.fetchExercises()
+            self.exercisesList = .init()
+            self.sessionStartDate = .init()
         }
         
         init(isWorkoutSaved: Bool, isWorkoutInProgress: Bool, workout: Workout) {
             self.workout = workout
             self.isWorkoutSaved = isWorkoutSaved
             self.isWorkoutInProgress = isWorkoutInProgress
-            self.fetchExercises()
+            let exercises = IdentifiedArray(
+                uniqueElements: workout.exercises
+                    .map({ExerciseRow.State(exercise: $0)})
+                    .sorted(using: KeyPathComparator(\.exercise.sortOrder, order: .forward))    // use forward for decending order
+            )
+            self.exercisesList = ExercisesList.State(exercises: exercises)
+            self.sessionStartDate = .init()
         }
         
         mutating func saveChanges() {
@@ -56,11 +64,6 @@ public struct WorkoutEditorFeature {
                     Logger.action.error("\(error)")
                 }
             }
-        }
-        
-        fileprivate mutating func fetchExercises() {
-            let exercises = IdentifiedArray(uniqueElements: workout.exercises.map({ExerciseRow.State(exercise: $0)}))
-            exercisesList = ExercisesList.State(exercises: exercises)
         }
     }
     
@@ -80,8 +83,9 @@ public struct WorkoutEditorFeature {
             case collapse
             case expand
             case workoutSaved
-            case navigationStackNonEmpty
-            case navigationStackIsEmpty
+            case activeWorkoutChanged(Workout)
+            case isBottomSheetCollapsible(Bool)
+            case toggleBottomSheet
         }
     }
     
@@ -105,28 +109,42 @@ public struct WorkoutEditorFeature {
                 
                 for item in bluePrints {
                     let exercise = Exercise()
-                    state.workout.exercises.append(exercise)
+                    state.workout.appendExercise(exercise)
                     exercise.template = item
                     exercise.repCountUnit = item.preferredRepCountUnit()
                     exercise.workout = state.workout
                     item.frequency += 1 // Improving the search results
                     
-                    state.exercisesList.exercises.append(ExerciseRow.State(exercise: exercise))
+                    state.exercisesList.exercises.insert(ExerciseRow.State(exercise: exercise), at: 0)
                 }
                 
                 return .none
                 
             case .cancelButtonTapped:
                 return .concatenate(
-                    .send(.reset),              // Reset the state
-                    .send(.delegate(.collapse)) // Collapse the bottom sheet
+                    .send(.delegate(.activeWorkoutChanged(state.workout))),
+                    .send(.delegate(.collapse)), // Collapse the bottom sheet
+                    .send(.reset)              // Reset the state
                 )
+                
+            case let .exercisesList(.delegate(.delete(exercise))):
+                state.workout.deleteExercise(exercise: exercise.exercise)
+                state.exercisesList.exercises.remove(id: exercise.id)
+                return .none
+                
             case .exercisesList:
                 return .none
+                
             case .finishButtonTapped:
                 state.workout.endDate = self.now
-                state.workout.duration = state.workout.startDate.distance(to: self.now)
-                return .concatenate(.send(.delegate(.workoutSaved)), .send(.delegate(.collapse)), .send(.reset))  // TODO: Close
+                let sessionTime = state.sessionStartDate.distance(to: self.now)
+                state.workout.duration += sessionTime
+                return .concatenate(
+                    .send(.delegate(.workoutSaved)),
+                    .send(.delegate(.activeWorkoutChanged(state.workout))),
+                    .send(.delegate(.collapse)),
+                    .send(.reset)
+                )  // TODO: Close
                 
             case let .nameChanged(text):
                 state.workout.name = text
@@ -146,12 +164,13 @@ public struct WorkoutEditorFeature {
                 
             case .reset:
                 state.workout = Workout()           // Reset the current workout
+                state.exercisesList = .init()       // Reset exercise list
                 state.isWorkoutSaved = false        // New workout is not saved
                 state.isWorkoutInProgress = false   // Current workout is not active
-                return .none
+                return .send(.delegate(.activeWorkoutChanged(state.workout)))
                 
             case .saveChanges:
-                // TODO: Pending
+                // TODO: Check for improvements
                 @Dependency(\.workoutDatabase) var database
                 
                 guard state.isWorkoutSaved.not() else {return .none}
@@ -167,6 +186,9 @@ public struct WorkoutEditorFeature {
             case .showExerciseListButtonTapped:
                 state.path.append(.exerciseLists(ExerciseBluePrintsList.State()))
                 return .none
+                
+            case .delegate(.toggleBottomSheet):
+                return .send(.delegate(.activeWorkoutChanged(state.workout)))
             case .delegate:
                 return .none
             }
@@ -174,17 +196,16 @@ public struct WorkoutEditorFeature {
         .forEach(\.path, action: \.path)
         .onChange(of: \.path) { _, newValue in
             Reduce { state, action in
+                // MARK: Show/Hide Tabbar & Change BottomSheet size when we have items in navigation stack
                 if newValue.isEmpty {
-                    return .send(.delegate(.navigationStackIsEmpty))
+                    /// Make bottom sheet non-resizable/ non-collapsible
+                    /// Make custom tabbar hidden to show full screen view
+                    return .send(.delegate(.isBottomSheetCollapsible(true)))
                 } else {
-                    return .send(.delegate(.navigationStackNonEmpty))
+                    /// Make bottom sheet resizable/collapsible
+                    /// Make custom tabbar visible
+                    return .send(.delegate(.isBottomSheetCollapsible(false)))
                 }
-            }
-        }
-        .onChange(of: \.workout) { _, _ in
-            Reduce {state, _ in
-                state.fetchExercises()
-                return .none
             }
         }
     }

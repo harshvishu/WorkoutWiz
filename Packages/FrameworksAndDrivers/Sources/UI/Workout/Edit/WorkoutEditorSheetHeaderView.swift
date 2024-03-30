@@ -13,10 +13,16 @@ import Domain
 import ComposableArchitecture
 
 struct WorkoutEditorSheetHeaderView: View {
+    @Dependency(\.continuousClock) var clock
+    
     @Bindable var store: StoreOf<WorkoutEditorFeature>
+    @Binding var selectedDetent: PresentationDetent
     
     @State private var viewState: ViewState = .timer
     @State private var isAnimating: Bool = false
+    
+    @State private var elapsedTime: TimeInterval = 0
+    @State private var timerTask: Task<Void, Error>?
     
     var body: some View {
         HStack(spacing: 0) {
@@ -34,14 +40,13 @@ struct WorkoutEditorSheetHeaderView: View {
                         switch viewState {
                         case .timer:
                             Group {
-                                // TODO: Fix the timer
-                                let elapsedTime = Date().timeIntervalSince(store.workout.startDate)
-                                Text("\(elapsedTime)")
-                                    .contentTransition(.numericText(value: elapsedTime))
+                                let estimatedElapsedTime = store.workout.duration + elapsedTime
+                                Text(estimatedElapsedTime.formattedElapsedTime())
+                                    .contentTransition(.numericText())
                                 Image(systemName: "timer")
                             }
                             .fixedSize()
-                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+//                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         case .calories:
                             Group {
                                 let energy =  Measurement(value: store.workout.calories, unit: UnitEnergy.kilocalories)
@@ -49,7 +54,7 @@ struct WorkoutEditorSheetHeaderView: View {
                                 Image(systemName: "bolt.fill")
                             }
                             .fixedSize()
-                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
+//                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         }
                     }
                     .layoutPriority(1)
@@ -62,14 +67,11 @@ struct WorkoutEditorSheetHeaderView: View {
                 .layoutPriority(1)
                 .previewBorder()
                 
-                // TODO: Optimize
-                Label("In Progress...", systemImage: "figure.run")
+                // TODO: Marqee text
+                Image(systemName: "figure.run")
                     .foregroundStyle(.tertiary)
                     .symbolEffect(.pulse, isActive: isAnimating)
                     .layoutPriority(0)
-                    .previewBorder()
-                    .clipped()
-                
                 
             } else {
                 /// Show record workout
@@ -77,12 +79,23 @@ struct WorkoutEditorSheetHeaderView: View {
                     .font(.title3.bold())
                     .transition(.asymmetric(insertion: .identity, removal: .slide))
                     .layoutPriority(0)
-                    .previewBorder()
             }
         }
         .animation(.easeInOut, value:  store.isWorkoutInProgress)
         .onAppear {
             isAnimating = true
+            timerTask = Task {
+                for await _ in self.clock.timer(interval: .seconds(1)) {
+                    withAnimation {
+                        elapsedTime += 1
+                    }
+                }
+            }
+        }
+        .onDisappear {
+            isAnimating = false
+            timerTask?.cancel()
+            timerTask = nil
         }
     }
 }

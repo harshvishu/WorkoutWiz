@@ -14,17 +14,6 @@ public func getTimeDifference(startDate: Date, endDate: Date) -> TimeInterval {
     return endDate.timeIntervalSince(startDate)
 }
 
-public func formatTime(
-    _ time: TimeInterval,
-    allowedUnits: NSCalendar.Unit = [.hour, .minute, .second],
-    unitsStyle: DateComponentsFormatter.UnitsStyle = .abbreviated
-) -> String {
-    let formatter = DateComponentsFormatter()
-    formatter.allowedUnits = allowedUnits
-    formatter.unitsStyle = unitsStyle
-    return formatter.string(from: time) ?? time.formatted()
-}
-
 public extension Collection {
     var isNotEmpty: Bool {
         return !isEmpty

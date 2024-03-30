@@ -27,63 +27,203 @@ public struct WorkoutsListFeature {
     @ObservableState
     public struct State: Equatable {
         var workouts: [Workout] = []
-        var grouping: Bool = false
         
-        public init() {
-            fetchWorkouts()
+        var grouping: Bool = false
+        var workoutsGroupedByDay: [Date : [Workout]] = [:]
+        
+        var searchQuery: String = ""
+        var fetchDescriptor: FetchDescriptor<Workout> {
+            var descriptor = FetchDescriptor(predicate: self.predicate, sortBy: self.sort)
+//            descriptor.fetchLimit = fetchLimit
+            // TODO: Fix Fetch Limit Issue
+            descriptor.fetchOffset = fetchOffset
+            return descriptor
         }
         
-        // Database ops
-        mutating func fetchWorkouts() {
-            @Dependency(\.workoutDatabase.fetchAll) var context
-            do {
-                self.workouts = try context()
-            } catch {
-                print(error)
-                self.workouts = []
+        var predicate: Predicate<Workout>? {
+            let (startDate, endDate) = filter.dates()
+            
+            return #Predicate {
+                $0.startDate > startDate && $0.startDate < endDate && searchQuery.isEmpty ? true : $0.name.localizedStandardContains(searchQuery)
             }
         }
         
-        mutating func deleteWorkout(_ workout: Workout) {
+        var sort: [SortDescriptor<Workout>] {
+            return [
+                self.dateSort?.descriptor,
+                self.nameSort?.descriptor,
+                self.uuidSort?.descriptor
+            ].compactMap { $0 }
+        }
+        
+        var dateSort: DateSort? = .reverse
+        public enum DateSort {
+            case forward, reverse
+            var descriptor: SortDescriptor<Workout> {
+                switch self {
+                case .forward:
+                    return .init(\.startDate, order: .forward)
+                case .reverse:
+                    return .init(\.startDate, order: .reverse)
+                }
+            }
+        }
+        
+        var nameSort: NameSort?
+        public enum NameSort {
+            case forward, reverse
+            var descriptor: SortDescriptor<Workout> {
+                switch self {
+                case .forward:
+                    return .init(\.name, order: .forward)
+                case .reverse:
+                    return .init(\.name, order: .reverse)
+                }
+            }
+        }
+        
+        var uuidSort: UUIDSort?
+        enum UUIDSort {
+            case forward, reverse
+            var descriptor: SortDescriptor<Workout> {
+                switch self {
+                case .forward: return .init(\.id, order: .forward)
+                case .reverse: return .init(\.id, order: .reverse)
+                }
+            }
+        }
+        
+        var fetchOffset = 0
+        var visibleWorkoutsLimit: Int? {
+            filter.fetchLimit()
+        }
+        var fetchLimit = 10
+        var canFetchMore = true
+        var isSearchFieldFocused: Bool = false
+        var filter: WorkoutListFilter = .none
+        
+        var activeWorkoutID: UUID?
+        
+        public init(filter: WorkoutListFilter = .none, grouping: Bool = false) {
+            self.filter = filter
+            self.grouping = grouping
+            //            self.workouts = fetchWorkouts()
+        }
+        
+        // Database ops
+        fileprivate mutating func fetchWorkouts() -> [Workout] {
+            @Dependency(\.workoutDatabase.fetch) var fetch
+            do {
+                return try fetch(fetchDescriptor)
+            } catch {
+                Logger.state.error("\(error)")
+                return []
+            }
+        }
+        
+        fileprivate mutating func deleteWorkout(_ workout: Workout) {
             @Dependency(\.workoutDatabase.delete) var delete
             do {
                 try delete(workout)
             } catch {
+                // Unable to delete
                 print(error)
-                self.workouts = []
             }
         }
     }
     
     public enum Action {
-        case delegate(Delegate)
-        case fetchWorkouts
         case delete(workout: Workout)
+        case fetchWorkouts
+        case newWorkoutButtonTapped
+        case showAllEntriesButtonTapped
+        case setFilter(WorkoutListFilter)
         
+        case delegate(Delegate)
         @CasePathable
         public enum Delegate {
             case editWorkout(Workout)
             case workoutListInvalidated
+            case startNewWorkout
+            case showCalendarScreen
         }
     }
+    
+    // MARK: Dependencies
+    @Dependency(\.saveData) var saveData
     
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
+           
+            case .fetchWorkouts:
+                let fetchResults = state.fetchWorkouts()
+//                let fetchLimit = state.fetchLimit // TODO:
+                
+                state.workouts += fetchResults
+                state.fetchOffset += fetchResults.count
+                
+                if let visibleWorkoutsLimit = state.visibleWorkoutsLimit {
+                    if state.workouts.count > visibleWorkoutsLimit {
+                        let difference = state.workouts.count - visibleWorkoutsLimit
+                        if state.dateSort == .reverse {
+                            state.workouts.removeLast(difference)
+                        } else {
+                            state.workouts.removeFirst(difference)
+                        }
+                        state.canFetchMore = false
+                    }
+                }
+                
+                if fetchResults.isEmpty {
+                    state.canFetchMore = false
+                }
+                return .none
+                
+                // MARK: Deleting workout
+                // TODO: Add alert confirmation
+            case let .delete(workout):
+                if state.activeWorkoutID == workout.id {
+                    return .none
+                }
+                
+                state.deleteWorkout(workout)
+                return .send(.delegate(.workoutListInvalidated), animation: .default)
+                
+            case .showAllEntriesButtonTapped:
+                return .send(.delegate(.showCalendarScreen), animation: .customSpring())
+                
+            case let .setFilter(filter):
+                state.filter = filter
+                return .send(.delegate(.workoutListInvalidated))
+                
+            case .newWorkoutButtonTapped:
+                return .send(.delegate(.startNewWorkout), animation: .customSpring())
+                
+                // MARK: Handle Delegate actions
             case let .delegate(action):
                 switch action {
                 case .workoutListInvalidated:
+                    state.workouts = []
+                    state.canFetchMore = true
+                    state.fetchOffset = 0
                     return .send(.fetchWorkouts)
                 case .editWorkout(_):
-                    // update that particular workout
+                    // TODO: update that particular workout
+                    return .none
+                case  .startNewWorkout, .showCalendarScreen:
                     return .none
                 }
-            case .fetchWorkouts:
-                state.fetchWorkouts()
+            }
+        }
+        .onChange(of: \.workouts) { _, _ in
+            Reduce { state, _ in
+                let calendar = Calendar.autoupdatingCurrent
+                let workoutsGroupedByDay = Dictionary(grouping: state.workouts) {
+                    calendar.startOfDay(for: $0.startDate)
+                }
+                state.workoutsGroupedByDay = workoutsGroupedByDay
                 return .none
-            case let .delete(workout):
-                state.deleteWorkout(workout)
-                return .send(.delegate(.workoutListInvalidated), animation: .default)
             }
         }
     }
@@ -92,24 +232,57 @@ public struct WorkoutsListFeature {
 struct WorkoutsListView: View {
     
     @Environment(\.isPresented) var isPresented
-    @Environment(RouterPath.self) var routerPath
     
     let store: StoreOf<WorkoutsListFeature>
     
     var body: some View {
-            
-            Section {
-                ForEach(store.workouts, id: \.id) { workout in
+        ScrollToView()
+            .onAppear {
+                store.send(.delegate(.workoutListInvalidated))
+            }
+        
+        if store.grouping {
+            ForEach(store.workoutsGroupedByDay.sorted(by: { $0.key > $1.key }), id: \.key) { day, workouts in
+                Text(day, style: .date)
+                    .id(day.formatted(.dateTime))
+                
+                ForEach(workouts, id: \.id) { workout in
                     WorkoutRowView(workout: workout)
                         .onTapGesture {
                             store.send(.delegate(.editWorkout(workout)), animation: .default)
                         }
                 }
-                .onDelete(perform: delete)
                 
+            }
+        } else {
+            HStack {
+                Text("Today")
+                
+                Spacer()
+                
+                Button {
+                    store.send(.showAllEntriesButtonTapped, animation: .customSpring())
+                } label: {
+                    Text("All Entries")
+                }
+                .foregroundStyle(.primary)
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            
+            ForEach(store.workouts, id: \.id) { workout in
+                WorkoutRowView(workout: workout)
+                    .onTapGesture {
+                        store.send(.delegate(.editWorkout(workout)), animation: .default)
+                    }
+                    .deleteDisabled(store.activeWorkoutID == workout.id)
+                    .printView("store.activeWorkoutID == workout.id : \(store.activeWorkoutID == workout.id)")
+            }
+            .onDelete(perform: delete)
+            
+            if store.workouts.isEmpty {
                 Button(action: {
-                    // TODO:
-//                    appState.send(.openEditWorkoutSheet)
+                    store.send(.delegate(.startNewWorkout))
                 }, label: {
                     VStack {
                         Text("No workouts for today!")
@@ -124,135 +297,10 @@ struct WorkoutsListView: View {
                 })
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
-                .opacity(store.workouts.isEmpty ? 1 : 0)
-                
-            } header: {
-                HStack {
-                    Text("Today")
-                    
-                    Spacer()
-                    
-                    Button {
-                        // TODO: 
-//                        appState.send(.showLogs)
-                    } label: {
-                        Text("All Entries")
-                    }
-                    .foregroundStyle(.primary)
-                }
-            }
-            .listRowSeparator(.hidden)
-            .onAppear {
-                store.send(.fetchWorkouts)
-            }
-            
-            /*
-             switch viewState {
-             case .loading:
-                ProgressView()
-                    .task {
-                        bindModelContext()
-                        await viewModel.listWorkouts()
-                    }
-            case .displayGrouped(let groupByDay):
-                ForEach(groupByDay.sorted(by: { $0.key > $1.key }), id: \.key) { day, workouts in
-                    Text(day, style: .date)
-                        .id(day.formatted(.dateTime))
-                        .print(day.formatted(.dateTime))
-                    
-                    ForEach(workouts, id: \.id) { workout in
-                        WorkoutRowView(workout: workout)
-                            .onTapGesture {
-                                routerPath.navigate(to: .workoutDetails(workout: workout))
-                            }
-                        //                        .id($0.documentID)
-                    }
-                    .onDelete(perform: delete)
-                }
-                .onReceive(appState.signal) {
-                    if case .workoutFinished = $0 {
-                        Task {
-                            await viewModel.listWorkouts()
-                        }
-                    }
-                }
-            case .display(let workouts):
-                Section {
-                    ForEach(workouts, id: \.id) { workout in
-                        WorkoutRowView(workout: workout)
-                            .onTapGesture {
-                                appState.send(.openWorkout(workout))
-                            }
-                    }
-                    .onDelete(perform: delete)
-                    
-                } header: {
-                    // TODO: Change header based on data
-                    HStack {
-                        Text("Today")
-                        
-                        Spacer()
-                        
-                        Button {
-                            appState.send(.showLogs)
-                        } label: {
-                            Text("All Entries")
-                            // TODO: Fixme Should not be seen in Calnedar View
-                        }
-                        .foregroundStyle(.primary)
-                    }
-                    .foregroundStyle(.primary)
-                    .font(.headline)
-                }
-                .onReceive(appState.signal) {
-                    if case .workoutFinished = $0 {
-                        Task {
-                            await viewModel.listWorkouts()
-                        }
-                    }
-                }
-            case .empty:
-                Section {
-                    Button(action: {
-                        appState.send(.openEditWorkoutSheet)
-                    }, label: {
-                        VStack {
-                            Text("No workouts for today!")
-                                .font(.title3)
-                            Text("Tap to start a workout")
-                                .font(.headline)
-                        }
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 200)
-                    })
-                    .buttonStyle(.plain)
-                    .contentShape(Rectangle())
-                } header: {
-                    HStack {
-                        Text("Today")
-                        
-                        Spacer()
-                        
-                        Button {
-                            appState.send(.showLogs)
-                        } label: {
-                            Text("All Entries")
-                        }
-                        .foregroundStyle(.primary)
-                    }
-                }
+                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .onReceive(appState.signal) {
-                    if case .workoutFinished = $0 {
-                        Task {
-                            await viewModel.listWorkouts()
-                        }
-                    }
-                }
             }
-            */
+        }
     }
 }
 
@@ -264,15 +312,15 @@ fileprivate extension WorkoutsListView {
         }
     }
 }
-
-#Preview {
-    return WorkoutsListView(
-        store: StoreOf<WorkoutsListFeature>(
-            initialState: WorkoutsListFeature.State(),
-            reducer: {
-                WorkoutsListFeature()
-            }
-        )
-    )
-    .withPreviewEnvironment()
-}
+//
+//#Preview {
+//    return WorkoutsListView(
+//        store: StoreOf<WorkoutsListFeature>(
+//            initialState: WorkoutsListFeature.State(),
+//            reducer: {
+//                WorkoutsListFeature()
+//            }
+//        )
+//    )
+//    .withPreviewEnvironment()
+//}

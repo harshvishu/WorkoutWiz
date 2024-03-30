@@ -128,7 +128,7 @@ public struct ExerciseBluePrintsList {
                 let fetchLimit = state.fetchLimit
                 
                 state.results += fetchResults
-                state.fetchOffset += fetchLimit
+                state.fetchOffset += fetchResults.count
                 if fetchResults.count < fetchLimit {
                     state.canFetchMore = false
                 }
@@ -177,7 +177,6 @@ struct ExerciseBluePrintsListView: View {
                 ForEach(store.results) { bluePrint in
                     let isSelected = store.selectedBluePrints.contains(bluePrint)
                     NavigationLink(state: WorkoutEditorFeature.Path.State.exerciseDetails) {
-                        
                         ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
                             .onTapGesture {
                                 if isSelected {
@@ -187,6 +186,7 @@ struct ExerciseBluePrintsListView: View {
                                 }
                             }
                     }
+                    .listRowSeparator(.hidden, edges: .top)
                     .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
                     .listRowInsets(EdgeInsets(top: 0,
                                               leading: 0,
@@ -201,35 +201,75 @@ struct ExerciseBluePrintsListView: View {
                     }
                 }
             }
+            .listSectionSeparator(.hidden)
             .searchable(text: $store.searchQuery.sending(\.searchQueryChanged))
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .safeAreaPadding(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: .defaultVerticalSpacing) {
+                    Divider()
+                    
+                    HStack {
+                        Button(action: {
+                            // TODO:
+                        }, label: {
+                            Label("New Template", systemImage: "doc.fill.badge.plus")
+                        })
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            // TODO: Toggle Grid vs List
+                        }, label: {
+                            Label("Grid", systemImage: "square.grid.2x2")
+                                .labelStyle(.iconOnly)
+                        })
+                        .foregroundStyle(.primary)
+                        
+                        Button(action: {
+                            // TODO: Toggle selected vs All
+                        }, label: {
+                            Label("Selected", systemImage: "checklist.checked")
+                                .labelStyle(.iconOnly)
+                        })
+                        
+                        Button(action: {
+                            // TODO: Show Filter Menu
+                        }, label: {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle.fill")
+                                .labelStyle(.iconOnly)
+                        })
+                    }
+                    .padding(.horizontal, .defaultHorizontalSpacing)
+                }
+                .background(.ultraThinMaterial)
+                .foregroundStyle(.primary)
+            }
         }
         .toolbar {
-            
             ToolbarItemGroup(placement: .topBarTrailing) {
                 HStack {
+                    if store.selectedBluePrints.isNotEmpty {
+                        Button(action: {
+                            store.send(.finishButtonTapped)
+                        }, label: {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(Color.accentColor)
+                                Text("Add \(store.selectedBluePrints.count) exercises")
+                                    .foregroundStyle(.primary)
+                            }
+                        })
+                    } else {
+                        Text("Tap to add")
+                            .padding(.vertical, 2)
+                            .padding(.horizontal, 8)
+                            .foregroundStyle(.secondary)
+                    }
                     
-                    Button(action: {
-                        // TODO:
-                    }, label: {
-                        Label("New", systemImage: "plus")
-                            .labelStyle(.titleAndIcon)
-                    })
-                    .foregroundStyle(.primary)
                     
-                    Button(action: {
-                        store.send(.finishButtonTapped)
-                    }, label: {
-                        Label("Add", systemImage: "\(store.selectedBluePrints.count).circle.fill")
-                            .labelStyle(.titleAndIcon)
-                    })
-                    .disabled(store.selectedBluePrints.isEmpty)
-                    .foregroundStyle(store.selectedBluePrints.isEmpty ? .secondary : .primary)
                 }
             }
-            
         }
         .bind($store.isSearchFieldFocused, to: $isSearchFieldFocused)
         .task(id: store.searchQuery) {

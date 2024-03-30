@@ -57,9 +57,6 @@ public struct AppFeature {
                     }
                     return .none
                 }
-            case .tabs(.delegate(.showLogs)):
-                state.tabs.currentTab = .logs
-                return .none
             case .tabs:
                 return .none
             }

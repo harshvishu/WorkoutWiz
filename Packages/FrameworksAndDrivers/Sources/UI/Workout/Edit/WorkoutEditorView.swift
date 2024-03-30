@@ -16,11 +16,8 @@ import ComposableArchitecture
 
 struct WorkoutEditorView: View {
     
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.keyboardShowing) private var keyboardShowing
-    @Environment(RouterPath.self) private var routerPath
-
-    @State private var exerciseSelector: ConcreteMessageQueue<[ExerciseBluePrint]> = .init()
+    
     @State private var alertOption: AlertOption?
     @State private var showFinishWorkoutAlert: Bool = false
     @State private var searchText = ""
@@ -28,164 +25,109 @@ struct WorkoutEditorView: View {
     @Bindable var store: StoreOf<WorkoutEditorFeature>
     
     public var body: some View {
-        ZStack {
-            VStack {
-                ScrollView(.vertical, showsIndicators: false) {
+        ZStack(alignment: .bottom) {
+            //                ScrollView(.vertical, showsIndicators: false) {
+            
+            List {
+                //                    LazyVStack(alignment: .leading) {
+                HStack {
+                    TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
+                        .font(.title3)
                     
-                    LazyVStack(alignment: .leading) {
-                        HStack {
-                            TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
-                                .font(.title3)
-                            
-                            Spacer()
-                            
-                            if store.workout.abbreviatedCategory != .none {
-                                Button(action: {}, label: {
-                                    Text(store.workout.abbreviatedCategory.rawValue)
-                                        .font(.caption)
-                                })
-                                .foregroundStyle(.secondary)
-                                .buttonStyle(.bordered)
-                                .buttonBorderShape(.capsule)
-                                .scaleEffect(0.75)
-                            }
-                        }
-                        
-                        Text("Notes")
-                            .truncationMode(.tail)
-                            .foregroundStyle(.tertiary)
-                            .font(.body)
-                            .onTapGesture {
-                                Logger.ui.info("Add notes for workout: TODO: Pending implementation")
-                            }
-                        
-                        if store.workout.exercises.isNotEmpty {
-                            ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList))
-                        } else {
-                            emptyStateView
-                        }
-                        
+                    Spacer()
+                    
+                    // TODO: Pending implementation for changing abbreviatedCategory
+                    if store.workout.abbreviatedCategory != .none {
+                        Button(action: {}, label: {
+                            Text(store.workout.abbreviatedCategory.rawValue)
+                                .font(.caption)
+                        })
+                        .foregroundStyle(.secondary)
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.capsule)
+                        .scaleEffect(0.75)
                     }
-                    .scrollContentBackground(.hidden)
-                    .scrollDismissesKeyboard(.automatic)
                 }
+                .listRowSeparator(.hidden)
+                .listRowInsets(.init(top: .defaultVerticalSpacing, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
                 
-                Spacer()
+                Text("Notes")
+                    .truncationMode(.tail)
+                    .foregroundStyle(.tertiary)
+                    .font(.body)
+                    .onTapGesture {
+                        // TODO:
+                        Logger.ui.info("Add notes for workout: TODO: Pending implementation")
+                    }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
                 
-                // MARK: - Add Exercise Action
-                if !keyboardShowing {
+                if store.workout.exercises.isNotEmpty {
+                    ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList))
+                } else {
+                    emptyStateView
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(.listRowContentInset)
+                }
+            }
+            .listStyle(.inset)
+            .listSectionSeparator(.hidden)
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.automatic)
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: .defaultVerticalSpacing) {
+                    Divider()
+                    
                     Button(action: {
                         store.send(.showExerciseListButtonTapped, animation: .default)
                     }, label: {
                         Text("Show All Exercises")
                             .frame(maxWidth: .infinity)
                     })
-                    .foregroundStyle(.primary)
-                    .tint(.clear)
+                    .buttonBorderShape(.capsule)
                     .buttonStyle(.bordered)
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.secondary, lineWidth: 2) // Set the stroke color and width
-                    )
-                    .transition(.opacity)
-                }
-                
-                if (store.workout.exercises.isNotEmpty) && keyboardShowing == false {
-                    HStack {
-                        // MARK: - Cancel Action
-                        Button(role: .destructive, action: {
-                            store.send(.cancelButtonTapped)
-                        }, label: {
-                            Label("Cancel", systemImage: "trash.fill")
-                                .padding(.horizontal)
-                        })
-                        .buttonBorderShape(.capsule)
-                        .buttonStyle(.bordered)
-                        .foregroundStyle(.primary)
-                        
-                        Button(action: {
-                            store.send(.finishButtonTapped)
-                        }, label: {
-                            Text("Finish Workout")
-                                .frame(maxWidth: .infinity)
-                        })
-                        .buttonBorderShape(.capsule)
-                        .buttonStyle(.borderedProminent)
+                    .foregroundStyle(.primary)
+                    .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
+                    .padding(.horizontal, .defaultHorizontalSpacing)
+                    
+                    if (store.workout.exercises.isNotEmpty) {
+                        HStack {
+                            // MARK: - Cancel Action
+                            Button(role: .destructive, action: {
+                                store.send(.cancelButtonTapped)
+                            }, label: {
+                                Label("Cancel", systemImage: "trash.fill")
+                                    .padding(.horizontal)
+                            })
+//                            .buttonBorderShape(.capsule)
+//                            .buttonStyle(.bordered)
+                            .foregroundStyle(Color.red)
+//                            .overlay(Capsule().stroke(Color.red, lineWidth: 2))
+                            // TODO: Check for styling
+                            
+                            Button(action: {
+                                store.send(.finishButtonTapped)
+                            }, label: {
+                                Text("Finish Workout")
+                                    .frame(maxWidth: .infinity)
+                            })
+                            .buttonBorderShape(.capsule)
+                            .buttonStyle(.borderedProminent)
+                            .tint(.primary)
+                            .foregroundStyle(.background)
+                        }
+                        .padding(.horizontal, .defaultHorizontalSpacing)
+                        .transition(.move(edge: .bottom))
                     }
-                    .padding(4)
-                    .clipShape(.capsule)
                 }
+                .background(.ultraThinMaterial)
+                .foregroundStyle(.primary)
+                .opacity(keyboardShowing ? 0 : 1)
             }
+            
         }
-        // MARK: - Alerts
-        // TODO: Alerts
-//        .alert(alertOption?.titile ?? "Alert", isPresented: $showFinishWorkoutAlert, presenting: alertOption) { options in
-//            Button(action: {
-//                if case .openAnotherWorkout(let workoutToOpen) = options {
-//                    workout = workoutToOpen
-//                    isWorkoutSaved = true
-//                    isWorkoutInProgress = false
-//                    appState.send(.openEditWorkoutSheet)
-//                    viewModel.resume(workout: workout)
-//                } else {
-//                    finish()
-//                }
-//            }) {
-//                Text("Yes")
-//            }
-//            Button(role: .cancel) {
-//                // TODO: nothing
-//            } label: {
-//                Text("Cancel")
-//            }
-//        } message: { options in
-//            let messge = alertOption?.messge ?? ""
-//            
-//            if case .finishWorkout = options {
-//                EmptyView()
-//            } else {
-//                Text(messge)
-//            }
-//        }
-
-        // TODO: Handle workout resume
-//        .onReceive(appState.signal){ message in
-//            switch message {
-//            case .openWorkout(let workoutToOpen):
-//                guard isWorkoutInProgress.not() else {
-//                    alertOption = .openAnotherWorkout(workoutToOpen)
-//                    return
-//                }   // return is current workout is in progress
-//                workout = workoutToOpen
-//                isWorkoutSaved = true
-//                appState.send(.openEditWorkoutSheet)
-//                viewModel.resume(workout: workout)
-//            default:
-//                break
-//            }
-//        }
     }
     
-//    private func finish() {
-//        insertWorkoutIfRequired()
-//        workout.endDate = .now
-//        workout.duration = workout.startDate.distance(to: .now)
-//        isWorkoutSaved = false
-//        isWorkoutInProgress = false
-//        appState.send(.closeWorkoutEditor)
-//        workout = Workout()
-//        viewModel.reset()
-//    }
-    
-//    private func insertWorkoutIfRequired() {
-//        if !isWorkoutSaved {
-//            modelContext.insert(workout)
-//            isWorkoutSaved = true
-//            viewModel.resume(workout: workout)
-//        }
-//        isWorkoutInProgress = true
-//    }
-//    
     private func isValid(set: Rep, forExercise exercise: Exercise) -> Bool {
         // Weight Validation
         let weightValidation = {
@@ -218,20 +160,6 @@ struct WorkoutEditorView: View {
             } != nil
         } != nil
         return !isWorkoutInvalid
-    }
-}
-
-fileprivate extension WorkoutEditorBottomSheetView {
-    func collapse()  {
-        withEaseOut {
-            selectedDetent = .InitialSheetDetent
-        }
-    }
-    
-    func exapand() {
-        withEaseOut {
-            selectedDetent = .ExpandedSheetDetent
-        }
     }
 }
 
@@ -273,14 +201,6 @@ enum AlertOption: Identifiable {
         }
     }
 }
-
-//#Preview {
-//    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
-//    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-//    
-//    return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
-//        .withPreviewEnvironment()
-//}
 
 fileprivate extension WorkoutEditorView {
     @ViewBuilder

@@ -9,7 +9,7 @@ import Foundation
 
 /// Use this to save the information on the execise when last performed
 
-public struct SaveDataRecord: Sendable {
+public struct SaveDataRecord {
     public let id: UUID = UUID()
     
     public var documentID: String

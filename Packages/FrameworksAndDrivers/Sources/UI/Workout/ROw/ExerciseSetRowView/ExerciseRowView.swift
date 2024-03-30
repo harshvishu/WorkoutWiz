@@ -45,18 +45,14 @@ public struct ExerciseRowView: View {
                 ExerciseRowHeaderView(store: store, isExpanded: $showExpandedSetView)
                     .padding(.bottom, 4)
                 
-                // Sets
-//                Group {
-                    // Show all exercise reps
-                ForEach(store.exercise.reps) { rep in
-                        ExerciseRepRowView(set: rep, position: rep.position)
-                            .transition(.move(edge: .bottom))
-                            .onTapGesture {
-                                store.send(.delegate(.editSet(rep)))
-                            }
-                    }
-                    
-                    // TODO: Use this instead 
+                ForEachWithIndex(store.exercise.reps) { idx, rep in
+                    ExerciseRepRowView(set: rep, position: idx)
+                        .transition(.move(edge: .bottom))
+                        .onTapGesture {
+                            store.send(.delegate(.editSet(rep)))
+                        }
+                }
+                
                 if store.exercise.reps.isNotEmpty {
                     HStack {
                         Text("\(store.exercise.repCountUnit.description)")
@@ -71,7 +67,6 @@ public struct ExerciseRowView: View {
                     .padding(.horizontal, 32)
                     .transition(.move(edge: .bottom))
                 }
-//                }
             }
             .padding(.listRowContentInset)
             .background {
@@ -85,37 +80,5 @@ public struct ExerciseRowView: View {
             ExerciseRowFooterView(store: store)
                 .zIndex(-1)
         }
-        .listRowBackground(Color.clear)
-        .listRowSeparator(.hidden)
-        .listRowInsets(.listRowInset)
     }
 }
-
-//#Preview {
-//    let exerciseID = UUID()
-//    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-//    
-//    return List {
-//        ExerciseSetRowView(
-//            exercise: ExerciseRecord(
-//                documentID: "1234",
-//                workoutDocumentID: "1111",
-//                template: ExerciseTemplate.mock_1,
-//                sets: [ExerciseSetRecord(
-//                    workoutDocumentID: "1",
-//                    exerciseDocumentID: "1_2",
-//                    weight: 15.5,
-//                    type: .rep,
-//                    time: 0.0,
-//                    rep: 10,
-//                    failure: true,
-//                    calories: 2.5,
-//                    position: 1
-//                )]
-//            )
-//        )
-//    }
-//    .listRowSpacing(.listRowVerticalSpacing)
-//    .withPreviewEnvironment()
-//    .environment(viewModel)
-//}

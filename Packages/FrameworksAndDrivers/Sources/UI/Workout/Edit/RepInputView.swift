@@ -12,6 +12,7 @@ import Persistence
 import DesignSystem
 import ComposableArchitecture
 
+// TODO: The view need performance improvements
 public enum FocusField: Hashable {
     case time
     case rep
@@ -42,11 +43,11 @@ public struct RepInput {
             self.exercise = exercise
             
             // TODO: Use save manager to get last saved info
-            self.repCountUnit = exercise.preferredRepCountUnit()
+            self.repCountUnit = exercise.preferredRepCountUnit
             self.weightUnit = .kg
             self.repType = .none
             
-            switch exercise.preferredRepCountUnit()  {
+            switch repCountUnit  {
             case .rep:
                 focusedField = .rep
             case .time:
@@ -62,7 +63,7 @@ public struct RepInput {
             self.weightUnit = rep.weightUnit
             self.repType = rep.repType
             
-            switch rep.countUnit {
+            switch repCountUnit {
             case .rep:
                 focusedField = .rep
             case .time:
@@ -106,8 +107,8 @@ public struct RepInput {
                 return .send(.focusedFieldChanged(focusField))
                 
             case .deleteButtonTapped:
-                if let id = state.rep?.id, state.isRepSaved {
-                    state.exercise.reps.removeAll { $0.id == id }
+                if let rep = state.rep, state.isRepSaved {
+                    state.exercise.deleteRep(rep: rep)
                 }
                 return .send(.delegate(.close))
                 
@@ -200,7 +201,6 @@ struct RepInputView: View {
                 Button(action: {
                     let newRepInputMode: RepCountUnit = (store.repCountUnit == .rep) ? .time : .rep
                     store.send(.changeRepCountUnit(newRepInputMode), animation: .customSpring())
-                    // Also change if exercise does not have any rep
                 }, label: {
                     Image(systemName: store.repCountUnit == .rep ? "123.rectangle.fill" : "timer")
                         .symbolEffect(.bounce, value: store.repCountUnit)
@@ -211,23 +211,28 @@ struct RepInputView: View {
                 
                 VStack(alignment: .center) {
                     switch store.repCountUnit {
-                    case .time:
-                        // MARK: Time
-                        Text(store.repTimeText.isEmpty ? "0:0" : store.repTimeText)
-                            .font(.title.bold())
-                            .frame(maxWidth: .infinity)
-                            .foregroundStyle(store.focusedField == .time ? appAccentColor : Color.primary)
-                            .bipAnimation(trigger: store.focusedField == .rep)
-                            .contentTransition(.numericText())
-                        
                     case .rep:
-                        // MARK: Rep Count
+                        // MARK: Display Rep Count
                         Text(store.repCountText.isEmpty ? "0" : store.repCountText)
                             .font(.title.bold())
                             .frame(maxWidth: .infinity)
                             .foregroundStyle(store.focusedField == .rep ? appAccentColor : Color.primary)
                             .bipAnimation(trigger: store.focusedField == .rep)
                             .contentTransition(.numericText())
+                            .onTapGesture {
+                                store.send(.focusedFieldChanged(.rep), animation: .customSpring())
+                            }
+                    case .time:
+                        // MARK: Display Rep Time
+                        Text(store.repTimeText.isEmpty ? "0:0" : store.repTimeText)
+                            .font(.title.bold())
+                            .frame(maxWidth: .infinity)
+                            .foregroundStyle(store.focusedField == .time ? appAccentColor : Color.primary)
+                            .bipAnimation(trigger: store.focusedField == .rep)
+                            .contentTransition(.numericText())
+                            .onTapGesture {
+                                store.send(.focusedFieldChanged(.time), animation: .customSpring())
+                            }
                     }
                     
                     Text("\(store.repCountUnit.description)")
@@ -243,6 +248,9 @@ struct RepInputView: View {
                         .foregroundStyle(store.focusedField == .weight ? appAccentColor : Color.primary)
                         .bipAnimation(trigger: store.focusedField == .weight)
                         .contentTransition(.numericText())
+                        .onTapGesture {
+                            store.send(.focusedFieldChanged(.weight), animation: .customSpring())
+                        }
                     
                     Text("\(store.weightUnit.sfSymbol)")
                         .font(.caption2)
@@ -262,12 +270,9 @@ struct RepInputView: View {
                         .tag($0.rawValue)
                 }
             }
-            .padding(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            .padding(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
             .pickerStyle(.segmented)
-            
-            Divider()
-            
-            
+                        
             RepInputKeyboard(mode: getRepInputMode(), keyPressHandler:  { key in
                 if case .submit = key {
                     
@@ -292,8 +297,6 @@ struct RepInputView: View {
                         rep.countUnit = store.repCountUnit
                         rep.calories = calories
                     } else {
-                        let position = store.exercise.reps.count
-                        
                         let rep = Rep(
                             weight: weight,
                             countUnit: store.repCountUnit,
@@ -301,20 +304,20 @@ struct RepInputView: View {
                             count: repCount,
                             weightUnit: store.weightUnit,
                             calories: calories,
-                            position: position,
                             repType: store.repType
                         )
-                        store.exercise.reps.append(rep)
+                        store.exercise.appendRep(rep)
                         rep.exercise = store.exercise
                     }
                     
-                    // Update the calories whenever a rep is added/ deleted or modified
-                    // TODO: Delete REP is pending
+                    // Update the calories whenever a rep is added/deleted or modified
                     store.exercise.calories = Exercise.estimatedCaloriesBurned(reps: store.exercise.reps)
                     
                     if let workout = store.exercise.workout {
                         let totalCaloriesBurnedForExercise = Workout.estimatedCaloriesBurned(exercises: workout.exercises)
                         workout.calories = totalCaloriesBurnedForExercise
+                        workout.abbreviatedCategory = fitnessTrackingUseCase.abbreviatedCategory(exercises: workout.exercises) ?? .none
+                        workout.abbreviatedMuscle = fitnessTrackingUseCase.abbreviatedMuscle(exercises: workout.exercises) ?? .none
                     }
                     
                     store.send(.delegate(.close), animation: .default)
@@ -323,11 +326,9 @@ struct RepInputView: View {
                 } else if case CustomKey.delete = key {
                     store.send(.keypadDeleteButtonPressed, animation: .default)
                 } else if case CustomKey.next = key {
-                    if store.focusedField == .weight {
-                        store.send(.focusedFieldChanged(store.repCountUnit == .rep ? .rep : .time), animation: .default)
-                    } else {
-                        store.send(.focusedFieldChanged(.weight), animation: .default)
-                    }
+                    store.send(.focusedFieldChanged(.weight), animation: .default)
+                } else if case CustomKey.prev = key {
+                    store.send(.focusedFieldChanged(store.repCountUnit == .rep ? .rep : .time), animation: .default)
                 } else if case CustomKey.period = key {
                     if store.focusedField == .weight {
                         store.send(.keypadPeriodButtonPressed, animation: .default)
@@ -336,18 +337,22 @@ struct RepInputView: View {
             }, timeChangeHandler: { time in
                 store.send(.repTimeChanged(time))
             })
-            
-            if store.isRepSaved {
-                Button(role: .destructive, action: {
-                    store.send(.deleteButtonTapped, animation: .default)
-                }, label: {
-                    Label("Delete", systemImage: "trash.fill")
-                        .padding(.buttonContentInsets)
-                })
-                .buttonBorderShape(.capsule)
-                .overlay(
-                    Capsule().stroke(Color.accentColor)
-                )
+        }
+        .modifyIf(store.isRepSaved) {
+            $0.safeAreaInset(edge: .bottom) {
+                VStack {
+                    Divider()
+                    Button(role: .destructive, action: {
+                        store.send(.deleteButtonTapped, animation: .default)
+                    }, label: {
+                        Label("Delete", systemImage: "trash.fill")
+                            .padding(.buttonContentInsets)
+                    })
+                    .foregroundStyle(Color.red)
+                }
+                .frame(maxWidth: .infinity)
+                .background(.ultraThinMaterial)
+                .foregroundStyle(.primary)
             }
         }
     }

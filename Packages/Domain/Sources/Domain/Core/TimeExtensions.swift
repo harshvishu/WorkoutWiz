@@ -28,12 +28,23 @@ public extension TimeInterval {
         ElapsedTime(timeInterval: self)
     }
     
-    func formattedElapsedTime(formatter: DateComponentsFormatter? = nil) -> String {
-        let formatter = formatter ?? getDateComponentsFormatter(self)
+    func formattedElapsedTime(formatter: DateComponentsFormatter? = nil, short: Bool = false) -> String {
+        let formatter = formatter ?? getDateComponentsFormatter(self, short: short)
         return formatter.string(from: self) ?? ""
+    }
+    
+    func formattedElapsedTime(
+        allowedUnits: NSCalendar.Unit,
+        unitsStyle: DateComponentsFormatter.UnitsStyle
+    ) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = allowedUnits
+        formatter.unitsStyle = unitsStyle
+        return formatter.string(from: self) ?? self.formatted()
     }
 }
 
+// TODO: Needs improvement
 public struct ElapsedTime {
     public private(set) var hours: Int
     public private(set) var minutes: Int

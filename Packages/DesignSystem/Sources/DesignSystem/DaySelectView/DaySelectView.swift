@@ -118,14 +118,34 @@ extension DaySelectView {
     }
 }
 
-public func getCurrentMonthDayRange(date: Date) -> [Day] {
+public func getDaysOfCurrentMonth(date: Date) -> [Day] {
     let calendar = Calendar.current
-    let month = calendar.dateInterval(of: .month, for: date)
-    
-    guard let firstMonthDay = month?.start else {return []}
-    guard let numberOfDays = calendar.range(of: .day, in: .month, for: date)?.count else {return []}
-    
-    return (0..<numberOfDays).compactMap{Day(date: calendar.date(byAdding: .day, value: $0, to: firstMonthDay))}
+     
+     // Get the range of days in the current month
+     guard let monthRange = calendar.range(of: .day, in: .month, for: date),
+           let firstMonthDay = calendar.date(from: calendar.dateComponents([.year, .month], from: date)) else {
+         return []
+     }
+     
+     // Create an array of dates for each day in the current month
+     let days = (0..<monthRange.count).compactMap { offset in
+         calendar.date(byAdding: .day, value: offset, to: firstMonthDay)
+     }
+     
+     // Convert dates to Day objects
+     let dayObjects = days.compactMap { Day(date: $0) }
+     
+     return dayObjects
+}
+
+public func getFirstAndLastDayOfMonth(for date: Date) -> (firstDay: Date, lastDay: Date)? {
+    let calendar = Calendar.current
+    guard let monthRange = calendar.range(of: .day, in: .month, for: date),
+          let firstOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date)),
+          let lastOfMonth = calendar.date(byAdding: DateComponents(day: monthRange.count - 1), to: firstOfMonth) else {
+        return nil
+    }
+    return (firstOfMonth, lastOfMonth)
 }
 
 public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day] {

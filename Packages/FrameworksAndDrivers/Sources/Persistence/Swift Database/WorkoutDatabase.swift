@@ -88,6 +88,63 @@ extension WorkoutDatabase: TestDependencyKey {
     }
 }
 
+public enum WorkoutListFilter: Equatable {
+    case none
+    case today(limit: Int? = nil)
+    case date(Date, limit: Int? = nil)
+    case dates(date1: Date, date2: Date, limit: Int? = nil)
+    case count(Int)
+}
+
+public extension WorkoutListFilter {
+    static func workoutOccursBetweenDates(
+        start: Date,
+        end: Date,
+        workout: Workout
+    ) -> Bool{
+        let calendar = Calendar.autoupdatingCurrent
+        let start = calendar.startOfDay(for: start)
+        let end = calendar.date(byAdding: .init(day: 1), to: calendar.startOfDay(for: end)) ?? end
+        
+        return workout.startDate > start && workout.startDate < end
+    }
+    
+    func fetchLimit() -> Int? {
+        switch self {
+        case .none:
+            nil
+        case .today(let limit):
+            limit
+        case .date(_, let limit):
+            limit
+        case .dates(_, _, limit: let limit):
+            limit
+        case .count(let limit):
+            limit
+        }
+    }
+    
+    func dates() -> (Date, Date) {
+        let calendar = Calendar.autoupdatingCurrent
+        var start = Date.distantPast
+        var end = Date.distantFuture
+        
+        switch self {
+        case .none, .count:
+            break
+        case .today:
+            start = calendar.startOfDay(for: Date())
+            end = calendar.date(byAdding: .init(day: 1), to: calendar.startOfDay(for: Date())) ?? Date()
+        case .date(let startDate, _):
+            start = calendar.startOfDay(for: startDate)
+        case .dates(let startDate, let endDate, _):
+            start = calendar.startOfDay(for: startDate)
+            end = calendar.date(byAdding: .init(day: 1), to: calendar.startOfDay(for: endDate)) ?? endDate
+        }
+        return (start, end)
+    }
+}
+
 // MARK: - Mock data
 
 public extension Workout {

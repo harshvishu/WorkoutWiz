@@ -122,7 +122,7 @@ public struct RepInputKeyboard: View {
         case .timeCount:
             []
         case .weight:
-            [.digit(1), .digit(2), .digit(3), .next,
+            [.digit(1), .digit(2), .digit(3), .prev,
              .digit(4), .digit(5), .digit(6), .plus,
              .digit(7), .digit(8), .digit(9), .minus,
              .period, .digit(0), .delete, .submit]

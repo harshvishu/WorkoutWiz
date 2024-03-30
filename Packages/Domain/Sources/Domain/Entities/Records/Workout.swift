@@ -19,32 +19,64 @@ public final class Workout: Identifiable, Equatable {
     public var notes: String = ""
     public var calories: Double = 0.0
     
-    @Relationship(deleteRule: .cascade, inverse: \Exercise.workout)
-    public var exercises: [Exercise] = []
+    @Relationship(deleteRule: .cascade, inverse: \Exercise.workout) private var _exercises: [Exercise] = []
+    public var exercises: [Exercise] {
+        _exercises.sorted(using: KeyPathComparator(\Exercise.sortOrder))
+    }
     
-    private var abbreviatedMuscleRaw: String = ExerciseMuscles.none.rawValue
-    private var abbreviatedCategoryRaw: String = ExerciseCategory.none.rawValue
+    private var _abbreviatedMuscle: String = ExerciseMuscles.none.rawValue
+    public var abbreviatedMuscle: ExerciseMuscles {
+        get {
+            ExerciseMuscles(rawValue: _abbreviatedMuscle) ?? .none
+        }
+        set {
+            _abbreviatedMuscle = newValue.rawValue
+        }
+    }
     
+    private var _abbreviatedCategory: String = ExerciseCategory.none.rawValue
+    public var abbreviatedCategory: ExerciseCategory {
+        get {
+            ExerciseCategory(rawValue: _abbreviatedCategory) ?? .none
+        }
+        set {
+            _abbreviatedCategory = newValue.rawValue
+        }
+    }
   
     public init(){}
     
-    public var abbreviatedMuscle: ExerciseMuscles {
-        get {
-            ExerciseMuscles(rawValue: abbreviatedMuscleRaw) ?? .none
-        }
-        set {
-            abbreviatedMuscleRaw = newValue.rawValue
-        }
+    // MARK: Public Methods
+    public func appendExercise(_ exercise: Exercise) {
+        var tempArray = exercises
+        exercise.sortOrder = tempArray.count
+        tempArray.append(exercise)
+        _exercises = tempArray
     }
     
-    public var abbreviatedCategory: ExerciseCategory {
-        get {
-            ExerciseCategory(rawValue: abbreviatedCategoryRaw) ?? .none
-        }
-        set {
-            abbreviatedCategoryRaw = newValue.rawValue
-        }
+    public func deleteExercise(exercise: Exercise) {
+        _exercises.removeAll { $0 == exercise }
     }
+    
+    public func deleteExercise(fromOffsets: IndexSet) {
+        var tempArray = exercises
+        tempArray.remove(atOffsets: fromOffsets)
+        setExercise(orderedExercises: tempArray)
+    }
+    
+    public func setExercise(orderedExercises: [Exercise]) {
+        for (index, exercise) in orderedExercises.enumerated() {
+            exercise.sortOrder = index
+        }
+        _exercises = orderedExercises
+    }
+    
+    public func moveExercise(fromOffsets: IndexSet, toOffset: Int) {
+        var tempArray = exercises
+        tempArray.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        setExercise(orderedExercises: tempArray)
+    }
+    
 }
 
 extension Workout: Hashable {

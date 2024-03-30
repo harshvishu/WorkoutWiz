@@ -18,8 +18,6 @@ struct WorkoutEditorBottomSheetView: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @State private var routerPath: RouterPath = .init()
-    
     @Bindable var store: StoreOf<WorkoutEditorFeature>
     @Binding var selectedDetent: PresentationDetent
     
@@ -30,85 +28,36 @@ struct WorkoutEditorBottomSheetView: View {
     
     var body: some View {
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
-            VStack {
-                
-                WorkoutEditorView(store: store)
-                    .opacity(selectedDetent.isCollapsed ? 0 : 1)
-                    .environment(routerPath)
-                
-                Spacer()
-                
-            }
-            .padding()
-            .scrollIndicators(.hidden)
-            .toolbar {
-                
-                ToolbarItemGroup(placement: .topBarLeading) {
-                    WorkoutEditorSheetHeaderView(store: store)
+            WorkoutEditorView(store: store)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .opacity(selectedDetent.isCollapsed ? 0 : 1)
+                .scrollIndicators(.hidden)
+                .toolbar {
+                    
+                    ToolbarItemGroup(placement: .topBarLeading) {
+                        WorkoutEditorSheetHeaderView(store: store, selectedDetent: $selectedDetent)
+                    }
+                    
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        Button(action: {
+                            hideKeyboard()
+                            store.send(.delegate(.toggleBottomSheet))
+                        }, label: {
+                            if  store.isWorkoutInProgress {
+                                Image(systemName: "chevron.up")
+                                    .foregroundStyle(.secondary)
+                                    .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 180))
+                            } else {
+                                Image(systemName: "plus")
+                                    .foregroundStyle(.secondary)
+                                    .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 360 + 45))
+                            }
+                        })
+                        .foregroundStyle(.primary)
+                        .buttonStyle(.bordered)
+                        .buttonBorderShape(.circle)
+                    }
                 }
-                
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button(action: {
-                        selectedDetent.toggle()
-                    }, label: {
-                        if  store.isWorkoutInProgress {
-                            Image(systemName: "chevron.up")
-                                .foregroundStyle(.secondary)
-                                .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 180))
-                        } else {
-                            Image(systemName: "plus")
-                                .foregroundStyle(.secondary)
-                                .rotationEffect(Angle(degrees: selectedDetent.isCollapsed ? 0 : 360 + 45))
-                        }
-                    })
-                    .foregroundStyle(.primary)
-                    .buttonStyle(.bordered)
-                    .buttonBorderShape(.circle)
-                }
-            }
-            // TODO: remove this
-            //            .onReceive(appState.signal) { signal in
-            //                switch signal {
-            //                case .openEditWorkoutSheet:
-            //                    expand()
-            //                case .closeWorkoutEditor:
-            //                    collapse()
-            //                default:
-            //                    break
-            //                }
-            //            }
-            
-            /*
-             .onChange(of: selectedDetent) { _, newValue in
-             // Sheet collapsed and ListExerciseView is visible
-             // Hide the header but do not close the sheet
-             //                if routerPath.path.last == .listExercise && newValue == .InitialSheetDetent {
-             //                    routerPath.path = []
-             //                }
-             }
-             .onReceive(appState.signal) { signal in
-             switch signal {
-             case .openEditWorkoutSheet:
-             expand()
-             case .closeWorkoutEditor:
-             collapse()
-             case .openWorkout(let workout):
-             if viewModel.isWorkoutInProgress {
-             // TODO: What to do if one workout is already in progress
-             // MAybe open in a new window/screen
-             } else {
-             viewModel.resume(workout: workout)
-             expand()
-             }
-             default:
-             break
-             }
-             }
-             .task {
-             viewModel.bind(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: SwiftDataWorkoutRepository(modelContext: modelContext.container.mainContext)))
-             }
-             */
-            
         } destination: { store in
             switch store.case {
             case let .exerciseLists(store):
@@ -122,19 +71,19 @@ struct WorkoutEditorBottomSheetView: View {
     }
 }
 
-fileprivate extension WorkoutEditorBottomSheetView {
-    func collapse()  {
-        withEaseOut {
-            selectedDetent = .InitialSheetDetent
-        }
-    }
-    
-    func expand() {
-        withEaseOut {
-            selectedDetent = .ExpandedSheetDetent
-        }
-    }
-}
+//fileprivate extension WorkoutEditorBottomSheetView {
+//    func collapse()  {
+//        withEaseOut {
+//            selectedDetent = .InitialSheetDetent
+//        }
+//    }
+//
+//    func expand() {
+//        withEaseOut {
+//            selectedDetent = .ExpandedSheetDetent
+//        }
+//    }
+//}
 
 //#Preview {
 //    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent

@@ -10,7 +10,6 @@ import DesignSystem
 import ComposableArchitecture
 
 public struct CustomTabBar: View, KeyboardReadable {
-    @Environment(\.keyboardShowing) var keyboardShowing
     
     @Bindable var store: StoreOf<TabBarFeature>
     @Dependency(\.keyboardShowing.isKeyboardShowing) var isKeyboardShowing
@@ -38,28 +37,22 @@ public struct CustomTabBar: View, KeyboardReadable {
                     })
                 }
             }
-            .frame(height: showTabBar ? .customTabBarHeight : .zero)
+            .frame(height: store.showTabBar ? .customTabBarHeight : .zero)
         }
         .background(
             UnevenRoundedRectangle(cornerRadii: RectangleCornerRadii(topLeading: .sheetCornerRadius, bottomLeading: 0, bottomTrailing: 0, topTrailing: .sheetCornerRadius))
-                .stroke(.tertiary, lineWidth: 1)    // TODO: improve
+                .stroke(.tertiary, lineWidth: 0.5)    // TODO: improve
                 .fill(.black)
                 .ignoresSafeArea(.all)
                 .shadow(color: .secondary.opacity(0.1), radius: 20, x: 0.0, y: 2.0)
         )
-        .opacity(showTabBar ? 1 : 0)
-        .offset(y: showTabBar ? .zero : .customTabBarHeight)
+        .opacity(store.showTabBar ? 1 : 0)
+        .offset(y: store.showTabBar ? .zero : .customTabBarHeight)
         .transition(.slide)
-        .animation(.easeInOut, value: showTabBar)
-        .onChange(of: keyboardShowing) { _, visibility in
+        .animation(.easeInOut, value: store.showTabBar)
+        .onChange(of: isKeyboardShowing) { _, visibility in
             store.send(.toggleKeyboardVisiblity(visibility))
         }
-    }
-    
-    // Accessor property for showing tab bar
-    private var showTabBar: Bool {
-        // TODO:
-        /*store.showTabBar &&*/ isKeyboardShowing.not()
     }
 }
 

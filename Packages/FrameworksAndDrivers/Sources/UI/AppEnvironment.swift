@@ -50,13 +50,11 @@ struct PreviewAppEnvironment: ViewModifier {
     @Environment(\.modelContext) private var modelContext
     
     @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
-    @State var routerPath: RouterPath = .init()
     
     func body(content: Content) -> some View {
         content
             .withModelContainer(preview: true)
             .environment(saveDataManager)
-            .environment(routerPath)
             .environment(SceneDelegate())
             .addKeyboardVisibilityToEnvironment()
     }

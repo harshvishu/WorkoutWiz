@@ -21,12 +21,11 @@ struct CalendarView: View {
     
     @State private var resetScroll: Day? = nil
     @State private var isTodayVisible: Bool = true
-    @State private var selectedDateRange: [Day] = getCurrentMonthDayRange(date: .now)
+    @State private var selectedDateRange: [Day] = getDaysOfCurrentMonth(date: .now)
     @State private var selectedDate: Day = Day(date: .now)
     @State private var today: Day = Day(date: .now)
     
-    // TODO: Pending Move
-    let store = StoreOf<WorkoutsListFeature>(initialState: WorkoutsListFeature.State()) {
+    let store = StoreOf<WorkoutsListFeature>(initialState: WorkoutsListFeature.State(filter: .none, grouping: true)) {
         WorkoutsListFeature()
     }
     
@@ -50,6 +49,11 @@ struct CalendarView: View {
                     }
                     .listStyle(.plain)
                     .listSectionSeparator(.hidden)
+                    .task {
+                        // TODO: find a proper place
+                        let (firstDay, lastDay) = getFirstAndLastDayOfMonth(for: Date()) ?? (Date(), Date())
+                        store.send(.setFilter(.dates(date1: firstDay, date2: lastDay)))
+                    }
                 }
                 // MARK: Day Select View Bindings
                 .onChange(of: selectedDate) { _, newValue in

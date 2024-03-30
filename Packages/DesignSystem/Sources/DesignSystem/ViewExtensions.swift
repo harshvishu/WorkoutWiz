@@ -14,11 +14,14 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "DesignSystem", category: "ViewExtension")
 
+#if os(iOS)
+public func hideKeyboard() {
+    let resign = #selector(UIResponder.resignFirstResponder)
+    UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
+}
+#endif
+
 public extension View {
-    func hideKeyboard() {
-        let resign = #selector(UIResponder.resignFirstResponder)
-        UIApplication.shared.sendAction(resign, to: nil, from: nil, for: nil)
-    }
     
     func printView(_ value: Any) -> Self {
         print(value)
@@ -183,22 +186,15 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $showSheet, content: {
-                VStack(spacing: 0) {
-                    sheetView
-                    Divider()
-                        .hidden()
-                    
-                    Rectangle()
-                        .fill(.clear)
-                        .frame(height: bottomPadding)
-                }
-                .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
-                .presentationCornerRadius(sheetCornerRadius)
-                .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
-                .presentationBackground(.background)
-                .interactiveDismissDisabled()
-            })
+            .sheet(isPresented: $showSheet) {
+                sheetView
+                    .padding(.bottom, bottomPadding)
+                    .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
+                    .presentationCornerRadius(sheetCornerRadius)
+                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
+                    .presentationBackground(.background)
+                    .interactiveDismissDisabled()
+            }
     }
 }
 
