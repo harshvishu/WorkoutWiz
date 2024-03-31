@@ -169,14 +169,14 @@ public struct ExerciseBluePrintsList {
 
 struct ExerciseBluePrintsListView: View {
     @Bindable var store: StoreOf<ExerciseBluePrintsList>
-    @FocusState private var isSearchFieldFocused: Bool
+    @State var isSearchFieldFocused: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
+//        VStack(alignment: .leading) {
             List {
                 ForEach(store.results) { bluePrint in
                     let isSelected = store.selectedBluePrints.contains(bluePrint)
-                    NavigationLink(state: WorkoutEditorFeature.Path.State.exerciseDetails) {
+                    NavigationLink(state: WorkoutEditor.Path.State.exerciseDetails) {
                         ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
                             .onTapGesture {
                                 if isSelected {
@@ -202,7 +202,7 @@ struct ExerciseBluePrintsListView: View {
                 }
             }
             .listSectionSeparator(.hidden)
-            .searchable(text: $store.searchQuery.sending(\.searchQueryChanged))
+            .searchable(text: $store.searchQuery.sending(\.searchQueryChanged), isPresented: $isSearchFieldFocused)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .safeAreaInset(edge: .bottom) {
@@ -210,65 +210,69 @@ struct ExerciseBluePrintsListView: View {
                     Divider()
                     
                     HStack {
+                        if store.selectedBluePrints.isNotEmpty {
+                            Button(action: {
+                                store.send(.finishButtonTapped)
+                            }, label: {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(Color.accentColor)
+                                    Text("Add \(store.selectedBluePrints.count) exercises")
+                                }
+                            })
+                        } else {
+                            Text("Select exercise to add")
+                                .padding(.vertical, 2)
+                                .padding(.horizontal, 8)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Spacer()
+                        
                         Button(action: {
-                            // TODO:
+                            // TODO: Navigate to create new template
                         }, label: {
                             Label("New Template", systemImage: "doc.fill.badge.plus")
                         })
-                        
-                        Spacer()
                         
                         Button(action: {
                             // TODO: Toggle Grid vs List
                         }, label: {
                             Label("Grid", systemImage: "square.grid.2x2")
-                                .labelStyle(.iconOnly)
                         })
-                        .foregroundStyle(.primary)
                         
                         Button(action: {
                             // TODO: Toggle selected vs All
                         }, label: {
                             Label("Selected", systemImage: "checklist.checked")
-                                .labelStyle(.iconOnly)
                         })
                         
                         Button(action: {
                             // TODO: Show Filter Menu
                         }, label: {
                             Label("Filter", systemImage: "line.3.horizontal.decrease.circle.fill")
-                                .labelStyle(.iconOnly)
                         })
                     }
                     .padding(.horizontal, .defaultHorizontalSpacing)
+                    .labelStyle(.iconOnly)
                 }
                 .background(.ultraThinMaterial)
                 .foregroundStyle(.primary)
             }
-        }
+//        }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                HStack {
-                    if store.selectedBluePrints.isNotEmpty {
-                        Button(action: {
-                            store.send(.finishButtonTapped)
-                        }, label: {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color.accentColor)
-                                Text("Add \(store.selectedBluePrints.count) exercises")
-                                    .foregroundStyle(.primary)
-                            }
-                        })
-                    } else {
-                        Text("Tap to add")
-                            .padding(.vertical, 2)
-                            .padding(.horizontal, 8)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    
-                }
+                    Button(action: {
+                        // TODO: Programatically show searchfield
+                        store.send(.searchButtonTapped, animation: .default)
+                    }, label: {
+                        Label("Search", systemImage: "magnifyingglass")
+                    })
+            }
+        }
+        .overlay {
+            if store.results.isEmpty {
+                ContentUnavailableView.search(text: store.searchQuery)
             }
         }
         .bind($store.isSearchFieldFocused, to: $isSearchFieldFocused)

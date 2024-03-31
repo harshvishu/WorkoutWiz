@@ -8,7 +8,6 @@
 import ComposableArchitecture
 import Domain
 import Foundation
-import DesignSystem
 
 public final class SaveDataManager {
     private let userDefaults: UserDefaults

@@ -15,7 +15,7 @@ import ComposableArchitecture
 struct WorkoutEditorSheetHeaderView: View {
     @Dependency(\.continuousClock) var clock
     
-    @Bindable var store: StoreOf<WorkoutEditorFeature>
+    @Bindable var store: StoreOf<WorkoutEditor>
     @Binding var selectedDetent: PresentationDetent
     
     @State private var viewState: ViewState = .timer
@@ -30,23 +30,19 @@ struct WorkoutEditorSheetHeaderView: View {
             /// Show elapsed time if workout has satarted
             if store.isWorkoutInProgress {
                 Button(action: {
-                    /// Show a popup timer with options to reset the time
-                    /// A Context Menu
-                    withAnimation(.linear) {
-                        viewState.toggle()
-                    }
+                    // TODO: Add Timer
                 }, label: {
                     HStack {
                         switch viewState {
                         case .timer:
                             Group {
-                                let estimatedElapsedTime = store.workout.duration + elapsedTime
-                                Text(estimatedElapsedTime.formattedElapsedTime())
-                                    .contentTransition(.numericText())
-                                Image(systemName: "timer")
+//                                let estimatedElapsedTime = store.workout.duration + elapsedTime
+//                                Text(estimatedElapsedTime.formattedElapsedTime())
+//                                    .contentTransition(.numericText())
+                                Label("Timer", systemImage: "timer")
+                                    .labelStyle(.titleAndIcon)
                             }
                             .fixedSize()
-//                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         case .calories:
                             Group {
                                 let energy =  Measurement(value: store.workout.calories, unit: UnitEnergy.kilocalories)
@@ -54,7 +50,6 @@ struct WorkoutEditorSheetHeaderView: View {
                                 Image(systemName: "bolt.fill")
                             }
                             .fixedSize()
-//                            .transition(.asymmetric(insertion: .move(edge: .bottom), removal: .move(edge: .top)))
                         }
                     }
                     .layoutPriority(1)
@@ -70,7 +65,7 @@ struct WorkoutEditorSheetHeaderView: View {
                 // TODO: Marqee text
                 Image(systemName: "figure.run")
                     .foregroundStyle(.tertiary)
-                    .symbolEffect(.pulse, isActive: isAnimating)
+                    .symbolEffect(.pulse, isActive: store.isWorkoutInProgress)
                     .layoutPriority(0)
                 
             } else {

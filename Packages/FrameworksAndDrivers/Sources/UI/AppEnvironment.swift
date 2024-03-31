@@ -34,6 +34,7 @@ struct AppEnvironment: ViewModifier {
         let container = SwiftDataModelConfigurationProvider.shared.container
         await templateRepository.insertTemplatesData(container: container)
     }
+    
 }
 
 extension View {

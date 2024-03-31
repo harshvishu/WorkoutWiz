@@ -135,7 +135,6 @@ public struct WorkoutsListFeature {
     public enum Action {
         case delete(workout: Workout)
         case fetchWorkouts
-        case newWorkoutButtonTapped
         case showAllEntriesButtonTapped
         case setFilter(WorkoutListFilter)
         
@@ -196,9 +195,6 @@ public struct WorkoutsListFeature {
             case let .setFilter(filter):
                 state.filter = filter
                 return .send(.delegate(.workoutListInvalidated))
-                
-            case .newWorkoutButtonTapped:
-                return .send(.delegate(.startNewWorkout), animation: .customSpring())
                 
                 // MARK: Handle Delegate actions
             case let .delegate(action):
@@ -276,7 +272,6 @@ struct WorkoutsListView: View {
                         store.send(.delegate(.editWorkout(workout)), animation: .default)
                     }
                     .deleteDisabled(store.activeWorkoutID == workout.id)
-                    .printView("store.activeWorkoutID == workout.id : \(store.activeWorkoutID == workout.id)")
             }
             .onDelete(perform: delete)
             

@@ -18,10 +18,10 @@ struct WorkoutEditorBottomSheetView: View {
     
     @Environment(\.modelContext) private var modelContext
     
-    @Bindable var store: StoreOf<WorkoutEditorFeature>
+    @Bindable var store: StoreOf<WorkoutEditor>
     @Binding var selectedDetent: PresentationDetent
     
-    init(store: StoreOf<WorkoutEditorFeature>, selectedDetent: Binding<PresentationDetent>) {
+    init(store: StoreOf<WorkoutEditor>, selectedDetent: Binding<PresentationDetent>) {
         self.store = store
         self._selectedDetent = selectedDetent
     }
@@ -41,7 +41,7 @@ struct WorkoutEditorBottomSheetView: View {
                     ToolbarItemGroup(placement: .topBarTrailing) {
                         Button(action: {
                             hideKeyboard()
-                            store.send(.delegate(.toggleBottomSheet))
+                            store.send(.delegate(selectedDetent.isCollapsed ? .expand : .collapse), animation: .default)
                         }, label: {
                             if  store.isWorkoutInProgress {
                                 Image(systemName: "chevron.up")
@@ -67,23 +67,8 @@ struct WorkoutEditorBottomSheetView: View {
                 Text("TODO: Pending Exercise Details")
             }
         }
-        
     }
 }
-
-//fileprivate extension WorkoutEditorBottomSheetView {
-//    func collapse()  {
-//        withEaseOut {
-//            selectedDetent = .InitialSheetDetent
-//        }
-//    }
-//
-//    func expand() {
-//        withEaseOut {
-//            selectedDetent = .ExpandedSheetDetent
-//        }
-//    }
-//}
 
 //#Preview {
 //    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent

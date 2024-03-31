@@ -73,27 +73,3 @@ public extension SharedStorage where T: Codable {
 public extension Notification.Name {
     static let userDefaultsValueChanged = Notification.Name("UserDefaultsValueChanged")
 }
-
-public extension UserDefaults {
-    func saveCodable<T: Codable>(_ value: T, forKey key: String) {
-        do {
-            let encodedData = try JSONEncoder().encode(value)
-            self.set(encodedData, forKey: key)
-        } catch {
-            print("Failed to encode and save \(T.self) with key \(key). Error: \(error)")
-        }
-    }
-    
-    func retrieveCodable<T: Codable>(forKey key: String) -> T? {
-        guard let data = self.data(forKey: key) else {
-            return nil
-        }
-        do {
-            let decodedValue = try JSONDecoder().decode(T.self, from: data)
-            return decodedValue
-        } catch {
-            print("Failed to decode and retrieve \(T.self) with key \(key). Error: \(error)")
-            return nil
-        }
-    }
-}
