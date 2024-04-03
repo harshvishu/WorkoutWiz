@@ -9,6 +9,9 @@ import ComposableArchitecture
 import Domain
 import Foundation
 
+let suiteName = "group." + (Bundle.main.bundleIdentifier ?? "") + ".SharedStorage"
+let sharedDefaults = UserDefaults(suiteName: suiteName) ?? .standard
+
 public final class SaveDataManager {
     private let userDefaults: UserDefaults
     
@@ -34,5 +37,6 @@ public extension DependencyValues {
 }
 
 extension SaveDataManager: DependencyKey {
-    public static var liveValue: SaveDataManager = .init(userDefaults: .standard)
+    public static var liveValue: SaveDataManager = .init(userDefaults: sharedDefaults)
+    public static var previewValue: SaveDataManager = .init(userDefaults: .standard)
 }

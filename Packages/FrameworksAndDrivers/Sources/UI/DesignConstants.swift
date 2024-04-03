@@ -14,6 +14,7 @@ public extension CGFloat {
     static let exerciseTemplatePreviewImageSize: CGFloat = 56.0
     static let exerciseTemplatePreviewImageCornerRadius: CGFloat = 16.0
     static let customTabBarHeight: CGFloat = 55.0
+    static let bottomTabSheetCollapsedHeight: CGFloat = 64.0
     static let sheetCornerRadius: CGFloat = 15.0
     static let InitialSheetDetentHeight: CGFloat = 110.0
 }
@@ -37,3 +38,6 @@ public extension EdgeInsets {
         bottom: 8,
         trailing: 16)
 }
+
+public let appBackgroundColor = Color("background", bundle: uiBundle)
+public let appAccentColor = Color("accent", bundle: uiBundle)

@@ -21,6 +21,11 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
     public func fetchExercises() async -> [Domain.ExerciseTemplate] {
         let exersices = await readJSONFromBundle()
         return exersices
+    }    
+    
+    public func fetchExercises() -> [Domain.ExerciseTemplate] {
+        let exersices = readJSONFromBundle()
+        return exersices
     }
     
     public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
@@ -43,6 +48,11 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
 
 fileprivate extension UserDefaultsExerciseTemplateRepository {
     func readJSONFromBundle() async -> [ExerciseTemplate] {
+        let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
+        return data
+    }
+    
+    func readJSONFromBundle() -> [ExerciseTemplate] {
         let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
         return data
     }

@@ -10,19 +10,6 @@ import OSLog
 
 private let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "\(#file)")
 
-public enum CustomKeyboardType {
-    case system(UIKeyboardType)
-    case counter(_ counter: Counter?, onNext: NextFieldHander? = nil, showPeriod: Bool)
-    
-    func isCustom() -> Bool {
-        if case .system = self {
-            false
-        } else {
-            true
-        }
-    }
-}
-
 public typealias Counter = (Int) -> ()
 public typealias NextFieldHander = () -> ()
 public typealias KeyInputValidaton = (UITextDocumentProxy, CustomKey) -> (Bool)

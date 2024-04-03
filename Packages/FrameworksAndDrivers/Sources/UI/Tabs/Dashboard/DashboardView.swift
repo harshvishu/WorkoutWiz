@@ -6,13 +6,10 @@
 //
 
 import SwiftUI
-import Domain
-import ApplicationServices
-import Persistence
 import DesignSystem
-import OSLog
-import SwiftData
 import ComposableArchitecture
+
+// TODO: Move implementation to DashboardTab
 
 @Reducer
 public struct DashboardFeature {

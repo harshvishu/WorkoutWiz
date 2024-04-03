@@ -62,7 +62,6 @@ struct WorkoutEditorBottomSheetView: View {
             switch store.case {
             case let .exerciseLists(store):
                 ExerciseBluePrintsListView(store: store)
-                    .opacity(selectedDetent.isCollapsed ? 0 : 1)
             case .exerciseDetails:
                 Text("TODO: Pending Exercise Details")
             }

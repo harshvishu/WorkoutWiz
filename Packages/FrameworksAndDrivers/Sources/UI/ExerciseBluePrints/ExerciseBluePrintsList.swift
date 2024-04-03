@@ -36,7 +36,7 @@ public struct ExerciseBluePrintsList {
             guard !searchQuery.isEmpty else { return nil /*#Predicate<ExerciseBluePrint> { _ in true }*/ }
             
             return #Predicate {
-                $0.name.localizedStandardContains(searchQuery)
+                $0.searchString.localizedStandardContains(searchQuery)
             }
         }
         
@@ -172,114 +172,126 @@ struct ExerciseBluePrintsListView: View {
     @State var isSearchFieldFocused: Bool = false
     
     var body: some View {
-//        VStack(alignment: .leading) {
-            List {
-                ForEach(store.results) { bluePrint in
-                    let isSelected = store.selectedBluePrints.contains(bluePrint)
-                    NavigationLink(state: WorkoutEditor.Path.State.exerciseDetails) {
-                        ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
-                            .onTapGesture {
-                                if isSelected {
-                                    store.send(.deSelectTemplate(bluePrint))
-                                } else {
-                                    store.send(.selectTemplate(bluePrint))
-                                }
+        List {
+            ScrollToView()
+            
+            ForEach(store.results) { bluePrint in
+
+                let isSelected = store.selectedBluePrints.contains(bluePrint)
+                NavigationLink(state: WorkoutEditor.Path.State.exerciseDetails) {
+                    ExerciseBluePrintRowView(exercise: bluePrint, isSelected: isSelected, highlightText: store.searchQuery)
+                        .onTapGesture {
+                            if isSelected {
+                                store.send(.deSelectTemplate(bluePrint), animation: .default)
+                            } else {
+                                store.send(.selectTemplate(bluePrint), animation: .default)
                             }
-                    }
-                    .listRowSeparator(.hidden, edges: .top)
-                    .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
-                    .listRowInsets(EdgeInsets(top: 0,
-                                              leading: 0,
-                                              bottom: 0,
-                                              trailing: 16))
-                   
-                }
-                // FIXME: loads everytime it appears
-                if store.state.canFetchMore {
-                    NextPageView {
-                        store.send(.loadNextPage)
-                    }
-                }
-            }
-            .listSectionSeparator(.hidden)
-            .searchable(text: $store.searchQuery.sending(\.searchQueryChanged), isPresented: $isSearchFieldFocused)
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
-            .safeAreaInset(edge: .bottom) {
-                VStack(spacing: .defaultVerticalSpacing) {
-                    Divider()
-                    
-                    HStack {
-                        if store.selectedBluePrints.isNotEmpty {
-                            Button(action: {
-                                store.send(.finishButtonTapped)
-                            }, label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(Color.accentColor)
-                                    Text("Add \(store.selectedBluePrints.count) exercises")
-                                }
-                            })
-                        } else {
-                            Text("Select exercise to add")
-                                .padding(.vertical, 2)
-                                .padding(.horizontal, 8)
-                                .foregroundStyle(.secondary)
                         }
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            // TODO: Navigate to create new template
-                        }, label: {
-                            Label("New Template", systemImage: "doc.fill.badge.plus")
-                        })
-                        
-                        Button(action: {
-                            // TODO: Toggle Grid vs List
-                        }, label: {
-                            Label("Grid", systemImage: "square.grid.2x2")
-                        })
-                        
-                        Button(action: {
-                            // TODO: Toggle selected vs All
-                        }, label: {
-                            Label("Selected", systemImage: "checklist.checked")
-                        })
-                        
-                        Button(action: {
-                            // TODO: Show Filter Menu
-                        }, label: {
-                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle.fill")
-                        })
-                    }
-                    .padding(.horizontal, .defaultHorizontalSpacing)
-                    .labelStyle(.iconOnly)
                 }
-                .background(.ultraThinMaterial)
-                .foregroundStyle(.primary)
+                .listRowSeparator(.hidden, edges: .top)
+                .listRowBackground(isSelected ? Color.secondary.opacity(0.2) : Color.clear)
+                .listRowInsets(EdgeInsets(top: 0,
+                                          leading: 0,
+                                          bottom: 0,
+                                          trailing: 16))
+                
             }
-//        }
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            // FIXME: loads everytime it appears
+            if store.state.canFetchMore {
+                NextPageView {
+                    store.send(.loadNextPage)
+                }
+                .previewBorder()
+            }
+        }
+        .environment(\.defaultMinListRowHeight, 0)
+        .previewBorder()
+        .navigationTitle("Templates")
+        .navigationBarTitleDisplayMode(.inline)
+        .listSectionSeparator(.hidden)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: .defaultVerticalSpacing) {
+                Divider()
+                
+                HStack {
+                    
+                    // Explore different versions of exercises to find what suits you.
+                    // Try searching by exercise type, muscle group, or equipment name to narrow down your options.
+                    SearchBar(searchText: $store.searchQuery.sending(\.searchQueryChanged), prompt: "Search") {
+                        hideKeyboard()
+                    }
+                    
+                    Spacer()
+                    
                     Button(action: {
-                        // TODO: Programatically show searchfield
-                        store.send(.searchButtonTapped, animation: .default)
+                        // TODO: Navigate to create new template
                     }, label: {
-                        Label("Search", systemImage: "magnifyingglass")
+                        Label("New Template", systemImage: "doc.fill.badge.plus")
                     })
+                    
+                    Button(action: {
+                        // TODO: Toggle Grid vs List
+                    }, label: {
+                        Label("Grid", systemImage: "square.grid.2x2")
+                    })
+                    
+                    Button(action: {
+                        // TODO: Toggle selected vs All
+                    }, label: {
+                        Label("Selected", systemImage: "checklist.checked")
+                    })
+                    
+                    Button(action: {
+                        // TODO: Show Filter Menu
+                    }, label: {
+                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle.fill")
+                    })
+                }
+                .padding(.horizontal, .defaultHorizontalSpacing)
+                .padding(.bottom, .defaultVerticalSpacing)
+                .labelStyle(.iconOnly)
+            }
+            .background(.ultraThinMaterial)
+            .foregroundStyle(.primary)
+        }
+        //        .toolbar {
+        //            ToolbarItemGroup(placement: .topBarTrailing) {
+        //                Button(action: {
+        //                    // TODO: Programatically show searchfield
+        //                    store.send(.searchButtonTapped, animation: .default)
+        //                }, label: {
+        //                    Label("Search", systemImage: "magnifyingglass")
+        //                })
+        //            }
+        //        }
+        .overlay(alignment: .bottomTrailing) {
+            if store.selectedBluePrints.isNotEmpty {
+                Button(action: {
+                    store.send(.finishButtonTapped)
+                }, label: {
+                    Text("^[Add \(store.selectedBluePrints.count) Exercise](inflect: true)")
+                })
+                .buttonBorderShape(.capsule)
+                .buttonStyle(.borderedProminent)
+                .shadow(radius: 2)
+                .padding(.horizontal, .defaultHorizontalSpacing)
+                .padding(.bottom , .defaultVerticalSpacing)
+                .safeAreaPadding(.bottom, .customTabBarHeight)
+                .transition(.scale)
             }
         }
         .overlay {
             if store.results.isEmpty {
-                ContentUnavailableView.search(text: store.searchQuery)
+                EmptyStateView(title: "No Results for \"\(store.searchQuery)\"", subtitle: "Check the spelling or try a new search.", resource: .placeholderSearch)
             }
         }
         .bind($store.isSearchFieldFocused, to: $isSearchFieldFocused)
         .task(id: store.searchQuery) {
             do {
                 try await Task.sleep(for: .milliseconds(100))
-                await store.send(.searchQueryChangeDebounced).finish()
+                await store.send(.searchQueryChangeDebounced, animation: .default).finish()
             } catch {}
         }
     }

@@ -18,7 +18,7 @@ struct ExerciseRowFooterView: View {
     
     let store: StoreOf<ExerciseRow>
     
-    @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, repType: .none)
+    @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, repType: .standard)
 
     var body: some View {
             Button(action: {

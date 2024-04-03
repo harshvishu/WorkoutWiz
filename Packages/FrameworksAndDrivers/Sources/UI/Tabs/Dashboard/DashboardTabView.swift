@@ -43,6 +43,7 @@ struct DashboardTabView: View {
     public var body: some View {
         NavigationStack {
             DashboardView(store: store.scope(state: \.dashboard, action: \.dashboard))
+                .hideNativeTabBar()
         }
     }
 }

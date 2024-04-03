@@ -12,7 +12,7 @@ import ComposableArchitecture
 public struct CustomTabBar: View, KeyboardReadable {
     
     @Bindable var store: StoreOf<TabBarFeature>
-    @Dependency(\.keyboardShowing.isKeyboardShowing) var isKeyboardShowing
+    @Environment(\.keyboardShowing) var isKeyboardShowing
     
     public init(store: StoreOf<TabBarFeature>) {
         self.store = store

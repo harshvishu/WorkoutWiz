@@ -25,7 +25,7 @@ struct ExerciseRepRowView: View {
         
         HStack(alignment: .center, spacing: 4) {
             
-            Image(systemName: set.repType == .none ? "\(position + 1).circle" : set.repType.sfSymbol)
+            Image(systemName: set.repType == .standard ? "\(position + 1).circle" : set.repType.sfSymbol)
                 .foregroundStyle(set.repType.color)
                 .frame(width: 25, height: 25)
                 .transition(.opacity)

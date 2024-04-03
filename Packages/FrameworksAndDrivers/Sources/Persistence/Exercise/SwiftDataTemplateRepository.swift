@@ -33,7 +33,18 @@ public final class SwiftDataTemplateRepository {
                 let templates = allExerciseTemplates.map(ExerciseBluePrint.init)
                 for template in templates {
                     context.insert(template)
+                    
+                    let searchString: String = [template.name,
+                                                template.primaryMuscles.map({$0.rawValue}).joined(separator: " ") ,
+                                                template.secondaryMuscles.map({$0.rawValue}).joined() , 
+                                                template.category.rawValue,
+                                                template.equipment?.rawValue ?? "" ,
+                                                template.instructions.joined(separator: " ")
+                    ].joined()
+                    
+                    template.searchString = searchString
                 }
+                
                 try context.save()
             }
         } catch {

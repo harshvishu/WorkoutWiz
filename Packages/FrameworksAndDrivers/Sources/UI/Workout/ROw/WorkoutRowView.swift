@@ -19,9 +19,7 @@ struct WorkoutRowView: View {
                     
                     // MARK: Workout Name
                     Text("\(workout.name.isEmpty ? "Workout" : workout.name)")
-                        .font(.body)
-                        .fontWeight(.semibold)
-                    
+                        .font(.headline)
                     
                     Text(workout.startDate, style: .date)
                         .font(.caption)

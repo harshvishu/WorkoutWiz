@@ -11,12 +11,15 @@ import ApplicationServices
 import Persistence
 import Domain
 
+// TODO: Move implementation to CalendarTab (Create new)
+
 @MainActor
 public struct CalendarScreen: View {
     
     public var body: some View {
         NavigationStack {
             CalendarView()
+                .hideNativeTabBar()
         }
     }
 }

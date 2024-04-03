@@ -10,14 +10,20 @@ import SwiftUI
 import ComposableArchitecture
 import OSLog
 
+// MARK: - WorkoutEditor Reducer
+
 @Reducer
 public struct WorkoutEditor {
+    
+    // MARK: - Inner Reducer for Path
     
     @Reducer(state: .equatable)
     public enum Path {
         case exerciseLists(ExerciseBluePrintsList)
         case exerciseDetails
     }
+    
+    // MARK: - State
     
     @ObservableState
     public struct State: Equatable {
@@ -26,6 +32,7 @@ public struct WorkoutEditor {
         var isWorkoutInProgress: Bool   // To tell if workout is currently active
         var sessionStartDate: Date
         var isNewWorkout: Bool
+        var isTimerRunning: Bool = false    // TODO: Pending
         
         var path = StackState<Path.State>()
         var exercisesList: ExercisesList.State
@@ -87,6 +94,8 @@ public struct WorkoutEditor {
         }
     }
     
+    // MARK: - Actions
+    
     public enum Action {
         case addSelectedBluePrints(bluePrints: [ExerciseBluePrint])
         case cancelButtonTapped
@@ -106,8 +115,11 @@ public struct WorkoutEditor {
         }
     }
     
+    // MARK: - Dependencies
+    
     @Dependency(\.date.now) var now
-    @Dependency(\.workoutDatabase) var database
+    
+    // MARK: - Reducer Body
     
     public var body: some ReducerOf<Self> {
         
@@ -116,8 +128,8 @@ public struct WorkoutEditor {
         }
         
         Reduce<State, Action> {
-            state,
-            action in
+            state, action in
+            
             switch action {
                 
             case let .addSelectedBluePrints(bluePrints):

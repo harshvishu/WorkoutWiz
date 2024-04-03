@@ -33,6 +33,7 @@ public struct TabBarFeature {
         // Child States
         var dashboard = DashboardTab.State()
         var workoutEditor = WorkoutEditor.State()
+        var settings = Settings.State()
         
         init(availableTabs: [AppScreen] = AppScreen.availableTabs, currentTab: AppScreen = AppScreen.dashboard) {
             self.availableTabs = availableTabs
@@ -47,6 +48,7 @@ public struct TabBarFeature {
     
     public enum Action {
         case dashboard(DashboardTab.Action)
+        case settings(Settings.Action)
         
         case selectTab(AppScreen)
         case setBottomSheetPresentationDetent(PresentationDetent)
@@ -64,6 +66,10 @@ public struct TabBarFeature {
             DashboardTab()
         }
         
+        Scope(state: \.settings, action: \.settings) {
+            Settings()
+        }
+        
         Scope(state: \.workoutEditor, action: \.workoutEditor) {
             WorkoutEditor()
         }
@@ -71,7 +77,7 @@ public struct TabBarFeature {
         Reduce<State,Action> { state, action in
             switch action {
                 
-                // MARK: Dashboard Action
+                // MARK: - Handle Dashboard Action
             case let .dashboard(.dashboard(.workoutsList(.delegate(delegateAction)))):
                 switch delegateAction {
                     // Handle tap on workout list
@@ -92,6 +98,11 @@ public struct TabBarFeature {
             case .dashboard:
                 return .none
                 
+                // MARK: - Handle Settings Actions
+            case .settings:
+                return .none
+                
+                // MARK: - Handle TabBar Actions
             case let .selectTab(tab):
                 state.currentTab = tab
                 return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .customSpring())
@@ -140,15 +151,21 @@ public struct TabBarFeature {
             }
         }
         .onChange(of: \.tabBottomSheetDetent) { _, detent in
-            Reduce { state, action in
+            Reduce { state, _ in
                 if detent == .InitialSheetDetent && state.currentTab == .dashboard && state.workoutEditor.isWorkoutInProgress.not() {
                     state.resetWorkoutEditorState()
                 }
                 
-                let showTabBar = detent == .InitialSheetDetent  // Hide TabBar when BottomSheet is fully presented
+                let showTabBar = detent == .InitialSheetDetent && state.isKeyboardVisible.not() // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
                 return .send(.toggleTabBar(showTabBar), animation: .customSpring())
             }
         }
+        .onChange(of: \.isKeyboardVisible, { _, isKeyboardVisible in
+            Reduce { state, _ in
+                let showTabBar = state.tabBottomSheetDetent == .InitialSheetDetent && isKeyboardVisible.not() // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                return .send(.toggleTabBar(showTabBar), animation: .customSpring())
+            }
+        })
         .onChange(of: \.workoutEditor.workout) { _, workout in
             Reduce { state, _ in
                 state.dashboard.dashboard.workoutsList.activeWorkoutID = workout.id
@@ -187,7 +204,7 @@ public struct TabBarView: View {
             resizable: $store.isBottomSheetResizable.sending(\.toggleBottomSheetResizable),
             detents: Self.AvailableSheetDetents,
             selectedDetent: $store.tabBottomSheetDetent.sending(\.setBottomSheetPresentationDetent),
-            bottomPadding: store.showTabBar ? .customTabBarHeight : .zero,
+            bottomPadding: store.showTabBar ? .bottomTabSheetCollapsedHeight : .zero,
             content: tabSheetContent
         )
     }

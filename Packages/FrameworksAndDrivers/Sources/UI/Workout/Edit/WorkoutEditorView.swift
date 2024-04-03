@@ -8,9 +8,6 @@
 import Domain
 import SwiftUI
 import DesignSystem
-import Persistence
-import ApplicationServices
-import SwiftData
 import OSLog
 import ComposableArchitecture
 
@@ -79,7 +76,7 @@ struct WorkoutEditorView: View {
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.automatic)
-            .safeAreaInset(edge: .bottom) {
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack(spacing: .defaultVerticalSpacing) {
                     Divider()
                     
@@ -105,17 +102,15 @@ struct WorkoutEditorView: View {
                                     Text("Cancel")
                                         .padding(.horizontal)
                                 })
-                                //                            .buttonBorderShape(.capsule)
-                                //                            .buttonStyle(.bordered)
                                 .foregroundStyle(Color.red)
-                                //                            .overlay(Capsule().stroke(Color.red, lineWidth: 2))
                                 // TODO: Check for styling
                                 
                                 if store.workout.exercises.isNotEmpty {
                                     Button(action: {
                                         store.send(.finishButtonTapped, animation: .default)
                                     }, label: {
-                                        Text("Finish Workout")
+                                        // TODO: Improve condition for label, maybe with timer
+                                        Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
                                             .frame(maxWidth: .infinity)
                                     })
                                     .buttonBorderShape(.capsule)
@@ -140,9 +135,9 @@ struct WorkoutEditorView: View {
             }
             .overlay {
                 if store.isWorkoutInProgress.not() && store.workout.exercises.isEmpty {
-                    ContentUnavailableView("Record Workout", systemImage: "list.bullet.clipboard", description: Text("Tap on Resume Workout to add your workout details."))
+                    EmptyStateView(title: "Record Workout", subtitle: "Tap on Resume Workout to add your workout details.", resource: .placeholderForms)
                 } else if store.workout.exercises.isEmpty {
-                    emptyStateView
+                    EmptyStateView(title: "No Exercises", subtitle: "Tap on Show All Exercises at the bottom to see list of all exercises.", resource: .placeholderList)
                 }
             }
         }

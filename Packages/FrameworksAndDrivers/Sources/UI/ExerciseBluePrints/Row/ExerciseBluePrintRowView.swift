@@ -49,7 +49,7 @@ struct ExerciseBluePrintRowView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Group {
                         if let highlightText = highlightText, highlightText.isNotEmpty {
-                            Text(exercise.name.highlighted(highlightText: highlightText, highlightColor: .red))
+                            Text(exercise.name.highlighted(highlightText: highlightText, highlightColor: .green))
                         } else {
                             Text(exercise.name)
                         }

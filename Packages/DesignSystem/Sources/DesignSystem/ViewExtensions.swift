@@ -273,3 +273,32 @@ struct ConditionalView: ViewModifier {
         }
     }
 }
+
+
+// MARK: - Empty State View
+@ViewBuilder
+public func EmptyStateView(title: String, subtitle: String, resource: ImageResource, imageWidth: CGFloat = 64) -> some View {
+    GeometryReader { proxy in
+        VStack(alignment: .center) {
+            Image(resource)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: imageWidth)
+            
+            Group {
+                Text(title)
+                    .foregroundStyle(.primary)
+                    .font(.headline)
+                
+                Text(subtitle)
+                    .foregroundStyle(.secondary)
+                    .font(.subheadline)
+            }
+            .padding(.horizontal)
+            .fixedSize(horizontal: false, vertical: true)
+            .multilineTextAlignment(.center)
+        }
+        .frame(width: proxy.size.width, alignment: .center)
+        .frame(maxHeight: .infinity)
+    }
+}

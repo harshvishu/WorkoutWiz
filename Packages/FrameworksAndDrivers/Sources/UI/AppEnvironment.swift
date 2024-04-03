@@ -46,7 +46,6 @@ extension View {
 
 /// Preview Environment
 
-@MainActor
 struct PreviewAppEnvironment: ViewModifier {
     @Environment(\.modelContext) private var modelContext
     
@@ -62,7 +61,7 @@ struct PreviewAppEnvironment: ViewModifier {
 }
 
 extension View {
-    @MainActor
+    
     func withPreviewEnvironment() -> some View {
         modifier(PreviewAppEnvironment())
     }

@@ -21,6 +21,7 @@ public extension DependencyValues {
 public struct WorkoutDatabase {
     public var fetchAll: @Sendable () throws -> [Workout]
     public var fetch: @Sendable (FetchDescriptor<Workout>) throws -> [Workout]
+    public var fetchCount: @Sendable (FetchDescriptor<Workout>) throws -> Int
     public var add: @Sendable (Workout) throws -> Void
     public var delete: @Sendable (Workout) throws -> Void
     
@@ -53,6 +54,16 @@ extension WorkoutDatabase: DependencyKey {
                 print(error)
                 return []
             }
+        }, fetchCount: { descriptor in
+            do {
+                @Dependency(\.databaseService) var databaseService
+                let databaseContext = try databaseService.context()
+
+                return try databaseContext.fetchCount(descriptor)
+            } catch {
+                print(error)
+                return 0
+            }
         }, add: { model in
             do {
                 @Dependency(\.databaseService) var databaseService
@@ -81,6 +92,8 @@ extension WorkoutDatabase: TestDependencyKey {
         [.mock]
     } fetch: { _ in
         [.mock]
+    } fetchCount: { _ in
+        1
     } add: { _ in
         
     } delete: { _ in

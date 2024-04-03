@@ -1,5 +1,5 @@
 //
-//  Schema.swift
+//  ExerciseTemplateTypes.swift
 //  
 //
 //  Created by harsh vishwakarma on 03/01/24.

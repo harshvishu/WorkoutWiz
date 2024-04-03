@@ -45,7 +45,7 @@ public struct RepInput {
             // TODO: Use save manager to get last saved info
             self.repCountUnit = exercise.preferredRepCountUnit
             self.weightUnit = .kg
-            self.repType = .none
+            self.repType = .standard
             
             switch repCountUnit  {
             case .rep:
@@ -339,7 +339,7 @@ struct RepInputView: View {
             })
         }
         .modifyIf(store.isRepSaved) {
-            $0.safeAreaInset(edge: .bottom) {
+            $0.safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack {
                     Divider()
                     Button(role: .destructive, action: {

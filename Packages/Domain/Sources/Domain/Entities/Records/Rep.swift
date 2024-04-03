@@ -40,7 +40,7 @@ public final class Rep: Identifiable {
             self._repType = newValue.rawValue
         }
         get {
-            RepType(rawValue: _repType) ?? .none
+            RepType(rawValue: _repType) ?? .standard
         }
     }
     
@@ -83,14 +83,14 @@ public enum RepCountUnit: Int {
 
 public enum RepType: Int, CaseIterable {
     
-    case none = 0
+    case standard = 0
     case warmup = 1
     case dropset = 2
     case failure = 3
     
     public var description: String {
         switch self {
-        case .none:
+        case .standard:
             "Standard"
         case .warmup:
             "Warm Up"
@@ -103,7 +103,7 @@ public enum RepType: Int, CaseIterable {
     
     public var sfSymbol: String {
         switch self {
-        case .none:
+        case .standard:
             "circle"
         case .warmup:
             "w.circle.fill"
@@ -116,7 +116,7 @@ public enum RepType: Int, CaseIterable {
     
     public var color: Color {
         switch self {
-        case .none:
+        case .standard:
             Color.secondary
         case .warmup:
             Color.green
@@ -128,7 +128,7 @@ public enum RepType: Int, CaseIterable {
     }
 }
 
-public enum WeightUnit: Int {
+public enum WeightUnit: Int, Codable, CaseIterable {
     case kg = 0
     case pound = 1
     
@@ -136,6 +136,18 @@ public enum WeightUnit: Int {
         switch self {
         case .kg: "kg"
         case .pound: "lbs"
+        }
+    }
+}
+
+public enum HeightUnit: Int, Codable, CaseIterable {
+    case meter = 0
+    case feet = 1
+    
+    public var sfSymbol: String {
+        switch self {
+        case .meter: return "m"
+        case .feet: return "ft"
         }
     }
 }

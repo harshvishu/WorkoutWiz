@@ -18,65 +18,58 @@ struct WorkoutEditorSheetHeaderView: View {
     @Bindable var store: StoreOf<WorkoutEditor>
     @Binding var selectedDetent: PresentationDetent
     
-    @State private var viewState: ViewState = .timer
     @State private var isAnimating: Bool = false
     
     @State private var elapsedTime: TimeInterval = 0
     @State private var timerTask: Task<Void, Error>?
     
     var body: some View {
-        HStack(spacing: 0) {
-            
-            /// Show elapsed time if workout has satarted
-            if store.isWorkoutInProgress {
+        HStack {
+            // TODO: Fix weird animation bug
+            if selectedDetent.isExpanded || store.isWorkoutInProgress {
                 Button(action: {
                     // TODO: Add Timer
+                    // MARK: - TODO: Click on "Timer Image" Open the timer popup
                 }, label: {
-                    HStack {
-                        switch viewState {
-                        case .timer:
-                            Group {
-//                                let estimatedElapsedTime = store.workout.duration + elapsedTime
-//                                Text(estimatedElapsedTime.formattedElapsedTime())
-//                                    .contentTransition(.numericText())
-                                Label("Timer", systemImage: "timer")
-                                    .labelStyle(.titleAndIcon)
-                            }
-                            .fixedSize()
-                        case .calories:
-                            Group {
-                                let energy =  Measurement(value: store.workout.calories, unit: UnitEnergy.kilocalories)
-                                Text(energy.formatted(.measurement(width: .abbreviated, usage: .workout)))
-                                Image(systemName: "bolt.fill")
-                            }
-                            .fixedSize()
+                    if store.isTimerRunning {
+                        Label(store.workout.duration.formattedElapsedTime(allowedUnits: [.hour, .minute, .second], unitsStyle: .positional), systemImage: "timer")
+                    } else {
+                        if selectedDetent.isExpanded {
+                            Label("Timer", systemImage: "timer")
+                        } else {
+                            // TODO: Pending
+                            Text("Workout in progres")
                         }
                     }
-                    .layoutPriority(1)
                 })
-                .font(.headline.monospaced())
-                .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.capsule)
-                .foregroundStyle(.white)
-                .scaleEffect(0.75)
+                .buttonStyle(.borderedProminent)
+                .tint(.primary)
+                .foregroundStyle(.background)
+                .labelStyle(.titleAndIcon)
                 .layoutPriority(1)
-                .previewBorder()
-                
-                // TODO: Marqee text
-                Image(systemName: "figure.run")
-                    .foregroundStyle(.tertiary)
-                    .symbolEffect(.pulse, isActive: store.isWorkoutInProgress)
-                    .layoutPriority(0)
-                
-            } else {
-                /// Show record workout
-                Text("Record Workout")
-                    .font(.title3.bold())
-                    .transition(.asymmetric(insertion: .identity, removal: .slide))
-                    .layoutPriority(0)
             }
+            
+            if selectedDetent.isCollapsed {
+                if store.isWorkoutInProgress {
+                    Image(systemName: "figure.run")
+                        .foregroundStyle(.tertiary)
+                        .symbolEffect(.pulse, isActive: store.isWorkoutInProgress)
+                        .opacity(store.isWorkoutInProgress ? 1 : 0)
+                } else {
+                    Button {
+                        store.send(.delegate(.expand), animation: .default)
+                    } label: {
+                        Text("Start a Workout")
+                    }
+                    .tint(.primary)
+                    .font(.headline)
+                }
+            }
+            
         }
-        .animation(.easeInOut, value:  store.isWorkoutInProgress)
+        .transition(.identity)
+        .font(.caption)
         .onAppear {
             isAnimating = true
             timerTask = Task {
@@ -91,20 +84,6 @@ struct WorkoutEditorSheetHeaderView: View {
             isAnimating = false
             timerTask?.cancel()
             timerTask = nil
-        }
-    }
-}
-
-fileprivate enum ViewState {
-    case calories
-    case timer
-    
-    mutating func toggle() {
-        switch self {
-        case .calories:
-            self = .timer
-        case .timer:
-            self = .calories
         }
     }
 }

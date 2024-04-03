@@ -26,6 +26,7 @@ public final class ExerciseBluePrint: Identifiable, Hashable {
     
     // Dynamic Properties
     public var frequency: Int = 0   // higher frequency gives priority in search results
+    public var searchString: String = ""
          
     public init(id: String, name: String, force: ExerciseForce?, level: ExerciseLevel, mechanic: ExerciseMechanic?, equipment: ExerciseEquipment?, primaryMuscles: [ExerciseMuscles], secondaryMuscles: [ExerciseMuscles], instructions: [String], category: ExerciseCategory, images: [String]) {
         self.id = id
@@ -49,12 +50,14 @@ public final class ExerciseBluePrint: Identifiable, Hashable {
         }
     }
     
+    @Transient
     public var level: ExerciseLevel {
         get {
             return ExerciseLevel(rawValue: _level) ?? .beginner
         }
     }
     
+    @Transient
     public var mechanic: ExerciseMechanic? {
         get {
             guard let _mechanic = _mechanic else {return nil}
@@ -62,6 +65,7 @@ public final class ExerciseBluePrint: Identifiable, Hashable {
         }
     }
     
+    @Transient
     public var equipment: ExerciseEquipment? {
         get {
             guard let _equipment = _equipment else {return nil}
@@ -69,24 +73,28 @@ public final class ExerciseBluePrint: Identifiable, Hashable {
         }
     }
     
+    @Transient
     public var primaryMuscles: [ExerciseMuscles] {
         get {
             _primaryMuscles.compactMap({ ExerciseMuscles(rawValue: $0) })
         }
     }
     
+    @Transient
     public var secondaryMuscles: [ExerciseMuscles] {
         get {
             _secondaryMuscles.compactMap({ ExerciseMuscles(rawValue: $0) })
         }
     }
     
+    @Transient
     public var category: ExerciseCategory {
         get {
             ExerciseCategory(rawValue: _category) ?? .none
         }
     }
     
+    @Transient
     public var isBodyWeightOnly: Bool {
         equipment == .bodyOnly
     }

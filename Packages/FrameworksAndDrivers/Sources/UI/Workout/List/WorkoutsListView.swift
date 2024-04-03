@@ -107,7 +107,6 @@ public struct WorkoutsListFeature {
         public init(filter: WorkoutListFilter = .none, grouping: Bool = false) {
             self.filter = filter
             self.grouping = grouping
-            //            self.workouts = fetchWorkouts()
         }
         
         // Database ops
@@ -148,7 +147,7 @@ public struct WorkoutsListFeature {
         }
     }
     
-    // MARK: Dependencies
+    // MARK: - Dependencies
     @Dependency(\.saveData) var saveData
     
     public var body: some Reducer<State, Action> {
@@ -248,23 +247,11 @@ struct WorkoutsListView: View {
                             store.send(.delegate(.editWorkout(workout)), animation: .default)
                         }
                 }
-                
             }
         } else {
-            HStack {
-                Text("Today")
-                
-                Spacer()
-                
-                Button {
-                    store.send(.showAllEntriesButtonTapped, animation: .customSpring())
-                } label: {
-                    Text("All Entries")
-                }
-                .foregroundStyle(.primary)
-            }
-            .listRowBackground(Color.clear)
-            .listRowSeparator(.hidden)
+            Text("Today")
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             
             ForEach(store.workouts, id: \.id) { workout in
                 WorkoutRowView(workout: workout)
@@ -275,19 +262,25 @@ struct WorkoutsListView: View {
             }
             .onDelete(perform: delete)
             
+            // TODO: Improve
+            if store.workouts.isNotEmpty {
+                Button {
+                    store.send(.showAllEntriesButtonTapped, animation: .customSpring())
+                } label: {
+                    Text("View all entries for today")
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity)
+                }
+                .foregroundStyle(.secondary)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            }
+            
             if store.workouts.isEmpty {
                 Button(action: {
                     store.send(.delegate(.startNewWorkout))
                 }, label: {
-                    VStack {
-                        Text("No workouts for today!")
-                            .font(.title3)
-                        Text("Tap to start a workout")
-                            .font(.headline)
-                    }
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
+                    EmptyStateView(title: "No Workouts", subtitle: "Tap to start a new workout.", resource: .placeholderQuestion)
                     .frame(height: 200)
                 })
                 .buttonStyle(.plain)
