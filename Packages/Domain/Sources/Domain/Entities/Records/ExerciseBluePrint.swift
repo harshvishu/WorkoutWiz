@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class ExerciseBluePrint: Identifiable, Hashable {
+public final class ExerciseBluePrint: Identifiable, Hashable, Equatable {
     @Attribute(.unique) public let id: String
     
     // Template properties

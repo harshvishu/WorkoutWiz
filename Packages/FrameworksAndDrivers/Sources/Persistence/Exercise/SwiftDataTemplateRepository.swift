@@ -55,7 +55,7 @@ public final class SwiftDataTemplateRepository {
     
 }
 
-fileprivate extension ExerciseBluePrint {
+public extension ExerciseBluePrint {
     convenience init(_ exerciseTemplate: ExerciseTemplate) {
         self.init(
             id: exerciseTemplate.id,

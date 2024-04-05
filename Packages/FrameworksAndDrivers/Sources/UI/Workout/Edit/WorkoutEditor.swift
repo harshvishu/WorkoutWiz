@@ -20,7 +20,7 @@ public struct WorkoutEditor {
     @Reducer(state: .equatable)
     public enum Path {
         case exerciseLists(ExerciseBluePrintsList)
-        case exerciseDetails
+        case exerciseDetails(ExerciseBluePrintDetails)
     }
     
     // MARK: - State

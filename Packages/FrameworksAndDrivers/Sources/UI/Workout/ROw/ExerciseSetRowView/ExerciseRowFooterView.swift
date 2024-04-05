@@ -17,6 +17,7 @@ struct ExerciseRowFooterView: View {
     @Environment(SaveDataManager.self) private var saveDataManager
     
     let store: StoreOf<ExerciseRow>
+    var isEditable: Bool
     
     @State var lastSavedSet: Rep = .init(weight: 0.0, countUnit: .rep, time: 0.0, count: 10, weightUnit: .kg, calories: 0.0, repType: .standard)
 
@@ -47,6 +48,7 @@ struct ExerciseRowFooterView: View {
                         .foregroundStyle(.primary)
                         .fontWeight(.semibold)
                         .padding(2)
+                        .opacity(isEditable ? 1 : 0)
                 }
                 .font(.footnote)
                 
@@ -63,5 +65,6 @@ struct ExerciseRowFooterView: View {
             )
             .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             .offset(y: -16)
+            .disabled(!isEditable)
     }
 }

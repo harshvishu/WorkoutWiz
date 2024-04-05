@@ -49,10 +49,11 @@ public struct ExercisesList {
 
 struct ExercisesListView: View {
     let store: StoreOf<ExercisesList>
+    var isEditable: Bool
     
     var body: some View {
         ForEach(store.scope(state: \.exercises, action: \.exercises)) {
-                ExerciseRowView(store: $0)
+            ExerciseRowView(store: $0, isEditable: isEditable)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
                     .listRowInsets(.listRowContentInset)
@@ -71,5 +72,5 @@ struct ExercisesListView: View {
 #Preview {
     ExercisesListView(store: StoreOf<ExercisesList>(initialState: ExercisesList.State(), reducer: {
         ExercisesList()
-    }))
+    }), isEditable: true)
 }

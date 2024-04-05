@@ -38,6 +38,8 @@ public struct ExerciseRowView: View {
     @State private var showExpandedSetView = true
     @State private var messageQueue: ConcreteMessageQueue<(Rep,Int)> = .init()
     
+    var isEditable: Bool
+    
     public var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
@@ -77,7 +79,7 @@ public struct ExerciseRowView: View {
             }
             
             // Footer
-            ExerciseRowFooterView(store: store)
+            ExerciseRowFooterView(store: store, isEditable: isEditable)
                 .zIndex(-1)
         }
     }

@@ -15,6 +15,6 @@ import ComposableArchitecture
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     let store = Store(initialState: AppFeature.State()) {
-        AppFeature()
+        AppFeature()._printChanges()
     }
 }

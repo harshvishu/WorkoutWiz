@@ -68,7 +68,7 @@ struct WorkoutEditorView: View {
                 .listRowSeparator(.hidden)
                 .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
                 
-                ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList))
+                ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
                     .disabled(store.isWorkoutInProgress.not())          // Disable all items inside the list
                     .deleteDisabled(store.isWorkoutInProgress.not())    // Disable swipe to delete
             }

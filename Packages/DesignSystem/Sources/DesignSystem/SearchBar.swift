@@ -25,7 +25,7 @@ public struct SearchBar: View {
                 .foregroundStyle(.secondary)
             
             TextField("Search", text: $searchText, prompt: Text(prompt))
-                .onSubmit(action)
+                .onSubmit(of: .search, action)
                 .submitLabel(.search)
             
             Button(action: {

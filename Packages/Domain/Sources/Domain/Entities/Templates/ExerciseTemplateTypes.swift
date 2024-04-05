@@ -37,6 +37,20 @@ public enum ExerciseEquipment: String, Hashable, Equatable, CaseIterable, Codabl
     case exerciseBall = "exercise ball"
     case ezCurlBar = "e-z curl bar"
     case other = "other"
+    
+    public static var allCases: [ExerciseEquipment] = [
+        .medicineBall,
+        .dumbbell,
+        .bodyOnly,
+        .bands,
+        .kettlebells,
+        .foamRoll,
+        .cable,
+        .machine,
+        .barbell,
+        .exerciseBall,
+        .ezCurlBar
+    ]
 }
 
 public enum ExerciseMuscles: String, Hashable, Equatable, CaseIterable, Codable {
@@ -58,6 +72,26 @@ public enum ExerciseMuscles: String, Hashable, Equatable, CaseIterable, Codable 
     case traps = "traps"
     case triceps = "triceps"
     case none = "none"
+    
+    public static var allCases: [ExerciseMuscles] = [
+        .abdominals,
+        .abductors,
+        .adductors,
+        .biceps,
+        .calves,
+        .chest,
+        .forearms,
+        .glutes,
+        .hamstrings,
+        .lats,
+        .lowerBack,
+        .middleBack,
+        .neck,
+        .quadriceps,
+        .shoulders,
+        .traps,
+        .triceps
+    ]
 }
 
 public enum ExerciseCategory: String, Hashable, Equatable, CaseIterable, Codable {

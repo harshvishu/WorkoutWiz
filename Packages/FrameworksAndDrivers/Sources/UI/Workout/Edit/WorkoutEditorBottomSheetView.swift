@@ -62,8 +62,8 @@ struct WorkoutEditorBottomSheetView: View {
             switch store.case {
             case let .exerciseLists(store):
                 ExerciseBluePrintsListView(store: store)
-            case .exerciseDetails:
-                Text("TODO: Pending Exercise Details")
+            case let .exerciseDetails(store):
+                ExerciseDetailView(store: store)
             }
         }
     }
