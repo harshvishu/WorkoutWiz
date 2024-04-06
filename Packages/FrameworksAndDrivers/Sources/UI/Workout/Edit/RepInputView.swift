@@ -19,9 +19,15 @@ public enum FocusField: Hashable {
     case weight
 }
 
+/**
+ A reducer struct `RepInput` that manages the state and actions related to inputting rep details.
+ */
 @Reducer
 public struct RepInput {
     
+    /**
+     A state struct `State` for managing rep input related state variables.
+     */
     @ObservableState
     public struct State: Equatable {
         var exercise: Exercise
@@ -39,6 +45,11 @@ public struct RepInput {
         var focusedField: FocusField?
         var isRepSaved = false
         
+        /**
+         Initializes the state with the provided exercise.
+         - Parameters:
+            - exercise: The exercise associated with the rep input.
+         */
         init(exercise: Exercise) {
             self.exercise = exercise
             
@@ -55,6 +66,12 @@ public struct RepInput {
             }
         }
         
+        /**
+         Initializes the state with the provided exercise and rep.
+         - Parameters:
+            - exercise: The exercise associated with the rep input.
+            - rep: The rep details to initialize the state.
+         */
         init(exercise: Exercise, rep: Rep) {
             self.exercise = exercise
             self.rep = rep
@@ -77,6 +94,9 @@ public struct RepInput {
         }
     }
     
+    /**
+     An enum `Action` defining the actions that can be performed in the rep input.
+     */
     public enum Action {
         case changeRepCountUnit(RepCountUnit)
         case deleteButtonTapped
@@ -96,6 +116,9 @@ public struct RepInput {
         case keypadPeriodButtonPressed
     }
     
+    /**
+     The body of the reducer, defining how actions modify the state.
+     */
     public var body: some ReducerOf<Self> {
         Reduce<State, Action> { state, action in
             switch action {
@@ -183,6 +206,9 @@ public struct RepInput {
     }
 }
 
+/**
+ A view struct `RepInputView` for displaying and inputting rep details.
+ */
 @MainActor
 struct RepInputView: View {
     @Environment(\.modelContext) private var modelContext
@@ -357,6 +383,10 @@ struct RepInputView: View {
         }
     }
     
+    /**
+     Retrieves the current rep input mode based on the focused field and rep count unit.
+     - Returns: The current rep input mode.
+     */
     private func getRepInputMode() -> RepInputMode {
         if store.focusedField == .weight {
             return .weight

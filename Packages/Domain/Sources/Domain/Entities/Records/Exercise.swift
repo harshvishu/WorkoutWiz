@@ -22,7 +22,7 @@ public final class Exercise: Identifiable {
     }
     
     public var calories: Double = 0.0
-    public var maxWeightLifted: Double? // Not needed for ody weight exercises
+    public var maxWeightLifted: Double? // Not needed for body weight exercises
     
     private var _repCountUnit: Int = RepCountUnit.rep.rawValue
     public var repCountUnit: RepCountUnit {
@@ -94,5 +94,9 @@ public extension Exercise {
     
     static func getMaxWeightLifted(reps:  [Rep]) -> Double {
         reps.max(by: {$0.weight < $1.weight})?.weight ?? 0.0
+    }
+    
+    func isValid() -> Bool {
+        return !reps.isEmpty && reps.allSatisfy { $0.isValid() }
     }
 }
