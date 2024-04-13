@@ -106,6 +106,12 @@ struct WorkoutRowView: View {
     }
 }
 
-//#Preview {
-//    WorkoutRowView(workout: .mock)
-//}
+// MARK: - Preview WorkoutRowView
+import Persistence
+
+#Preview {
+    let container = SwiftDataModelConfigurationProvider.shared.container
+
+    return WorkoutRowView(workout: .mock)
+        .modelContainer(container)
+}

@@ -75,7 +75,7 @@ public enum AppScreen: Hashable, Identifiable , CaseIterable {
         case .profile:
             Text("Profile")
         case .logs:
-            CalendarScreen()
+            CalendarTabView()
         case .settings:
             SettingsView(store: store.scope(state: \.settings, action: \.settings))
         case .other:

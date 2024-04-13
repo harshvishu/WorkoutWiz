@@ -14,7 +14,6 @@ import ComposableArchitecture
 
 // Footer View
 struct ExerciseRowFooterView: View {
-    @Environment(SaveDataManager.self) private var saveDataManager
     
     let store: StoreOf<ExerciseRow>
     var isEditable: Bool

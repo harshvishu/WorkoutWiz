@@ -78,7 +78,7 @@ public struct TabBarFeature {
             switch action {
                 
                 // MARK: - Handle Dashboard Action
-            case let .dashboard(.dashboard(.workoutsList(.delegate(delegateAction)))):
+            case let .dashboard(.workoutsList(.delegate(delegateAction))):
                 switch delegateAction {
                     // Handle tap on workout list
                 case let .editWorkout(workout):
@@ -135,8 +135,8 @@ public struct TabBarFeature {
                     return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .default)
                 case .expand:
                     return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)
-                case .workoutSaved:
-                    return .send(.dashboard(.dashboard(.workoutsList(.delegate(.workoutListInvalidated)))))
+                case .workoutSaved, .workoutDeleted:
+                    return .send(.dashboard(.workoutsList(.delegate(.workoutListInvalidated))))
                 case .isBottomSheetResizable(let resizable):
                     return .send(.toggleBottomSheetResizable(resizable))
                 }
@@ -168,7 +168,7 @@ public struct TabBarFeature {
         })
         .onChange(of: \.workoutEditor.workout) { _, workout in
             Reduce { state, _ in
-                state.dashboard.dashboard.workoutsList.activeWorkoutID = workout.id
+                state.dashboard.workoutsList.activeWorkoutID = workout.id
                 return .none
             }
         }
@@ -227,10 +227,12 @@ fileprivate extension TabBarView {
     }
 }
 
-//#Preview {
-//    @State var selectedScreen: AppScreen = .dashboard
-//    @State var popToRootScreen: AppScreen = .other
-//
-//    return TabBarView(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-//        .withPreviewEnvironment()
-//}
+#Preview {
+    @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+        TabBarFeature()
+    })
+    let container = SwiftDataModelConfigurationProvider.shared.container
+    
+    return TabBarView(store: store)
+        .modelContainer(container)
+}

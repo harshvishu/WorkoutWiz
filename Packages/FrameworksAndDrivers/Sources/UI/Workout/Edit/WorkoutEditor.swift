@@ -42,6 +42,7 @@ public struct WorkoutEditor {
         @CasePathable
         public enum Alert {
             case confirmCancel
+            case confirmDeleteWorkout
             case confirmSaveWorkout
         }
     }
@@ -144,12 +145,22 @@ public struct WorkoutEditor {
         case addSelectedBluePrints(bluePrints: [ExerciseBluePrint])
         case cancelButtonTapped
         case delegate(Delegate)
+        case deleteButtonTapped
+        
+        /// Deletes the workout. Use with caution as this action is irreversible.
+        /// - Warning: This action is irreversible. Make sure you want to permanently delete the workout.
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly Use `deleteButtonTapped` instead")
+        case deleteWorkout
         case destination(PresentationAction<Destination.Action>)
         case exercisesList(ExercisesList.Action)
         case finishButtonTapped
+        
+        /// Terminates the workout session and makes changes permanent. Use with caution as this action is irreversible.
+        /// - Warning: This action is irreversible. Make sure you want to finish the workout.
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly. Use `finishButtonTapped` instead")
+        case finishWorkout
         case nameChanged(String)
         case path(StackAction<Path.State, Path.Action>)
-        case finishWorkout
         case showExerciseListButtonTapped
         case startWorkoutButtonTapped
 
@@ -162,6 +173,7 @@ public struct WorkoutEditor {
             case expand
             case isBottomSheetResizable(Bool)
             case workoutSaved
+            case workoutDeleted
         }
     }
     
@@ -217,6 +229,13 @@ public struct WorkoutEditor {
                 }
                 return .none
                 
+            case .deleteButtonTapped:
+                state.destination = .alert(.deleteWorkout)
+                return .none
+                
+            case .deleteWorkout:
+                state.deleteWorkout()               // Delete workout
+                return .none
             case let .exercisesList(.delegate(.delete(exercise))):
                 state.workout.deleteExercise(exercise: exercise.exercise)
                 state.exercisesList.exercises.remove(id: exercise.id)
@@ -277,10 +296,16 @@ public struct WorkoutEditor {
                 // MARK: Action Handler for Destination
             case let .destination(.presented(.alert(alertAction))):
                 switch alertAction {
-                case .confirmSaveWorkout:
-                    return .send(.finishWorkout)
                 case .confirmCancel:
                     return .none
+                case .confirmDeleteWorkout:
+                    return .run { send in
+                        await send(.deleteWorkout)
+                        await send(.delegate(.collapse))
+                        await send(.delegate(.workoutDeleted))
+                    }
+                case .confirmSaveWorkout:
+                    return .send(.finishWorkout)
                 }
             
             case .destination:
@@ -321,43 +346,18 @@ extension AlertState where Action == WorkoutEditor.Destination.Alert {
         }
     } message: {
         TextState("You have few incomplete exercises. Are you sure you want to save this workout?")
+    }    
+    
+    static let deleteWorkout = Self {
+        TextState("Delete Workout?")
+    } actions: {
+        ButtonState(role: .destructive, action: .confirmDeleteWorkout) {
+            TextState("Yes")
+        }
+        ButtonState(role: .cancel) {
+            TextState("Nevermind")
+        }
+    } message: {
+        TextState("Are you sure you want to delete this workout?")
     }
-    
-//    static let speechRecognitionDenied = Self {
-//        TextState("Speech recognition denied")
-//    } actions: {
-//        ButtonState(action: .continueWithoutRecording) {
-//            TextState("Continue without recording")
-//        }
-//        ButtonState(action: .openSettings) {
-//            TextState("Open settings")
-//        }
-//        ButtonState(role: .cancel) {
-//            TextState("Cancel")
-//        }
-//    } message: {
-//        TextState(
-//      """
-//      You previously denied speech recognition and so your meeting will not be recorded. You can \
-//      enable speech recognition in settings, or you can continue without recording.
-//      """
-//        )
-//    }
-    
-//    static let speechRecognitionRestricted = Self {
-//        TextState("Speech recognition restricted")
-//    } actions: {
-//        ButtonState(action: .continueWithoutRecording) {
-//            TextState("Continue without recording")
-//        }
-//        ButtonState(role: .cancel) {
-//            TextState("Cancel")
-//        }
-//    } message: {
-//        TextState(
-//      """
-//      Your device does not support speech recognition and so your meeting will not be recorded.
-//      """
-//        )
-//    }
 }

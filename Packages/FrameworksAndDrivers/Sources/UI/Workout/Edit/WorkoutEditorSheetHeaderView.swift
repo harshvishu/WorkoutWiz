@@ -36,7 +36,7 @@ struct WorkoutEditorSheetHeaderView: View {
     
     var body: some View {
         HStack {
-            // Timer Button
+            // MARK: Timer Button
             if selectedDetent.isExpanded || store.isWorkoutInProgress {
                 Button(action: {
                     // TODO: Add Timer
@@ -64,15 +64,30 @@ struct WorkoutEditorSheetHeaderView: View {
                 .layoutPriority(1)
             }
             
+            // MARK: - TODO: Button to delete workout
+            /*
+            Button(role: .destructive) {
+                store.send(.deleteButtonTapped, animation: .default)
+            } label: {
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(.titleAndIcon)
+            }
+            .buttonBorderShape(.capsule)
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+            .layoutPriority(1)*/
+            
             // Start Workout Button
             if selectedDetent.isCollapsed {
                 if store.isWorkoutInProgress {
+                    // MARK: Workout Running Indicator
                     // Show running icon if workout is in progress
                     Image(systemName: "figure.run")
                         .foregroundStyle(.tertiary)
                         .symbolEffect(.pulse, isActive: store.isWorkoutInProgress)
                         .opacity(store.isWorkoutInProgress ? 1 : 0)
                 } else {
+                    // MARK: Start Workout button
                     // Show "Start a Workout" button if detent is collapsed and no workout is in progress
                     Button {
                         store.send(.delegate(.expand), animation: .default)
@@ -106,8 +121,3 @@ struct WorkoutEditorSheetHeaderView: View {
         }
     }
 }
-
-//#Preview {
-//    return WorkoutEditorSheetHeaderView()
-//        .withPreviewEnvironment()
-//}

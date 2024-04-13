@@ -10,6 +10,7 @@ import SwiftUI
 import DesignSystem
 import OSLog
 import ComposableArchitecture
+import Persistence
 
 struct WorkoutEditorView: View {
     
@@ -36,56 +37,65 @@ struct WorkoutEditorView: View {
             
             List {
                 // List of workout editor components
-                
-                // Workout name text field
-                HStack(spacing: 0) {
-                    TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
+                Group {
+                    // MARK: Workout name text field
+                    VStack(alignment: .leading) {
+                        HStack(spacing: 0) {
+                            TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
+                                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
+                                .font(.title3)
+                                .padding(.trailing)
+                            
+                            Spacer()
+                            
+                            if (store.workout.abbreviatedCategory != .none) {
+                                // MARK: Button for changing workout category
+                                Button(action: {}, label: {
+                                    Label(store.workout.abbreviatedCategory.rawValue, systemImage: "tag.fill")
+                                        .font(.caption.weight(.medium))
+                                        .labelStyle(.titleAndIcon)
+                                })
+                                .foregroundStyle(.secondary)
+                                .buttonBorderShape(.capsule)
+                                .padding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                .background {
+                                    Capsule(style: .continuous)
+                                        .fill(.quinary.opacity(0.5))
+                                        .stroke(.secondary, lineWidth: 0.5)
+                                }
+                                
+                            }
+                        }
+                        .opacity(isWorkoutNameTextFieldVisible ? 1 : 0) // Show only if visible
                         .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
-                        .font(.title3)
-                        .padding(.trailing)
-                    
-                    Spacer()
-                    
-                    // Button for changing workout category
-                    if store.workout.abbreviatedCategory != .none {
-                        Button(action: {}, label: {
-                            Text(store.workout.abbreviatedCategory.rawValue)
-                                .font(.caption)
+                        
+                        // MARK: Button for adding notes to the workout
+                        Button(action: {
+                            // Navigate to Notes Editor
+                            Logger.ui.info("Add notes for workout: TODO: Pending implementation")
+                        }, label: {
+                            HStack {
+                                Text("Notes")
+                                Image(systemName: "pencil.and.list.clipboard")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.tertiary)
+                            .font(.body)
                         })
-                        .foregroundStyle(.secondary)
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.capsule)
-                        .scaleEffect(0.75)
+                        .opacity(isWorkoutNotesTextFieldVisible ? 1 : 0) // Show only if visible
+                        .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                     }
+                    .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
+                    // List of exercises
+                    ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
+                        .deleteDisabled(store.isWorkoutInProgress.not()) // Disable swipe to delete
                 }
-                .opacity(isWorkoutNameTextFieldVisible ? 1 : 0) // Show only if visible
-                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
+                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .listRowInsets(.init(top: .defaultVerticalSpacing, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
-                
-                // Button for adding notes to the workout
-                Button(action: {
-                    // Navigate to Notes Editor
-                    Logger.ui.info("Add notes for workout: TODO: Pending implementation")
-                }, label: {
-                    HStack {
-                        Text("Notes")
-                        Image(systemName: "pencil.and.list.clipboard")
-                            .font(.caption)
-                    }
-                    .foregroundStyle(.tertiary)
-                    .font(.body)
-                })
+                .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
+                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                 .buttonStyle(.plain)
-                .opacity(isWorkoutNotesTextFieldVisible ? 1 : 0) // Show only if visible
-                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
-                .listRowSeparator(.hidden)
-                .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
-                
-                // List of exercises
-                ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
-                    .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
-                    .deleteDisabled(store.isWorkoutInProgress.not()) // Disable swipe to delete
+                .previewBorder()
             }
             .listStyle(.inset)
             .listSectionSeparator(.hidden)
@@ -140,12 +150,14 @@ struct WorkoutEditorView: View {
                         }
                         .padding(.horizontal, .defaultHorizontalSpacing)
                     } else {
+                        
                         // Button to start or resume workout
                         Button(action: {
                             store.send(.startWorkoutButtonTapped, animation: .default)
                         }, label: {
                             Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
                         })
+                        .frame(maxWidth: .infinity)
                     }
                 }
                 .transition(.identity)
@@ -183,7 +195,12 @@ struct WorkoutEditorView: View {
 }
 
 #Preview {
-    WorkoutEditorView(store: StoreOf<WorkoutEditor>(initialState: WorkoutEditor.State(), reducer: {
-        WorkoutEditor()
-    }))
+    let container = SwiftDataModelConfigurationProvider.shared.container
+    
+    return NavigationStack {
+        WorkoutEditorView(store: StoreOf<WorkoutEditor>(initialState: WorkoutEditor.State(), reducer: {
+            WorkoutEditor()
+        }))
+    }
+    .modelContainer(container)
 }
