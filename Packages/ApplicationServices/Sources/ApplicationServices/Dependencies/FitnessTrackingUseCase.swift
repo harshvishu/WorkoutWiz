@@ -7,6 +7,7 @@
 
 import Foundation
 import Domain
+import ComposableArchitecture
 
 public class FitnessTrackingUseCase: FitnessTrackingIOPort {
     
@@ -75,4 +76,16 @@ public class FitnessTrackingUseCase: FitnessTrackingIOPort {
             }
         return wordCounts.max { $0.value < $1.value }?.key
     }
+}
+
+public extension DependencyValues {
+    var fitnessTrackingUseCase: FitnessTrackingUseCase {
+        get{self[FitnessTrackingUseCase.self]}
+        set{self[FitnessTrackingUseCase.self] = newValue}
+    }
+}
+
+extension FitnessTrackingUseCase: DependencyKey {
+    public static var liveValue: FitnessTrackingUseCase = .init(fitnessCalculatorService: FitnessCalculatorService())
+    public static var previewValue: FitnessTrackingUseCase = .init(fitnessCalculatorService: FitnessCalculatorService())
 }

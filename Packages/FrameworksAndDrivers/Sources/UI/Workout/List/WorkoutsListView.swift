@@ -181,7 +181,7 @@ public struct WorkoutsListFeature {
                 
             case .fetchWorkouts:
                 let fetchResults = state.fetchWorkouts()
-                //                let fetchLimit = state.fetchLimit // TODO:
+                // let fetchLimit = state.fetchLimit // TODO:
                 /// TODO: Move the workouts to individual Feature like `ExerciseRow` and then move alerts within each State
                 state.workouts += fetchResults
                 state.fetchOffset += fetchResults.count
@@ -244,7 +244,7 @@ public struct WorkoutsListFeature {
                     state.workouts = []
                     state.canFetchMore = true
                     state.fetchOffset = 0
-                    return .send(.fetchWorkouts)
+                    return .send(.fetchWorkouts, animation: .default)
                 case .editWorkout(_):
                     // TODO: update that particular workout
                     return .none

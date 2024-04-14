@@ -60,7 +60,7 @@ struct WorkoutEditorView: View {
                                 .padding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
                                 .background {
                                     Capsule(style: .continuous)
-                                        .fill(.quinary.opacity(0.5))
+                                        .fill(.quinary.opacity(0.3))
                                         .stroke(.secondary, lineWidth: 0.5)
                                 }
                                 

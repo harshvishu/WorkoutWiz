@@ -53,6 +53,33 @@ public enum CustomKey: Equatable {
             "arrow.uturn.backward"
         }
     }
+    
+    @ViewBuilder
+    public var view: some View {
+        switch self {
+        case .period:
+            Text(".")
+        case .digit(let value):
+            Text("\(value)")
+        case .submit:
+            Text("Done")
+        case .empty:
+            EmptyView()
+        default:
+            Image(systemName: sfSymbol)
+        }
+    }
+    
+    public func buttonStyle() -> any PrimitiveButtonStyle {
+        switch self {
+        case .empty:
+            PlainButtonStyle()
+        case .submit:
+            BorderedProminentButtonStyle()
+        default:
+            BorderedButtonStyle()
+        }
+    }
 }
 
 public typealias KeyPressHandler = (CustomKey) -> ()
@@ -136,25 +163,27 @@ public struct RepInputKeyboard: View {
                     ZStack {
                         Color.clear
                         switch k {
-                        case .period:
-                            Text(".")
-                        case .digit(let value):
-                            Text("\(value)")
-                        case .empty:
-                            EmptyView()
+                        case .next:
+                            Text("weight")
+                        case .prev:
+                            Text("reps")
                         default:
-                            Image(systemName: k.sfSymbol)
+                            k.view
                         }
                     }
                 })
                 .font(.title3)
                 .frame(maxWidth: .infinity)
                 .frame(height: 40)
-                .modifyIf(k != CustomKey.empty) {
-                    $0.buttonStyle(.bordered)
-                }
                 .modifyIf(k == CustomKey.empty) {
                     $0.buttonStyle(.plain)
+                }
+                .modifyIf(k == CustomKey.submit) {
+                    $0.buttonStyle(.borderedProminent)
+                        .foregroundStyle(.background)
+                }
+                .modifyIf(k != CustomKey.empty && k != CustomKey.submit) {
+                    $0.buttonStyle(.bordered)
                 }
             }
             .previewBorder()
@@ -184,25 +213,27 @@ public struct RepInputKeyboard: View {
                             ZStack {
                                 Color.clear
                                 switch k {
-                                case .period:
-                                    Text(".")
-                                case .digit(let value):
-                                    Text("\(value)")
-                                case .empty:
-                                    EmptyView()
+                                case .next:
+                                    Text("weight")
+                                case .prev:
+                                    Text("time")
                                 default:
-                                    Image(systemName: k.sfSymbol)
+                                    k.view
                                 }
                             }
                         })
                         .font(.title3)
                         .frame(maxWidth: .infinity)
                         .frame(height: 40)
-                        .modifyIf(k != CustomKey.empty) {
-                            $0.buttonStyle(.bordered)
-                        }
                         .modifyIf(k == CustomKey.empty) {
                             $0.buttonStyle(.plain)
+                        }
+                        .modifyIf(k == CustomKey.submit) {
+                            $0.buttonStyle(.borderedProminent)
+                                .foregroundStyle(.background)
+                        }
+                        .modifyIf(k != CustomKey.empty && k != CustomKey.submit) {
+                            $0.buttonStyle(.bordered)
                         }
                     }
                 }
@@ -236,6 +267,7 @@ public struct TimeInputKeyboard: View {
         .foregroundStyle(.primary)
         .frame(maxHeight: 240)
         .padding([.leading, .bottom, .trailing])
+        .transition(.identity)
     }
     
     
