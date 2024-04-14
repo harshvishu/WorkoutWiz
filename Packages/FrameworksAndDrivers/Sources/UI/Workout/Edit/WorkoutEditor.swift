@@ -1,6 +1,6 @@
 //
 //  WorkoutEditor.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 08/03/24.
 //
@@ -25,12 +25,12 @@ public struct WorkoutEditor {
     public enum Path {
         case exerciseLists(ExerciseBluePrintsList)
         case exerciseDetails(ExerciseBluePrintDetails)
-    }    
+    }
     
     // MARK: - Inner Reducer for Destination
     
     /**
-     An inner reducer enum `Destination` for manging alerts and presentations.
+     An inner reducer enum `Destination` for managing alerts and presentations.
      */
     @Reducer(state: .equatable)
     public enum Destination {
@@ -65,7 +65,10 @@ public struct WorkoutEditor {
         
         var path = StackState<Path.State>()
         var exercisesList: ExercisesList.State
-       
+        
+        /**
+         Initializes the state with default values.
+         */
         init() {
             @Dependency(\.workoutDatabase.fetchAll) var fetchAll
             _ = try? fetchAll()
@@ -81,9 +84,9 @@ public struct WorkoutEditor {
         /**
          Initializes the state with provided values.
          - Parameters:
-            - isWorkoutSaved: A boolean indicating whether the workout is saved.
-            - isWorkoutInProgress: A boolean indicating whether the workout is in progress.
-            - workout: The workout object.
+         - isWorkoutSaved: A boolean indicating whether the workout is saved.
+         - isWorkoutInProgress: A boolean indicating whether the workout is in progress.
+         - workout: The workout object.
          */
         init(isWorkoutSaved: Bool, isWorkoutInProgress: Bool, workout: Workout) {
             self.workout = workout
@@ -94,7 +97,7 @@ public struct WorkoutEditor {
             let exercises = IdentifiedArray(
                 uniqueElements: workout.exercises
                     .map({ExerciseRow.State(exercise: $0)})
-                    .sorted(using: KeyPathComparator(\.exercise.sortOrder, order: .forward))    // use forward for decending order
+                    .sorted(using: KeyPathComparator(\.exercise.sortOrder, order: .forward))    // use forward for descending order
             )
             self.exercisesList = ExercisesList.State(exercises: exercises)
             self.sessionStartDate = .init()
@@ -149,7 +152,7 @@ public struct WorkoutEditor {
         
         /// Deletes the workout. Use with caution as this action is irreversible.
         /// - Warning: This action is irreversible. Make sure you want to permanently delete the workout.
-        @available(*, message: "Use with caution as this action is irreversible. Do not call directly Use `deleteButtonTapped` instead")
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly. Use `deleteButtonTapped` instead")
         case deleteWorkout
         case destination(PresentationAction<Destination.Action>)
         case exercisesList(ExercisesList.Action)
@@ -163,7 +166,7 @@ public struct WorkoutEditor {
         case path(StackAction<Path.State, Path.Action>)
         case showExerciseListButtonTapped
         case startWorkoutButtonTapped
-
+        
         /**
          An enum `Delegate` defining delegate actions for the workout editor.
          */
@@ -201,7 +204,7 @@ public struct WorkoutEditor {
             switch action {
                 
             case let .addSelectedBluePrints(bluePrints):
-               
+                
                 state.saveWorkoutIfNotExistsAndStart()
                 
                 for item in bluePrints {
@@ -307,7 +310,7 @@ public struct WorkoutEditor {
                 case .confirmSaveWorkout:
                     return .send(.finishWorkout)
                 }
-            
+                
             case .destination:
                 return .none
                 
@@ -346,7 +349,7 @@ extension AlertState where Action == WorkoutEditor.Destination.Alert {
         }
     } message: {
         TextState("You have few incomplete exercises. Are you sure you want to save this workout?")
-    }    
+    }
     
     static let deleteWorkout = Self {
         TextState("Delete Workout?")

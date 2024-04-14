@@ -72,11 +72,9 @@ struct ExercisesListView: View {
     var body: some View {
         ForEach(store.scope(state: \.exercises, action: \.exercises)) {
             ExerciseRowView(store: $0, isEditable: isEditable)
-//                    .listRowBackground(Color.clear)
-//                    .listRowSeparator(.hidden)
-//                    .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
-            }
-            .onDelete(perform: delete)
+        }
+        .onDelete(perform: delete)
+        .deleteDisabled(isEditable.not())
     }
     
     /**

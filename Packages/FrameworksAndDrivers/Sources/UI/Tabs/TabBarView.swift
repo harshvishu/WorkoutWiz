@@ -95,6 +95,12 @@ public struct TabBarFeature {
                 case .workoutListInvalidated:
                     return .none
                 }
+                /// When a alert is presented, active bottom sheet hides itself
+                /// Present the bottom sheet again
+            case .dashboard(.workoutsList(.destination(.presented(.alert)))):
+                let show = Constants.EligibleBottomSheetScreens.contains(state.currentTab)
+                return .send(.showTabBottomSheet(show), animation: .default)
+                
             case .dashboard:
                 return .none
                 
@@ -146,8 +152,8 @@ public struct TabBarFeature {
         }
         .onChange(of: \.currentTab) { _, tab in
             Reduce { state, action in
-                state.showTabBottomSheet = Constants.EligibleBottomSheetScreens.contains(tab)
-                return .none
+                let show = Constants.EligibleBottomSheetScreens.contains(tab)
+                return .send(.showTabBottomSheet(show), animation: .default)
             }
         }
         .onChange(of: \.tabBottomSheetDetent) { _, detent in

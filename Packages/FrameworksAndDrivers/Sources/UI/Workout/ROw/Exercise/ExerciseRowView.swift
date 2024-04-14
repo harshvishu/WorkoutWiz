@@ -30,13 +30,13 @@ public struct ExerciseRow {
             case editSet(Rep)
         }
     }
+    // TODO: Move Delete Exercise action here
 }
 
 public struct ExerciseRowView: View {
     let store: StoreOf<ExerciseRow>
     
     @State private var showExpandedSetView = true
-    @State private var messageQueue: ConcreteMessageQueue<(Rep,Int)> = .init()
     
     var isEditable: Bool
     

@@ -29,10 +29,10 @@ public struct WorkoutsListFeature {
      */
     @Reducer(state: .equatable)
     public enum Destination {
-        case confirmationDialog(ConfirmationDialogState<ConfirmationDialog>)
+        case alert(AlertState<Alert>)
         
         @CasePathable
-        public enum ConfirmationDialog {
+        public enum Alert {
             case confirmDelete
             case cancelDelete
         }
@@ -155,6 +155,7 @@ public struct WorkoutsListFeature {
         @available(*, message: "Use with caution as this action is irreversible. Do not call directly Use `deleteButtonTapped` instead")
         case delete(workout: Workout)
         case deleteButtonTapped(workout: Workout)
+        
         case destination(PresentationAction<Destination.Action>)
         
         case fetchWorkouts
@@ -181,7 +182,7 @@ public struct WorkoutsListFeature {
             case .fetchWorkouts:
                 let fetchResults = state.fetchWorkouts()
                 //                let fetchLimit = state.fetchLimit // TODO:
-                
+                /// TODO: Move the workouts to individual Feature like `ExerciseRow` and then move alerts within each State
                 state.workouts += fetchResults
                 state.fetchOffset += fetchResults.count
                 
@@ -204,7 +205,7 @@ public struct WorkoutsListFeature {
                 
             case .deleteButtonTapped(let workout):
                 state.workoutToBeDeleted = workout.id
-                state.destination = .confirmationDialog(.deleteWorkout(workout: workout))
+                state.destination = .alert(.deleteWorkout(workout: workout))
                 return .none
                 
             case let .delete(workout):
@@ -215,18 +216,16 @@ public struct WorkoutsListFeature {
                 state.deleteWorkout(workout)
                 return .send(.delegate(.workoutListInvalidated), animation: .default)
                 
-            case let .destination(.presented(.confirmationDialog(dialog))):
+            case let .destination(.presented(.alert(dialog))):
                 switch dialog {
                 case .confirmDelete:
                     return .run { [workoutToBeDeleted = state.workoutToBeDeleted, workouts = state.workouts] send in
                         if let workout = workouts.first(where: {$0.id == workoutToBeDeleted}) {
                             await send(.delete(workout: workout))
                         }
-                        await send(.fetchWorkouts)
                     }
                 case .cancelDelete:
-                    state.workoutToBeDeleted = nil
-                    return .send(.fetchWorkouts)
+                    return .none
                 }
             case .destination:
                 return .none
@@ -352,7 +351,7 @@ struct WorkoutsListView: View {
     private func workoutsList(workouts: [Workout]) -> some View {
         ForEach(workouts, id: \.id) { workout in
             WorkoutRowView(workout: workout)
-                .confirmationDialog($store.scope(state: \.destination?.confirmationDialog, action: \.destination.confirmationDialog))
+                .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
                 .onTapGesture {
                     // Send a delegate action to edit the workout
                     store.send(.delegate(.editWorkout(workout)), animation: .default)
@@ -376,12 +375,12 @@ struct WorkoutsListView: View {
     }
 }
 
-extension ConfirmationDialogState where Action == WorkoutsListFeature.Destination.ConfirmationDialog {
+extension AlertState where Action == WorkoutsListFeature.Destination.Alert {
     static func deleteWorkout(workout: Workout) -> Self {
         Self {
             TextState("Delete \(workout.name)?")
         } actions: {
-            ButtonState(action: .confirmDelete) {
+            ButtonState(role: .destructive, action: .confirmDelete) {
                 TextState("Yes")
             }
             ButtonState(role: .cancel, action: .cancelDelete) {
@@ -392,7 +391,6 @@ extension ConfirmationDialogState where Action == WorkoutsListFeature.Destinatio
         }
     }
 }
-
 
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container

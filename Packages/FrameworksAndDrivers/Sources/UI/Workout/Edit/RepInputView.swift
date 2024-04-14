@@ -26,10 +26,26 @@ public enum FocusField: Hashable {
 public struct RepInput {
     
     /**
+     An inner reducer enum `Destination` for manging alerts and presentations.
+     */
+    @Reducer(state: .equatable)
+    public enum Destination {
+        case alert(AlertState<Alert>)
+        
+        @CasePathable
+        public enum Alert {
+            case confirmDelete
+            case cancelDelete
+        }
+    }
+    
+    /**
      A state struct `State` for managing rep input related state variables.
      */
     @ObservableState
     public struct State: Equatable {
+        @Presents var destination: Destination.State?
+        
         var exercise: Exercise
         var rep: Rep?
         
@@ -99,7 +115,13 @@ public struct RepInput {
      */
     public enum Action {
         case changeRepCountUnit(RepCountUnit)
+        /// Deletes the workout. Use with caution as this action is irreversible.
+        /// - Warning: This action is irreversible. Make sure you want to permanently delete the Rep.
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly. Use `deleteButtonTapped` instead")
+        case deleteRep
         case deleteButtonTapped
+        
+        case destination(PresentationAction<Destination.Action>)
         
         case delegate(Delegate)
         public enum Delegate {
@@ -129,11 +151,25 @@ public struct RepInput {
                 let focusField: FocusField = repCountUnit == .rep ? .rep : .time
                 return .send(.focusedFieldChanged(focusField))
                 
-            case .deleteButtonTapped:
+                // TODO: FIXME showTabBottomSheet is set to false when deleting a workout
+            case .deleteRep:
                 if let rep = state.rep, state.isRepSaved {
                     state.exercise.deleteRep(rep: rep)
                 }
                 return .send(.delegate(.close))
+            case .deleteButtonTapped:
+                state.destination = .alert(.deleteRep)
+                return .none
+                
+            case let .destination(.presented(.alert(dialog))):
+                switch dialog {
+                case .confirmDelete:
+                    return .send(.deleteRep)
+                case .cancelDelete:
+                    return .none
+                }
+            case .destination:
+                return .none
                 
             case let .keypadInputReceived(num):
                 switch state.focusedField {
@@ -203,6 +239,7 @@ public struct RepInput {
                 return .none
             }
         }
+        .ifLet(\.$destination, action: \.destination)
     }
 }
 
@@ -364,6 +401,7 @@ struct RepInputView: View {
                 store.send(.repTimeChanged(time))
             })
         }
+        .alert($store.scope(state: \.destination?.alert, action: \.destination.alert) )
         .modifyIf(store.isRepSaved) {
             $0.safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack {
@@ -395,5 +433,20 @@ struct RepInputView: View {
         } else {
             return .timeCount
         }
+    }
+}
+
+extension AlertState where Action == RepInput.Destination.Alert {
+    static var deleteRep = Self {
+        TextState("Delete Rep?")
+    } actions: {
+        ButtonState(role: .destructive, action: .confirmDelete) {
+            TextState("Yes")
+        }
+        ButtonState(role: .cancel, action: .cancelDelete) {
+            TextState("Nevermind")
+        }
+    } message: {
+        TextState("Are you sure you want to delete this rep?")
     }
 }
