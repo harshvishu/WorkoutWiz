@@ -97,7 +97,7 @@ public struct TabBarFeature {
                 }
                 /// When a alert is presented, active bottom sheet hides itself
                 /// Present the bottom sheet again
-            case .dashboard(.workoutsList(.destination(.presented(.alert)))):
+            case .dashboard(.workoutsList(.destination(.presented))):
                 let show = Constants.EligibleBottomSheetScreens.contains(state.currentTab)
                 return .send(.showTabBottomSheet(show), animation: .default)
                 

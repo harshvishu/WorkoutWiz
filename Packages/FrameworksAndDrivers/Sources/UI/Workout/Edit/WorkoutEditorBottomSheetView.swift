@@ -18,9 +18,6 @@ struct WorkoutEditorBottomSheetView: View {
     
     // MARK: - Environment
     
-    // Accesses the model context environment
-    @Environment(\.modelContext) private var modelContext
-    
     // MARK: - State Variables
     
     // Bindable store for managing the workout editor state

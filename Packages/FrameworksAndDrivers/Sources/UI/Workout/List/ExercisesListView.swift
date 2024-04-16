@@ -29,28 +29,13 @@ public struct ExercisesList {
     public enum Action {
         /// Action to handle exercises.
         case exercises(IdentifiedActionOf<ExerciseRow>)
-        /// Action to delete an exercise.
-        case delete(exercise: ExerciseRow.State)
-        
-        /// Action to delegate an operation.
-        case delegate(Delegate)
-        
-        /// Enum representing delegate operations.
-        public enum Delegate: Equatable {
-            /// Delegate operation to delete an exercise.
-            case delete(exercise: ExerciseRow.State)
-        }
     }
     
     /// The body of the reducer.
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            case let .delete(exercise):
-                return .send(.delegate(.delete(exercise: exercise)))
             case .exercises:
-                return .none
-            case .delegate:
                 return .none
             }
         }
@@ -84,7 +69,7 @@ struct ExercisesListView: View {
     func delete(at indexSet: IndexSet) {
         for index in indexSet {
             let exercise = store.exercises[index]
-            store.send(.delete(exercise: exercise))
+            store.send(.exercises(.element(id: exercise.id, action: .delegate(.delete))))
         }
     }
 }

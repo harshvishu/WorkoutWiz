@@ -86,9 +86,9 @@ struct WorkoutEditorView: View {
                         .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                     }
                     .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
+                    
                     // List of exercises
                     ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
-                        .deleteDisabled(store.isWorkoutInProgress.not()) // Disable swipe to delete
                 }
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -97,6 +97,7 @@ struct WorkoutEditorView: View {
                 .buttonStyle(.plain)
                 .previewBorder()
             }
+            .environment(\.defaultMinListRowHeight, 0)
             .listStyle(.inset)
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)

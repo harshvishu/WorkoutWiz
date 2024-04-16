@@ -20,10 +20,10 @@ public extension View {
     }
 }
 
-@MainActor
 fileprivate struct ModelContainerModifier: ViewModifier {
     let configurationProvider: SwiftDataModelConfigurationProvider
     
+    @MainActor
     init() {
         self.configurationProvider = SwiftDataModelConfigurationProvider.shared
         self.configurationProvider.container.mainContext.autosaveEnabled = true

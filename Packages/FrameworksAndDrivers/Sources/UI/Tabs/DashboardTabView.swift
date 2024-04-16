@@ -30,8 +30,8 @@ public struct DashboardTab {
         
         Reduce<State, Action> { state, action in
             switch action {
-            case let .workoutsList(.delegate(.editWorkout(_))):
-                return .none
+//            case let .workoutsList(.delegate(.editWorkout(_))):
+//                return .none
             case .workoutsList:
                 return .none
             }
@@ -48,7 +48,6 @@ struct DashboardTabView: View {
     let store: StoreOf<DashboardTab>
     
     @Environment(\.isPresented) var isPresented
-    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         NavigationStack {
@@ -58,6 +57,7 @@ struct DashboardTabView: View {
                         List {
                             WorkoutsListView(store: store.scope(state: \.workoutsList, action: \.workoutsList))
                         }
+                        .environment(\.defaultMinListRowHeight, 0)
                         .listStyle(.plain)
                         .listSectionSeparator(.hidden)
                     }

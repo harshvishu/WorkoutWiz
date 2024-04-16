@@ -17,7 +17,6 @@ import ComposableArchitecture
 struct CalendarTabView: View {
     
     @Environment(\.isPresented) var isPresented
-    @Environment(\.modelContext) private var modelContext
     
     @State private var resetScroll: Day? = nil
     @State private var isTodayVisible: Bool = true
@@ -64,6 +63,7 @@ struct CalendarTabView: View {
                         Logger.ui.info("Day Change \(newValue.date.formatted(.dateTime))")
                     }
                 }
+                .environment(\.defaultMinListRowHeight, 0)
                 .scrollIndicators(.hidden)
                 .scrollContentBackground(.hidden)
                 .toolbar {

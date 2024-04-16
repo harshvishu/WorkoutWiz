@@ -26,6 +26,8 @@ public enum CustomKey: Equatable {
     case next
     case prev
     case undo
+    case switchTime
+    case switchRep
     
     public var sfSymbol: String {
         switch self {
@@ -51,6 +53,10 @@ public enum CustomKey: Equatable {
             "delete.left.fill"
         case .undo:
             "arrow.uturn.backward"
+        case .switchRep:
+            "123.rectangle.fill"
+        case .switchTime:
+            "timer"
         }
     }
     
@@ -62,7 +68,9 @@ public enum CustomKey: Equatable {
         case .digit(let value):
             Text("\(value)")
         case .submit:
-            Text("Done")
+            Text("done")
+        case .next:
+            Text("next")
         case .empty:
             EmptyView()
         default:
@@ -129,14 +137,14 @@ public struct RepInputKeyboard: View {
     private var keysSet: [CustomKey] {
         switch mode {
         case .repCount:
-            [.digit(1), .digit(2), .digit(3), .next,
+            [.digit(1), .digit(2), .digit(3), .switchTime,
              .digit(4), .digit(5), .digit(6), .plus,
              .digit(7), .digit(8), .digit(9), .minus,
-             .empty, .digit(0), .delete, .submit]
+             .empty, .digit(0), .delete, .next]
         case .timeCount:
             []
         case .weight:
-            [.digit(1), .digit(2), .digit(3), .prev,
+            [.digit(1), .digit(2), .digit(3), .empty,
              .digit(4), .digit(5), .digit(6), .plus,
              .digit(7), .digit(8), .digit(9), .minus,
              .period, .digit(0), .delete, .submit]
@@ -162,14 +170,7 @@ public struct RepInputKeyboard: View {
                 }, label: {
                     ZStack {
                         Color.clear
-                        switch k {
-                        case .next:
-                            Text("weight")
-                        case .prev:
-                            Text("reps")
-                        default:
-                            k.view
-                        }
+                        k.view
                     }
                 })
                 .font(.title3)
@@ -178,7 +179,7 @@ public struct RepInputKeyboard: View {
                 .modifyIf(k == CustomKey.empty) {
                     $0.buttonStyle(.plain)
                 }
-                .modifyIf(k == CustomKey.submit) {
+                .modifyIf(k == CustomKey.submit || k == CustomKey.next || k == CustomKey.prev) {
                     $0.buttonStyle(.borderedProminent)
                         .foregroundStyle(.background)
                 }
@@ -192,7 +193,7 @@ public struct RepInputKeyboard: View {
     
     @ViewBuilder
     var wheelInputView: some View {
-        let keys: [CustomKey] = [.next, .plus, .minus, .submit]
+        let keys: [CustomKey] = [.switchRep, .plus, .minus, .next]
         
         let columns = [
             GridItem(.flexible())
@@ -212,14 +213,7 @@ public struct RepInputKeyboard: View {
                         }, label: {
                             ZStack {
                                 Color.clear
-                                switch k {
-                                case .next:
-                                    Text("weight")
-                                case .prev:
-                                    Text("time")
-                                default:
-                                    k.view
-                                }
+                                k.view
                             }
                         })
                         .font(.title3)
@@ -228,7 +222,7 @@ public struct RepInputKeyboard: View {
                         .modifyIf(k == CustomKey.empty) {
                             $0.buttonStyle(.plain)
                         }
-                        .modifyIf(k == CustomKey.submit) {
+                        .modifyIf(k == CustomKey.submit || k == CustomKey.next || k == CustomKey.prev) {
                             $0.buttonStyle(.borderedProminent)
                                 .foregroundStyle(.background)
                         }
@@ -237,7 +231,7 @@ public struct RepInputKeyboard: View {
                         }
                     }
                 }
-                .frame(width: (width - 24) / 4)
+                .frame(width: max(0, (width - 24) / 4))
                 .previewBorder()
             }
         }

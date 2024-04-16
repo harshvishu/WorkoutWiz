@@ -30,9 +30,15 @@ public struct WorkoutsListFeature {
     @Reducer(state: .equatable)
     public enum Destination {
         case alert(AlertState<Alert>)
+        case confirmationDialog(ConfirmationDialogState<ConfirmationDialog>)
         
         @CasePathable
-        public enum Alert {
+        public enum Alert: Equatable {
+            // Empty Alert
+        }
+        
+        @CasePathable
+        public enum ConfirmationDialog {
             case confirmDelete
             case cancelDelete
         }
@@ -205,7 +211,7 @@ public struct WorkoutsListFeature {
                 
             case .deleteButtonTapped(let workout):
                 state.workoutToBeDeleted = workout.id
-                state.destination = .alert(.deleteWorkout(workout: workout))
+                state.destination = .confirmationDialog(.deleteWorkout(workout: workout))
                 return .none
                 
             case let .delete(workout):
@@ -215,8 +221,8 @@ public struct WorkoutsListFeature {
                 
                 state.deleteWorkout(workout)
                 return .send(.delegate(.workoutListInvalidated), animation: .default)
-                
-            case let .destination(.presented(.alert(dialog))):
+          
+            case let .destination(.presented(.confirmationDialog(dialog))):
                 switch dialog {
                 case .confirmDelete:
                     return .run { [workoutToBeDeleted = state.workoutToBeDeleted, workouts = state.workouts] send in
@@ -227,6 +233,7 @@ public struct WorkoutsListFeature {
                 case .cancelDelete:
                     return .none
                 }
+                
             case .destination:
                 return .none
                 
@@ -352,16 +359,18 @@ struct WorkoutsListView: View {
         ForEach(workouts, id: \.id) { workout in
             WorkoutRowView(workout: workout)
                 .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+                .confirmationDialog($store.scope(state: \.destination?.confirmationDialog, action: \.destination.confirmationDialog))
                 .onTapGesture {
                     // Send a delegate action to edit the workout
                     store.send(.delegate(.editWorkout(workout)), animation: .default)
                 }
-                .contextMenu {
+                .swipeActions(edge: .trailing) {
                     Button {
                         store.send(.deleteButtonTapped(workout: workout))
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                    .tint(.red)
                     .disabled(store.activeWorkoutID == workout.id)   // Disable delete if the workout is active
                     
                     Button {
@@ -370,12 +379,17 @@ struct WorkoutsListView: View {
                     } label: {
                         Label("Duplicate", systemImage: "doc.on.doc.fill")
                     }
+                    .tint(.blue)
                 }
         }
     }
 }
 
 extension AlertState where Action == WorkoutsListFeature.Destination.Alert {
+    
+}
+
+extension ConfirmationDialogState where Action == WorkoutsListFeature.Destination.ConfirmationDialog {
     static func deleteWorkout(workout: Workout) -> Self {
         Self {
             TextState("Delete \(workout.name)?")
@@ -402,5 +416,6 @@ extension AlertState where Action == WorkoutsListFeature.Destination.Alert {
             }
         )
     )
+    .withPreviewEnvironment()
     .modelContainer(container)
 }

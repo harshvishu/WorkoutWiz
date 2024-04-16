@@ -123,6 +123,31 @@ public struct WorkoutEditor {
         }
         
         /**
+         Add exercise to the workout.
+         */
+        mutating func addExercises(bluePrints: [ExerciseBluePrint]) {
+            for item in bluePrints {
+                let exercise = Exercise()
+                workout.appendExercise(exercise)
+                exercise.template = item
+                exercise.repCountUnit = item.preferredRepCountUnit()
+                exercise.workout = workout
+                item.frequency += 1 // Sort by most frequent
+                
+                exercisesList.exercises.insert(ExerciseRow.State(exercise: exercise), at: 0)
+            }
+        }
+        
+        /**
+         Delete exericse
+         */
+        mutating func deleteExercise(exerciseID: ObjectIdentifier) {
+            guard let exercise = exercisesList.exercises[id: exerciseID]?.exercise else {return}
+            workout.deleteExercise(exercise: exercise)
+            exercisesList.exercises.remove(id: exerciseID)
+        }
+        
+        /**
          Deletes the workout from the database.
          */
         mutating func deleteWorkout() {
@@ -206,18 +231,7 @@ public struct WorkoutEditor {
             case let .addSelectedBluePrints(bluePrints):
                 
                 state.saveWorkoutIfNotExistsAndStart()
-                
-                for item in bluePrints {
-                    let exercise = Exercise()
-                    state.workout.appendExercise(exercise)
-                    exercise.template = item
-                    exercise.repCountUnit = item.preferredRepCountUnit()
-                    exercise.workout = state.workout
-                    item.frequency += 1 // Improving the search results
-                    
-                    state.exercisesList.exercises.insert(ExerciseRow.State(exercise: exercise), at: 0)
-                }
-                
+                state.addExercises(bluePrints: bluePrints)
                 return .none
                 
             case .cancelButtonTapped:
@@ -239,9 +253,10 @@ public struct WorkoutEditor {
             case .deleteWorkout:
                 state.deleteWorkout()               // Delete workout
                 return .none
-            case let .exercisesList(.delegate(.delete(exercise))):
-                state.workout.deleteExercise(exercise: exercise.exercise)
-                state.exercisesList.exercises.remove(id: exercise.id)
+                
+                // MARK: - Delete exercise
+            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.delete)))):
+                state.deleteExercise(exerciseID: exerciseID)
                 return .none
                 
             case .exercisesList:

@@ -56,6 +56,9 @@ public struct AppFeature {
                         return .send(.popup(.editSet(forExercise: exercise, rep: rep)))
                     }
                     return .none
+                case .element:
+                    // Add other delegates here
+                    return .none
                 }
             case .tabs:
                 return .none

@@ -159,20 +159,17 @@ public struct RepInput {
                 if let rep = state.rep, state.isRepSaved {
                     state.exercise.deleteRep(rep: rep)
                 }
-                return .send(.delegate(.close))
+                return .run { @MainActor send in
+                    send(.delegate(.close))
+                }
             // Action when delete button is tapped
             case .deleteButtonTapped:
                 state.destination = .alert(.deleteRep)
                 return .none
                 
             // Handling presentation of alerts
-            case let .destination(.presented(.alert(dialog))):
-                switch dialog {
-                case .confirmDelete:
-                    return .send(.deleteRep)
-                case .cancelDelete:
-                    return .none
-                }
+            case .destination(.presented(.alert(.confirmDelete))):
+                return .send(.deleteRep)
             case .destination:
                 return .none
                 
@@ -206,7 +203,6 @@ public struct RepInput {
                         if let weight = weightText.double {
                             state.weightText = weight.isZero ? "" : weightText
                         }
-                        
                     case .none, .some(.time):
                         break
                     }
@@ -232,6 +228,9 @@ public struct RepInput {
                         break
                     }
                     return .none
+                case .switchRep, .switchTime:
+                    let newRepInputMode: RepCountUnit = (state.repCountUnit == .rep) ? .time : .rep
+                    return .send(.changeRepCountUnit(newRepInputMode))
                     
                 // Action when submit button is tapped
                 case .submit:
@@ -329,23 +328,11 @@ public struct RepInput {
 struct RepInputView: View {
     @Bindable var store: StoreOf<RepInput>
     @State var isDeleteButtonEnabled = false
-    
+        
     var body: some View {
         
         VStack {
             HStack(alignment: .center, spacing: 4) {
-                
-                // MARK: Rep Count Type toggle
-                Button(action: {
-                    let newRepInputMode: RepCountUnit = (store.repCountUnit == .rep) ? .time : .rep
-                    store.send(.changeRepCountUnit(newRepInputMode))
-                }, label: {
-                    Image(systemName: store.repCountUnit == .rep ? "123.rectangle.fill" : "timer")
-                        .symbolEffect(.bounce, value: store.repCountUnit)
-                        .contentTransition(.symbolEffect(.replace.byLayer))
-                })
-                .buttonStyle(.plain)
-                .disabled(store.exercise.reps.count > 0)
                 
                 VStack(alignment: .center) {
                     switch store.repCountUnit {
@@ -354,22 +341,22 @@ struct RepInputView: View {
                         Text(store.repCountText.isEmpty ? "0" : store.repCountText)
                             .font(.title.bold())
                             .frame(maxWidth: .infinity)
-                            .foregroundStyle(store.focusedField == .rep ? appAccentColor : Color.primary)
+                            .foregroundStyle(store.focusedField == .rep ? Color.accentColor : Color.primary)
                             .bipAnimation(trigger: store.focusedField == .rep)
                             .contentTransition(.numericText())
                             .onTapGesture {
-                                store.send(.focusedFieldChanged(.rep), animation: .customSpring())
+                                store.send(.focusedFieldChanged(.rep), animation: .default)
                             }
                     case .time:
                         // MARK: Display Rep Time
                         Text(store.repTimeText.isEmpty ? "0:0" : store.repTimeText)
                             .font(.title.bold())
                             .frame(maxWidth: .infinity)
-                            .foregroundStyle(store.focusedField == .time ? appAccentColor : Color.primary)
+                            .foregroundStyle(store.focusedField == .time ? Color.accentColor : Color.primary)
                             .bipAnimation(trigger: store.focusedField == .rep)
                             .contentTransition(.numericText())
                             .onTapGesture {
-                                store.send(.focusedFieldChanged(.time), animation: .customSpring())
+                                store.send(.focusedFieldChanged(.time), animation: .default)
                             }
                     }
                     
@@ -383,7 +370,7 @@ struct RepInputView: View {
                     Text(store.weightText.isEmpty ? "0" : store.weightText)
                         .font(.title.bold())
                         .frame(maxWidth: .infinity)
-                        .foregroundStyle(store.focusedField == .weight ? appAccentColor : Color.primary)
+                        .foregroundStyle(store.focusedField == .weight ? Color.accentColor : Color.primary)
                         .bipAnimation(trigger: store.focusedField == .weight)
                         .contentTransition(.numericText())
                         .onTapGesture {
@@ -444,7 +431,7 @@ struct RepInputView: View {
     private func getRepInputMode() -> RepInputMode {
         if store.focusedField == .weight {
             return .weight
-        } else if store.repCountUnit == .rep {
+        } else if store.focusedField == .rep {
             return .repCount
         } else {
             return .timeCount
@@ -465,4 +452,44 @@ extension AlertState where Action == RepInput.Destination.Alert {
     } message: {
         TextState("Are you sure you want to delete this rep?")
     }
+}
+
+// TODO: Remove
+struct CheckToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            ZStack {
+                Capsule()
+                    .frame(width: 28, height: 64)
+                    .foregroundStyle(configuration.isOn ? Color.white : .black)
+                    .overlay {
+                        Capsule()
+                            .stroke(Color.black.opacity(0.1), lineWidth: 2)
+                    }
+                ZStack{
+                    Circle()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(.white)
+                    Image(systemName: configuration.isOn ? "textformat.123" : "timer")
+                        .symbolVariant(.fill)
+                        .contentTransition(.symbolEffect(.replace.downUp.wholeSymbol))
+                }
+                .shadow(color: .black.opacity(0.14), radius: 4, x: 0, y: 2)
+                .offset(y: configuration.isOn ? 18 : -18)
+                .padding(4)
+                .animation(.spring(), value: configuration.isOn)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+#Preview {
+    @State var isOn = false
+    return Toggle("21", isOn: $isOn)
+        .toggleStyle(CheckToggleStyle())
+//        .padding()
+        .previewBorder()
 }
