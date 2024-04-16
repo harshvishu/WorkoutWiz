@@ -129,6 +129,10 @@ public struct RepInputKeyboard: View {
                     })
             }
         }
+        // Disabling the unwanted animations
+        .transaction { transaction in
+            transaction.animation = nil
+        }
         .foregroundStyle(.primary)
         .frame(maxHeight: 240)
         .padding([.leading, .bottom, .trailing])
@@ -261,7 +265,6 @@ public struct TimeInputKeyboard: View {
         .foregroundStyle(.primary)
         .frame(maxHeight: 240)
         .padding([.leading, .bottom, .trailing])
-        .transition(.identity)
     }
     
     

@@ -254,9 +254,15 @@ public struct WorkoutEditor {
                 state.deleteWorkout()               // Delete workout
                 return .none
                 
+                /// Handle delegate actions for each ExerciseRow from ExerciseList
                 // MARK: - Delete exercise
             case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.delete)))):
                 state.deleteExercise(exerciseID: exerciseID)
+                return .none
+                // MARK: - Handle Info button tapped on `Exercise Row Header`
+            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showBluePrintDetails)))):
+                guard let blueprint = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
+                state.path.append(.exerciseDetails(.init(exercise: blueprint)))
                 return .none
                 
             case .exercisesList:

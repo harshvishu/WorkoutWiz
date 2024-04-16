@@ -374,7 +374,7 @@ struct RepInputView: View {
                         .bipAnimation(trigger: store.focusedField == .weight)
                         .contentTransition(.numericText())
                         .onTapGesture {
-                            store.send(.focusedFieldChanged(.weight), animation: .customSpring())
+                            store.send(.focusedFieldChanged(.weight), animation: .default)
                         }
                     
                     Text("\(store.weightUnit.sfSymbol)")

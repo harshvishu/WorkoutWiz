@@ -27,24 +27,28 @@ struct ExerciseRowFooterView: View {
                 HStack(alignment: .lastTextBaseline, spacing: 4) {
                     if store.exercise.reps.isEmpty  {
                         Label("No sets for this exercise.", systemImage: "lightbulb.circle.fill")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isEditable.not() ? Color.secondary : .accentColor)
+//                            .foregroundStyle(.secondary)
                             .transition(.opacity)
                     } else {
                         let energy =  Measurement(value: store.exercise.calories, unit: UnitEnergy.kilocalories)
                         Label(energy.formatted(.measurement(width: .abbreviated, usage: .workout)), systemImage: "flame")
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(isEditable.not() ? Color.secondary : .accentColor)
+//                            .foregroundStyle(.primary)
                         
                         if let maxWeightLifted = store.exercise.maxWeightLifted , !maxWeightLifted.isZero {
                             let weight = Measurement(value: maxWeightLifted, unit: UnitMass.kilograms)
                             Label(weight.formatted(.measurement(width: .narrow, usage: .general)), systemImage: "scalemass.fill")
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(isEditable.not() ? Color.secondary : .accentColor)
+//                                .foregroundStyle(.primary)
                         }
                     }
                     
                     Spacer()
                     
                     Text("Add a set")
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isEditable.not() ? Color.secondary : .accentColor)
+//                        .foregroundStyle(.primary)
                         .fontWeight(.semibold)
                         .padding(2)
                         .opacity(isEditable ? 1 : 0)
@@ -60,10 +64,11 @@ struct ExerciseRowFooterView: View {
                     bottomLeading: 8.0,
                     bottomTrailing: 8.0,
                     topTrailing: 0.0), style: .continuous)
-                .fill(Color.black.opacity(0.2))
+//                .fill(Color.black.opacity(0.2))
+                    .fill((isEditable.not() ? Color.secondary : Color.accentColor).opacity(0.2))
             )
             .padding(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
             .offset(y: -16)
-            .disabled(!isEditable)
+            .disabled(isEditable.not())
     }
 }

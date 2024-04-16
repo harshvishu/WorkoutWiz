@@ -45,6 +45,7 @@ public struct ExerciseRow {
             case addNewSet
             case editSet(Rep)
             case delete
+            case showBluePrintDetails
         }
     }
     

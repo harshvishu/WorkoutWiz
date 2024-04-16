@@ -1,6 +1,6 @@
 //
 //  ExerciseBluePrintDetailView.swift
-//  
+//
 //
 //  Created by harsh vishwakarma on 05/04/24.
 //
@@ -8,6 +8,7 @@
 import SwiftUI
 import Domain
 import ComposableArchitecture
+import DesignSystem
 
 @Reducer
 public struct ExerciseBluePrintDetails {
@@ -25,56 +26,52 @@ struct ExerciseDetailView: View {
     let store: StoreOf<ExerciseBluePrintDetails>
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Text(store.exercise.name)
-                    .font(.title)
-                    .bold()
+        Form {
+//            Text(store.exercise.name)
+//                .font(.title)
+//                .bold()
+            
+            if let force = store.exercise.force?.rawValue {
                 
-                if let force = store.exercise.force?.rawValue {
-                    Text("Force: \(force.capitalized)")
-                }
-                Text("Level: \(store.exercise.level.rawValue.capitalized)")
-                if let mechanic = store.exercise.mechanic?.rawValue {
-                    Text("Mechanic: \(mechanic.capitalized)")
-                }
-                if let equipment = store.exercise.equipment?.rawValue {
-                    Text("Equipment: \(equipment.capitalized)")
-                }
-                
-                Text("Category: \(store.exercise.category.rawValue.capitalized)")
-                
-                if store.exercise.primaryMuscles.isNotEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Primary Muscles:")
-                            .font(.headline)
-                        ForEach(store.exercise.primaryMuscles, id: \.self) { muscle in
-                            Text("- \(muscle)")
-                        }
-                    }
-                }
-                if store.exercise.secondaryMuscles.isNotEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Secondary Muscles:")
-                            .font(.headline)
-                        ForEach(store.exercise.secondaryMuscles, id: \.self) { muscle in
-                            Text("- \(muscle)")
-                        }
-                    }
-                }
-                
-                if store.exercise.instructions.isNotEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Instructions:")
-                            .font(.headline)
-                        ForEach(store.exercise.instructions, id: \.self) { instruction in
-                            Text("- \(instruction)")
-                        }
+                LabeledContent("Force", value: force.capitalized)
+            }
+            LabeledContent("Level", value: store.exercise.level.rawValue.capitalized)
+            
+            if let mechanic = store.exercise.mechanic?.rawValue {
+                LabeledContent("Mechanic", value: mechanic.capitalized)
+            }
+            if let equipment = store.exercise.equipment?.rawValue {
+                LabeledContent("Equipment", value: equipment.capitalized)
+            }
+            Section("Category") {
+                Label(store.exercise.category.rawValue.capitalized, systemImage: store.exercise.category.iconForCategory())
+            }
+            
+            if store.exercise.primaryMuscles.isNotEmpty {
+                Section("Primary Muscles") {
+                    ForEach(store.exercise.primaryMuscles, id: \.self) { muscle in
+                        Text(muscle.rawValue.capitalized)
                     }
                 }
             }
-            .padding()
+            if store.exercise.secondaryMuscles.isNotEmpty {
+                Section("Secondary Muscles") {
+                    ForEach(store.exercise.secondaryMuscles, id: \.self) { muscle in
+                        Text(muscle.rawValue.capitalized)
+                    }
+                }
+            }
+            
+            if store.exercise.instructions.isNotEmpty {
+                Section("Instructions") {
+                    ForEachWithIndex(store.exercise.instructions, id: \.self) { idx, instruction in
+                        Label(instruction, systemImage: "\(idx + 1).circle.fill")
+                    }
+                }
+            }
         }
+        .formStyle(.grouped)
+        .navigationTitle(store.exercise.name)
     }
 }
 

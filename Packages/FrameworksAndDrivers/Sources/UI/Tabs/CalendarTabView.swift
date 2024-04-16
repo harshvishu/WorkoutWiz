@@ -63,7 +63,8 @@ struct CalendarTabView: View {
                         Logger.ui.info("Day Change \(newValue.date.formatted(.dateTime))")
                     }
                 }
-                .environment(\.defaultMinListRowHeight, 0)
+                .environment(\.defaultMinListRowHeight, 1)
+                .safeAreaPadding(.bottom, .customTabBarHeight)
                 .scrollIndicators(.hidden)
                 .scrollContentBackground(.hidden)
                 .toolbar {

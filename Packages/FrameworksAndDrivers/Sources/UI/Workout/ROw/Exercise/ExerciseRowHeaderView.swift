@@ -43,7 +43,7 @@ struct ExerciseRowHeaderView: View {
             Spacer()
             
             Button(action: {
-                Swift.print("Info Button tapped")
+                store.send(.delegate(.showBluePrintDetails), animation: .default)
             }, label: {
                 Image(systemName: "info.circle.fill")
             })
