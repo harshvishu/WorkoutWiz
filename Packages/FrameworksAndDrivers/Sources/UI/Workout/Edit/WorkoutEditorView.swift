@@ -10,78 +10,108 @@ import SwiftUI
 import DesignSystem
 import OSLog
 import ComposableArchitecture
+import Persistence
 
 struct WorkoutEditorView: View {
     
+    // MARK: - Environment Variables
+    
+    // Keyboard state environment variable
     @Environment(\.keyboardShowing) private var keyboardShowing
     
-    @State private var alertOption: AlertOption?
-    @State private var showFinishWorkoutAlert: Bool = false
+    // MARK: - State Variables
+    
+    // State variable to store the search text for filtering exercises
     @State private var searchText = ""
     
+    // MARK: - Bindable Store
+    
+    // Bindable store for managing the workout editor state
     @Bindable var store: StoreOf<WorkoutEditor>
+    
+    // MARK: - Body
     
     public var body: some View {
         ZStack(alignment: .bottom) {
+            // Main content stack
+            
             List {
-                HStack(spacing: 0) {
-                    
-                    TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
-                        .disabled(store.isWorkoutInProgress.not())
-                        .font(.title3)
-                        .padding(.trailing)
-                    
-                    Spacer()
-                    
-                    // TODO: Pending implementation for changing abbreviatedCategory
-                    if store.workout.abbreviatedCategory != .none {
-                        Button(action: {}, label: {
-                            Text(store.workout.abbreviatedCategory.rawValue)
-                                .font(.caption)
+                // List of workout editor components
+                Group {
+                    // MARK: Workout name text field
+                    VStack(alignment: .leading) {
+                        HStack(spacing: 0) {
+                            TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
+                                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
+                                .font(.title3)
+                                .padding(.trailing)
+                            
+                            Spacer()
+                            
+                            if (store.workout.abbreviatedCategory != .none) {
+                                // MARK: Button for changing workout category
+                                Button(action: {}, label: {
+                                    Label(store.workout.abbreviatedCategory.rawValue, systemImage: "tag.fill")
+                                        .font(.caption.weight(.medium))
+                                        .labelStyle(.titleAndIcon)
+                                })
+                                .foregroundStyle(.secondary)
+                                .buttonBorderShape(.capsule)
+                                .padding(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                                .background {
+                                    Capsule(style: .continuous)
+                                        .fill(.quinary.opacity(0.3))
+                                        .stroke(.secondary, lineWidth: 0.5)
+                                }
+                                
+                            }
+                        }
+                        .opacity(isWorkoutNameTextFieldVisible ? 1 : 0) // Show only if visible
+                        .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
+                        
+                        // MARK: Button for adding notes to the workout
+                        Button(action: {
+                            // Navigate to Notes Editor
+                            Logger.ui.info("Add notes for workout: TODO: Pending implementation")
+                        }, label: {
+                            HStack {
+                                Text("Notes")
+                                Image(systemName: "pencil.and.list.clipboard")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.tertiary)
+                            .font(.body)
                         })
-                        .foregroundStyle(.secondary)
-                        .buttonStyle(.bordered)
-                        .buttonBorderShape(.capsule)
-                        .scaleEffect(0.75)
+                        .opacity(isWorkoutNotesTextFieldVisible ? 1 : 0) // Show only if visible
+                        .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                     }
+                    .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
+                    
+                    // List of exercises
+                    ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
                 }
-                .opacity(isWorkoutNameTextFieldVisible ? 1 : 0)
-                .disabled(store.isWorkoutInProgress.not())          // Disable all items inside the list
+                .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
-                .listRowInsets(.init(top: .defaultVerticalSpacing, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
-                
-                Button(action: {
-                    // TODO: Navigate to Notes Editor
-                    Logger.ui.info("Add notes for workout: TODO: Pending implementation")
-                }, label: {
-                    HStack {
-                        Text("Notes")
-                        Image(systemName: "pencil.and.list.clipboard")
-                            .font(.caption)
-                    }
-                    .foregroundStyle(.tertiary)
-                    .font(.body)
-                })
+                .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: 0, trailing: .defaultHorizontalSpacing))
+                .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                 .buttonStyle(.plain)
-                .opacity(isWorkoutNotesTextFieldVisible ? 1 : 0)
-                .disabled(store.isWorkoutInProgress.not())          // Disable all items inside the list
-                .listRowSeparator(.hidden)
-                .listRowInsets(.init(top: 0, leading: .defaultHorizontalSpacing, bottom: .defaultVerticalSpacing, trailing: .defaultHorizontalSpacing))
-                
-                ExercisesListView(store: store.scope(state: \.exercisesList, action: \.exercisesList), isEditable: store.isWorkoutInProgress)
-                    .disabled(store.isWorkoutInProgress.not())          // Disable all items inside the list
-                    .deleteDisabled(store.isWorkoutInProgress.not())    // Disable swipe to delete
+                .previewBorder()
             }
+            .environment(\.defaultMinListRowHeight, 0)
             .listStyle(.inset)
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.automatic)
             .safeAreaInset(edge: .bottom, spacing: 0) {
+                // Bottom safe area content
+                
                 VStack(spacing: .defaultVerticalSpacing) {
                     Divider()
                     
                     if store.isWorkoutInProgress {
+                        // Buttons for in-progress workout
                         
+                        // Button to show all exercises
                         Button(action: {
                             store.send(.showExerciseListButtonTapped, animation: .default)
                         }, label: {
@@ -94,171 +124,84 @@ struct WorkoutEditorView: View {
                         .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
                         .padding(.horizontal, .defaultHorizontalSpacing)
                         
-                            HStack {
-                                // MARK: - Cancel Action
-                                Button(role: .destructive, action: {
-                                    store.send(.cancelButtonTapped, animation: .default)
+                        HStack {
+                            // Cancel button
+                            Button(role: .destructive, action: {
+                                store.send(.cancelButtonTapped, animation: .default)
+                            }, label: {
+                                Text("Cancel")
+                                    .padding(.horizontal)
+                            })
+                            .foregroundStyle(Color.red)
+                            
+                            // Finish button if exercises are added
+                            if store.workout.exercises.isNotEmpty {
+                                Button(action: {
+                                    store.send(.finishButtonTapped, animation: .default)
                                 }, label: {
-                                    Text("Cancel")
-                                        .padding(.horizontal)
+                                    // Label for finish button
+                                    Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
+                                        .frame(maxWidth: .infinity)
                                 })
-                                .foregroundStyle(Color.red)
-                                // TODO: Check for styling
-                                
-                                if store.workout.exercises.isNotEmpty {
-                                    Button(action: {
-                                        store.send(.finishButtonTapped, animation: .default)
-                                    }, label: {
-                                        // TODO: Improve condition for label, maybe with timer
-                                        Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
-                                            .frame(maxWidth: .infinity)
-                                    })
-                                    .buttonBorderShape(.capsule)
-                                    .buttonStyle(.borderedProminent)
-                                    .tint(.primary)
-                                    .foregroundStyle(.background)
-                                }
+                                .buttonBorderShape(.capsule)
+                                .buttonStyle(.borderedProminent)
+                                .tint(.primary)
+                                .foregroundStyle(.background)
                             }
-                            .padding(.horizontal, .defaultHorizontalSpacing)
+                        }
+                        .padding(.horizontal, .defaultHorizontalSpacing)
                     } else {
+                        
+                        // Button to start or resume workout
                         Button(action: {
                             store.send(.startWorkoutButtonTapped, animation: .default)
                         }, label: {
                             Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
                         })
+                        .frame(maxWidth: .infinity)
                     }
                 }
                 .transition(.identity)
                 .background(.ultraThinMaterial)
                 .foregroundStyle(.primary)
-                .opacity(keyboardShowing ? 0 : 1)
+                .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
             }
             .overlay {
+                // Overlay views for empty state messages
+                
                 if store.isWorkoutInProgress.not() && store.workout.exercises.isEmpty {
+                    // Show empty state for recording workout
                     EmptyStateView(title: "Record Workout", subtitle: "Tap on Resume Workout to add your workout details.", resource: .placeholderForms)
                 } else if store.workout.exercises.isEmpty {
+                    // Show empty state for no exercises
                     EmptyStateView(title: "No Exercises", subtitle: "Tap on Show All Exercises at the bottom to see list of all exercises.", resource: .placeholderList)
                 }
             }
+            // Alerts for workout editor view
+            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
         }
     }
     
-    private func isValid(set: Rep, forExercise exercise: Exercise) -> Bool {
-        // Weight Validation
-        let weightValidation = {
-            let weightRequired = exercise.template?.mechanic != nil
-            let isWeightAdded = set.weight > .zero
-            return !weightRequired || weightRequired && isWeightAdded
-        }()
-        
-        // Rep validation
-        let repValidation = {
-            let repRequired = set.countUnit == .rep
-            let isRepAdded = set.count > 0
-            return !repRequired || repRequired && isRepAdded
-        }()
-        
-        // Time Required
-        let timeValidation = {
-            let timeRequired = set.countUnit == .time
-            let isTimeAdded = set.time > .zero
-            return !timeRequired || timeRequired && isTimeAdded
-        }()
-        
-        return weightValidation && repValidation && timeValidation
-    }
+    // MARK: - Computed Properties
     
-    func isCurrentWorkoutValid() async -> Bool {
-        let isWorkoutInvalid = store.workout.exercises.first { exercise in
-            exercise.reps.first { set in
-                !isValid(set: set, forExercise: exercise)
-            } != nil
-        } != nil
-        return !isWorkoutInvalid
-    }
-    
+    // Computed property to determine the visibility of the workout name text field
     private var isWorkoutNameTextFieldVisible: Bool {
         store.isWorkoutInProgress || store.workout.exercises.isNotEmpty || store.workout.name.isNotEmpty
     }
+    
+    // Computed property to determine the visibility of the workout notes text field
     private var isWorkoutNotesTextFieldVisible: Bool {
         store.isWorkoutInProgress || store.workout.exercises.isNotEmpty
     }
 }
 
-enum AlertOption: Identifiable {
-    var id: String {
-        switch self {
-        case .invalidWorkout:
-            "invalidWorkout"
-        case .finishWorkout:
-            "finishWorkout"
-        case .openAnotherWorkout:
-            "openAnotherWorkout"
-        }
-    }
+#Preview {
+    let container = SwiftDataModelConfigurationProvider.shared.container
     
-    case invalidWorkout
-    case finishWorkout
-    case openAnotherWorkout(Workout)
-    
-    var titile: String {
-        switch self {
-        case .finishWorkout:
-            "Finish Workout"
-        case .invalidWorkout:
-            "Finish Workout"
-        case .openAnotherWorkout:
-            "Save Progress"
-        }
+    return NavigationStack {
+        WorkoutEditorView(store: StoreOf<WorkoutEditor>(initialState: WorkoutEditor.State(), reducer: {
+            WorkoutEditor()
+        }))
     }
-    
-    var messge: String {
-        switch self {
-        case .finishWorkout:
-            "Finish Workout"
-        case .invalidWorkout:
-            "You have some empty sets in your workout. Do you still want to save?"
-        case .openAnotherWorkout:
-            "You already have a workout in progress. Do you still want to start a new one?"
-        }
-    }
+    .modelContainer(container)
 }
-
-fileprivate extension WorkoutEditorView {
-    @ViewBuilder
-    private var emptyStateView: some View {
-        GeometryReader { proxy in
-            VStack(alignment: .center) {
-                Image(.placeholderList)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 64)
-                
-                Group {
-                    Text("No Exercises")
-                        .foregroundStyle(.primary)
-                        .font(.headline)
-                    
-                    Text("Tap on Show All Exercises at the bottom to see list of all exercises.")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
-                }
-                .padding(.horizontal)
-                .fixedSize(horizontal: false, vertical: true)
-                .multilineTextAlignment(.center)
-            }
-            .frame(width: proxy.size.width, alignment: .center)
-            .frame(maxHeight: .infinity)
-        }
-    }
-}
-
-//#Preview {
-//    WorkoutEditorView(store: StoreOf<WorkoutEditorFeature>(initialState: WorkoutEditorFeature.State(), reducer: {
-//        WorkoutEditorFeature()
-//    }, withDependencies: {
-//        $0.workoutDatabase = .previewValue
-//        
-//    }))
-//    .withPreviewEnvironment()
-//}

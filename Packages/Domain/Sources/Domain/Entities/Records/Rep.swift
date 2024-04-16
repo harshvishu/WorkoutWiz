@@ -61,6 +61,11 @@ public final class Rep: Identifiable {
             WeightUnit(rawValue: _weightUnit) ?? .kg
         }
     }
+    
+    public func isValid() -> Bool {
+        return weight > 0 && ( time > 0 || count > 0 )
+    }
+
 }
 
 extension Rep: Hashable {

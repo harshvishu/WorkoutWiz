@@ -39,5 +39,5 @@ public extension EdgeInsets {
         trailing: 16)
 }
 
-public let appBackgroundColor = Color("background", bundle: uiBundle)
-public let appAccentColor = Color("accent", bundle: uiBundle)
+//public let appBackgroundColor = Color("background", bundle: uiBundle)
+//public let appAccentColor = Color("accent", bundle: uiBundle)

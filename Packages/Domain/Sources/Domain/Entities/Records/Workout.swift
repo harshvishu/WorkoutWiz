@@ -112,9 +112,8 @@ public extension Workout {
         return wordCounts.max { $0.value < $1.value }?.key
     }
 
-    // TODO: Add validations
     func isValid() -> Bool {
-        true
+        return !exercises.isEmpty && exercises.allSatisfy { $0.isValid() }
     }
 }
 

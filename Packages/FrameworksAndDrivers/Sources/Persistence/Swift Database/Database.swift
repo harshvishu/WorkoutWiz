@@ -32,6 +32,7 @@ extension Database: DependencyKey {
     )
 }
 
+@MainActor
 let appContext: ModelContext = {
     let container = SwiftDataModelConfigurationProvider.shared.container
     let context = ModelContext(container)
@@ -39,6 +40,7 @@ let appContext: ModelContext = {
     return context
 }()
 
+@MainActor
 let preivewAppContext: ModelContext = {
     let container = SwiftDataModelConfigurationProvider.preview.container
     let context = ModelContext(container)

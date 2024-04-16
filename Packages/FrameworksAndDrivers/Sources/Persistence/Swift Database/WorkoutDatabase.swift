@@ -24,10 +24,12 @@ public struct WorkoutDatabase {
     public var fetchCount: @Sendable (FetchDescriptor<Workout>) throws -> Int
     public var add: @Sendable (Workout) throws -> Void
     public var delete: @Sendable (Workout) throws -> Void
+    public var save: @Sendable () throws -> Void
     
     enum WorkoutError: Error {
         case add
         case delete
+        case save
     }
 }
 
@@ -83,8 +85,15 @@ extension WorkoutDatabase: DependencyKey {
             } catch {
                 throw WorkoutError.delete
             }
+        }) {
+            @Dependency(\.databaseService) var databaseService
+            let databaseContext = try databaseService.context()
+            do { 
+                try databaseContext.save()
+            } catch {
+                throw WorkoutError.save
+            }
         }
-    )
 }
 
 extension WorkoutDatabase: TestDependencyKey {
@@ -97,6 +106,8 @@ extension WorkoutDatabase: TestDependencyKey {
     } add: { _ in
         
     } delete: { _ in
+        
+    } save: {
         
     }
 }

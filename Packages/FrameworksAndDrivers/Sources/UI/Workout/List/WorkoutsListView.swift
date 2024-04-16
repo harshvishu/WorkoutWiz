@@ -24,8 +24,30 @@ enum Filter: Equatable {
 
 @Reducer
 public struct WorkoutsListFeature {
+    /**
+     An inner reducer enum `Destination` for manging alerts and presentations.
+     */
+    @Reducer(state: .equatable)
+    public enum Destination {
+        case alert(AlertState<Alert>)
+        case confirmationDialog(ConfirmationDialogState<ConfirmationDialog>)
+        
+        @CasePathable
+        public enum Alert: Equatable {
+            // Empty Alert
+        }
+        
+        @CasePathable
+        public enum ConfirmationDialog {
+            case confirmDelete
+            case cancelDelete
+        }
+    }
+    
     @ObservableState
     public struct State: Equatable {
+        @Presents var destination: Destination.State?
+        
         var workouts: [Workout] = []
         
         var grouping: Bool = false
@@ -34,7 +56,7 @@ public struct WorkoutsListFeature {
         var searchQuery: String = ""
         var fetchDescriptor: FetchDescriptor<Workout> {
             var descriptor = FetchDescriptor(predicate: self.predicate, sortBy: self.sort)
-//            descriptor.fetchLimit = fetchLimit
+            //            descriptor.fetchLimit = fetchLimit
             // TODO: Fix Fetch Limit Issue
             descriptor.fetchOffset = fetchOffset
             return descriptor
@@ -103,6 +125,7 @@ public struct WorkoutsListFeature {
         var filter: WorkoutListFilter = .none
         
         var activeWorkoutID: UUID?
+        var workoutToBeDeleted: UUID?
         
         public init(filter: WorkoutListFilter = .none, grouping: Bool = false) {
             self.filter = filter
@@ -128,11 +151,19 @@ public struct WorkoutsListFeature {
                 // Unable to delete
                 print(error)
             }
+            workoutToBeDeleted = nil
         }
     }
     
     public enum Action {
+        /// Deletes the workout. Use with caution as this action is irreversible.
+        /// - Warning: This action is irreversible. Make sure you want to permanently delete the workout.
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly Use `deleteButtonTapped` instead")
         case delete(workout: Workout)
+        case deleteButtonTapped(workout: Workout)
+        
+        case destination(PresentationAction<Destination.Action>)
+        
         case fetchWorkouts
         case showAllEntriesButtonTapped
         case setFilter(WorkoutListFilter)
@@ -153,11 +184,11 @@ public struct WorkoutsListFeature {
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
-           
+                
             case .fetchWorkouts:
                 let fetchResults = state.fetchWorkouts()
-//                let fetchLimit = state.fetchLimit // TODO:
-                
+                // let fetchLimit = state.fetchLimit // TODO:
+                /// TODO: Move the workouts to individual Feature like `ExerciseRow` and then move alerts within each State
                 state.workouts += fetchResults
                 state.fetchOffset += fetchResults.count
                 
@@ -178,8 +209,11 @@ public struct WorkoutsListFeature {
                 }
                 return .none
                 
-                // MARK: Deleting workout
-                // TODO: Add alert confirmation
+            case .deleteButtonTapped(let workout):
+                state.workoutToBeDeleted = workout.id
+                state.destination = .confirmationDialog(.deleteWorkout(workout: workout))
+                return .none
+                
             case let .delete(workout):
                 if state.activeWorkoutID == workout.id {
                     return .none
@@ -187,6 +221,21 @@ public struct WorkoutsListFeature {
                 
                 state.deleteWorkout(workout)
                 return .send(.delegate(.workoutListInvalidated), animation: .default)
+          
+            case let .destination(.presented(.confirmationDialog(dialog))):
+                switch dialog {
+                case .confirmDelete:
+                    return .run { [workoutToBeDeleted = state.workoutToBeDeleted, workouts = state.workouts] send in
+                        if let workout = workouts.first(where: {$0.id == workoutToBeDeleted}) {
+                            await send(.delete(workout: workout))
+                        }
+                    }
+                case .cancelDelete:
+                    return .none
+                }
+                
+            case .destination:
+                return .none
                 
             case .showAllEntriesButtonTapped:
                 return .send(.delegate(.showCalendarScreen), animation: .customSpring())
@@ -202,7 +251,7 @@ public struct WorkoutsListFeature {
                     state.workouts = []
                     state.canFetchMore = true
                     state.fetchOffset = 0
-                    return .send(.fetchWorkouts)
+                    return .send(.fetchWorkouts, animation: .default)
                 case .editWorkout(_):
                     // TODO: update that particular workout
                     return .none
@@ -211,6 +260,7 @@ public struct WorkoutsListFeature {
                 }
             }
         }
+        .ifLet(\.$destination, action: \.destination)
         .onChange(of: \.workouts) { _, _ in
             Reduce { state, _ in
                 let calendar = Calendar.autoupdatingCurrent
@@ -224,47 +274,47 @@ public struct WorkoutsListFeature {
     }
 }
 
+/**
+ A view struct `WorkoutsListView` for displaying a list of workouts.
+ */
 struct WorkoutsListView: View {
-    
+    /// Environment variable to check if the view is presented.
     @Environment(\.isPresented) var isPresented
-    
-    let store: StoreOf<WorkoutsListFeature>
+    /// The store of `WorkoutsListFeature`.
+    @Bindable var store: StoreOf<WorkoutsListFeature>
     
     var body: some View {
+        // Scroll to view
         ScrollToView()
             .onAppear {
+                // Send a delegate action to invalidate the workout list
                 store.send(.delegate(.workoutListInvalidated))
             }
         
+        // MARK:  Grouped workouts
         if store.grouping {
+            
+            // Loop through each day and its associated workouts
             ForEach(store.workoutsGroupedByDay.sorted(by: { $0.key > $1.key }), id: \.key) { day, workouts in
+                // Display the day
                 Text(day, style: .date)
                     .id(day.formatted(.dateTime))
                 
-                ForEach(workouts, id: \.id) { workout in
-                    WorkoutRowView(workout: workout)
-                        .onTapGesture {
-                            store.send(.delegate(.editWorkout(workout)), animation: .default)
-                        }
-                }
+                workoutsList(workouts: workouts)
             }
         } else {
+            // TODO: Move to Dashboard
+            // MARK: "Today"
             Text("Today")
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             
-            ForEach(store.workouts, id: \.id) { workout in
-                WorkoutRowView(workout: workout)
-                    .onTapGesture {
-                        store.send(.delegate(.editWorkout(workout)), animation: .default)
-                    }
-                    .deleteDisabled(store.activeWorkoutID == workout.id)
-            }
-            .onDelete(perform: delete)
+            workoutsList(workouts: store.workouts)
             
-            // TODO: Improve
+            // button to view all entries for today if workouts are available
             if store.workouts.isNotEmpty {
                 Button {
+                    // Send a delegate action to show all entries for today
                     store.send(.showAllEntriesButtonTapped, animation: .customSpring())
                 } label: {
                     Text("View all entries for today")
@@ -276,12 +326,14 @@ struct WorkoutsListView: View {
                 .listRowSeparator(.hidden)
             }
             
+            // Display a button to start a new workout if no workouts are available
             if store.workouts.isEmpty {
                 Button(action: {
+                    // Send a delegate action to start a new workout
                     store.send(.delegate(.startNewWorkout))
                 }, label: {
                     EmptyStateView(title: "No Workouts", subtitle: "Tap to start a new workout.", resource: .placeholderQuestion)
-                    .frame(height: 200)
+                        .frame(height: 200)
                 })
                 .buttonStyle(.plain)
                 .contentShape(Rectangle())
@@ -290,25 +342,80 @@ struct WorkoutsListView: View {
             }
         }
     }
-}
-
-fileprivate extension WorkoutsListView {
-    func delete(at indexSet: IndexSet) {
+    
+    /**
+     Deletes workouts at the specified indices.
+     - Parameter indexSet: The indices of workouts to delete.
+     */
+    private func delete(at indexSet: IndexSet) {
         for index in indexSet {
             let workout = store.workouts[index]
             store.send(.delete(workout: workout))
         }
     }
+    
+    @ViewBuilder
+    private func workoutsList(workouts: [Workout]) -> some View {
+        ForEach(workouts, id: \.id) { workout in
+            WorkoutRowView(workout: workout)
+                .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+                .confirmationDialog($store.scope(state: \.destination?.confirmationDialog, action: \.destination.confirmationDialog))
+                .onTapGesture {
+                    // Send a delegate action to edit the workout
+                    store.send(.delegate(.editWorkout(workout)), animation: .default)
+                }
+                .swipeActions(edge: .trailing) {
+                    Button {
+                        store.send(.deleteButtonTapped(workout: workout))
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    .tint(.red)
+                    .disabled(store.activeWorkoutID == workout.id)   // Disable delete if the workout is active
+                    
+                    Button {
+                        // TODO: Duplicate workout
+                        print("TODO: Duplicate")
+                    } label: {
+                        Label("Duplicate", systemImage: "doc.on.doc.fill")
+                    }
+                    .tint(.blue)
+                }
+        }
+    }
 }
-//
-//#Preview {
-//    return WorkoutsListView(
-//        store: StoreOf<WorkoutsListFeature>(
-//            initialState: WorkoutsListFeature.State(),
-//            reducer: {
-//                WorkoutsListFeature()
-//            }
-//        )
-//    )
-//    .withPreviewEnvironment()
-//}
+
+extension AlertState where Action == WorkoutsListFeature.Destination.Alert {
+    
+}
+
+extension ConfirmationDialogState where Action == WorkoutsListFeature.Destination.ConfirmationDialog {
+    static func deleteWorkout(workout: Workout) -> Self {
+        Self {
+            TextState("Delete \(workout.name)?")
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmDelete) {
+                TextState("Yes")
+            }
+            ButtonState(role: .cancel, action: .cancelDelete) {
+                TextState("Nevermind")
+            }
+        } message: {
+            TextState("Are you sure you want to delete this workout?")
+        }
+    }
+}
+
+#Preview {
+    let container = SwiftDataModelConfigurationProvider.shared.container
+    return WorkoutsListView(
+        store: StoreOf<WorkoutsListFeature>(
+            initialState: WorkoutsListFeature.State(),
+            reducer: {
+                WorkoutsListFeature()
+            }
+        )
+    )
+    .withPreviewEnvironment()
+    .modelContainer(container)
+}

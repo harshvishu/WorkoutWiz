@@ -19,11 +19,33 @@ public enum FocusField: Hashable {
     case weight
 }
 
+/**
+ A reducer struct `RepInput` that manages the state and actions related to inputting rep details.
+ */
 @Reducer
 public struct RepInput {
     
+    /**
+     An inner reducer enum `Destination` for manging alerts and presentations.
+     */
+    @Reducer(state: .equatable)
+    public enum Destination {
+        case alert(AlertState<Alert>)
+        
+        @CasePathable
+        public enum Alert {
+            case confirmDelete
+            case cancelDelete
+        }
+    }
+    
+    /**
+     A state struct `State` for managing rep input related state variables.
+     */
     @ObservableState
     public struct State: Equatable {
+        @Presents var destination: Destination.State?
+        
         var exercise: Exercise
         var rep: Rep?
         
@@ -39,6 +61,11 @@ public struct RepInput {
         var focusedField: FocusField?
         var isRepSaved = false
         
+        /**
+         Initializes the state with the provided exercise.
+         - Parameters:
+         - exercise: The exercise associated with the rep input.
+         */
         init(exercise: Exercise) {
             self.exercise = exercise
             
@@ -55,6 +82,12 @@ public struct RepInput {
             }
         }
         
+        /**
+         Initializes the state with the provided exercise and rep.
+         - Parameters:
+         - exercise: The exercise associated with the rep input.
+         - rep: The rep details to initialize the state.
+         */
         init(exercise: Exercise, rep: Rep) {
             self.exercise = exercise
             self.rep = rep
@@ -77,9 +110,18 @@ public struct RepInput {
         }
     }
     
+    /**
+     An enum `Action` defining the actions that can be performed in the rep input.
+     */
     public enum Action {
         case changeRepCountUnit(RepCountUnit)
+        /// Deletes the workout. Use with caution as this action is irreversible.
+        /// - Warning: This action is irreversible. Make sure you want to permanently delete the Rep.
+        @available(*, message: "Use with caution as this action is irreversible. Do not call directly. Use `deleteButtonTapped` instead")
+        case deleteRep
         case deleteButtonTapped
+        
+        case destination(PresentationAction<Destination.Action>)
         
         case delegate(Delegate)
         public enum Delegate {
@@ -91,123 +133,206 @@ public struct RepInput {
         
         case focusedFieldChanged(FocusField?)
         
-        case keypadInputReceived(Int)
-        case keypadDeleteButtonPressed
-        case keypadPeriodButtonPressed
+        case keypadInputReceived(CustomKey)
     }
     
+    // MARK: - Dependencies
+    @Dependency(\.fitnessTrackingUseCase) var fitnessTrackingUseCase
+    
+    /**
+     The body of the reducer, defining how actions modify the state.
+     */
     public var body: some ReducerOf<Self> {
         Reduce<State, Action> { state, action in
             switch action {
+            // Action to change the unit of rep count
             case let .changeRepCountUnit(repCountUnit):
+                // Guard clause to prevent changing unit if reps are already added
                 guard state.exercise.reps.isEmpty else {return .none}
                 state.repCountUnit = repCountUnit
                 state.exercise.repCountUnit = repCountUnit
                 let focusField: FocusField = repCountUnit == .rep ? .rep : .time
                 return .send(.focusedFieldChanged(focusField))
                 
-            case .deleteButtonTapped:
+                // Action to delete a rep
+            case .deleteRep:
                 if let rep = state.rep, state.isRepSaved {
                     state.exercise.deleteRep(rep: rep)
                 }
-                return .send(.delegate(.close))
+                return .run { @MainActor send in
+                    send(.delegate(.close))
+                }
+            // Action when delete button is tapped
+            case .deleteButtonTapped:
+                state.destination = .alert(.deleteRep)
+                return .none
                 
-            case let .keypadInputReceived(num):
-                switch state.focusedField {
-                case .some(.rep):
-                    let repCountText = "\(state.repCountText)\(num)"
-                    if repCountText.count > 4 {
-                        return .none
-                    }
-                    
-                    if let repCount = repCountText.int {
-                        state.repCountText = (repCount == 0) ? "" : "\(repCount)"
-                    }
-                case .some(.weight):
-                    let weightText = "\(state.weightText)\(num)"
-                    if weightText.contains(".") {
-                        let components = weightText.split(separator: ".")
-                        if let fraction = components.last, fraction.count > 2 {
+            // Handling presentation of alerts
+            case .destination(.presented(.alert(.confirmDelete))):
+                return .send(.deleteRep)
+            case .destination:
+                return .none
+                
+            // Handling keypad input
+            case let .keypadInputReceived(key):
+                switch key {
+                case let .digit(num):
+                    switch state.focusedField {
+                    // Handling digit input for rep count
+                    case .some(.rep):
+                        let repCountText = "\(state.repCountText)\(num)"
+                        if repCountText.count > 4 {
                             return .none
                         }
-                    } else if weightText.count > 4 {
-                        return .none
+                        
+                        if let repCount = repCountText.int {
+                            state.repCountText = (repCount == 0) ? "" : "\(repCount)"
+                        }
+                    // Handling digit input for weight
+                    case .some(.weight):
+                        let weightText = "\(state.weightText)\(num)"
+                        if weightText.contains(".") {
+                            let components = weightText.split(separator: ".")
+                            if let fraction = components.last, fraction.count > 2 {
+                                return .none
+                            }
+                        } else if weightText.count > 4 {
+                            return .none
+                        }
+                        
+                        if let weight = weightText.double {
+                            state.weightText = weight.isZero ? "" : weightText
+                        }
+                    case .none, .some(.time):
+                        break
+                    }
+                    return .none
+                    
+                case .period:
+                    if state.focusedField == .weight && !state.weightText.contains(".") {
+                        state.weightText.append(".")
+                    }
+                    return .none
+                    
+                case .delete:
+                    switch state.focusedField {
+                    case .some(.rep):
+                        if state.repCountText.isNotEmpty {
+                            state.repCountText.removeLast()
+                        }
+                    case .some(.weight):
+                        if state.weightText.isNotEmpty {
+                            _ = state.weightText.removeLast()
+                        }
+                    case .none, .some(.time):
+                        break
+                    }
+                    return .none
+                case .switchRep, .switchTime:
+                    let newRepInputMode: RepCountUnit = (state.repCountUnit == .rep) ? .time : .rep
+                    return .send(.changeRepCountUnit(newRepInputMode))
+                    
+                // Action when submit button is tapped
+                case .submit:
+                    let weight = state.weightText.double ?? 0.0
+                    let repCount = state.repCountText.int ?? 0
+                    let repTime = timeInterval(from: state.repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
+                    
+                    let calories = fitnessTrackingUseCase.trackCaloriesBurned(
+                        metValue: state.exercise.template?.category.met() ?? 0.0,
+                        weight: weight,
+                        repCountUnit: state.repCountUnit,
+                        duration: repTime,
+                        rep: repCount
+                    )
+                    
+                    if let rep = state.rep {
+                        rep.weight = weight
+                        rep.count = repCount
+                        rep.time = repTime
+                        rep.weightUnit = state.weightUnit
+                        rep.repType = state.repType
+                        rep.countUnit = state.repCountUnit
+                        rep.calories = calories
+                    } else {
+                        let rep = Rep(
+                            weight: weight,
+                            countUnit: state.repCountUnit,
+                            time: repTime,
+                            count: repCount,
+                            weightUnit: state.weightUnit,
+                            calories: calories,
+                            repType: state.repType
+                        )
+                        state.exercise.appendRep(rep)
+                        rep.exercise = state.exercise
                     }
                     
-                    if let weight = weightText.double {
-                        state.weightText = weight.isZero ? "" : weightText
-                    }
+                    // Update the calories whenever a rep is added/deleted or modified
+                    state.exercise.calories = Exercise.estimatedCaloriesBurned(reps: state.exercise.reps)
                     
-                case .none, .some(.time):
-                    break
-                }
-                return .none
-                
-            case .keypadPeriodButtonPressed:
-                if state.focusedField == .weight && !state.weightText.contains(".") {
-                    state.weightText.append(".")
-                }
-                return .none
-                
-            case .keypadDeleteButtonPressed:
-                switch state.focusedField {
-                case .some(.rep):
-                    if state.repCountText.isNotEmpty {
-                        state.repCountText.removeLast()
+                    if let workout = state.exercise.workout {
+                        let totalCaloriesBurnedForExercise = Workout.estimatedCaloriesBurned(exercises: workout.exercises)
+                        workout.calories = totalCaloriesBurnedForExercise
+                        workout.abbreviatedCategory = fitnessTrackingUseCase.abbreviatedCategory(exercises: workout.exercises) ?? .none
+                        workout.abbreviatedMuscle = fitnessTrackingUseCase.abbreviatedMuscle(exercises: workout.exercises) ?? .none
                     }
-                case .some(.weight):
-                    if state.weightText.isNotEmpty {
-                        _ = state.weightText.removeLast()
-                    }
-                case .none, .some(.time):
-                    break
+                    return .send(.delegate(.close), animation: .default)
+                    
+                case .next:
+                    return .send(.focusedFieldChanged(.weight))
+                case .prev:
+                    return .send(.focusedFieldChanged(state.repCountUnit == .rep ? .rep : .time))
+                    
+                // TODO: Pending Implementations
+                case .plus:
+                    return .none
+                case .minus:
+                    return .none
+                case .hideKeyboard:
+                    return .none
+                case .empty:
+                    return .none
+                case .undo:
+                    return .none
                 }
-                return .none
                 
+            // Action to handle focused field change
             case let .focusedFieldChanged(focusedField):
                 state.focusedField = focusedField
                 return .none
                 
+            // Action to change rep type
             case let .repTypeChanged(repType):
                 state.repType = repType
                 return .none
                 
+            // Action to change rep time
             case let .repTimeChanged(repTime):
                 state.repTimeText = repTime.formattedElapsedTime(formatter: minutesSecondsFormatter)
                 return .none
                 
+            // Action related to delegate
             case .delegate:
                 return .none
             }
         }
+        .ifLet(\.$destination, action: \.destination)
     }
 }
 
+/**
+ A view struct `RepInputView` for displaying and inputting rep details.
+ */
 @MainActor
 struct RepInputView: View {
-    @Environment(\.modelContext) private var modelContext
-    
-    @State private var fitnessTrackingUseCase: FitnessTrackingIOPort = FitnessTrackingUseCase()
-    
     @Bindable var store: StoreOf<RepInput>
     @State var isDeleteButtonEnabled = false
-    
+        
     var body: some View {
         
         VStack {
             HStack(alignment: .center, spacing: 4) {
-                
-                // MARK: Rep Count Type toggle
-                Button(action: {
-                    let newRepInputMode: RepCountUnit = (store.repCountUnit == .rep) ? .time : .rep
-                    store.send(.changeRepCountUnit(newRepInputMode), animation: .customSpring())
-                }, label: {
-                    Image(systemName: store.repCountUnit == .rep ? "123.rectangle.fill" : "timer")
-                        .symbolEffect(.bounce, value: store.repCountUnit)
-                        .contentTransition(.symbolEffect(.replace.byLayer))
-                })
-                .buttonStyle(.plain)
-                .disabled(store.exercise.reps.count > 0)
                 
                 VStack(alignment: .center) {
                     switch store.repCountUnit {
@@ -216,22 +341,22 @@ struct RepInputView: View {
                         Text(store.repCountText.isEmpty ? "0" : store.repCountText)
                             .font(.title.bold())
                             .frame(maxWidth: .infinity)
-                            .foregroundStyle(store.focusedField == .rep ? appAccentColor : Color.primary)
+                            .foregroundStyle(store.focusedField == .rep ? Color.accentColor : Color.primary)
                             .bipAnimation(trigger: store.focusedField == .rep)
                             .contentTransition(.numericText())
                             .onTapGesture {
-                                store.send(.focusedFieldChanged(.rep), animation: .customSpring())
+                                store.send(.focusedFieldChanged(.rep), animation: .default)
                             }
                     case .time:
                         // MARK: Display Rep Time
                         Text(store.repTimeText.isEmpty ? "0:0" : store.repTimeText)
                             .font(.title.bold())
                             .frame(maxWidth: .infinity)
-                            .foregroundStyle(store.focusedField == .time ? appAccentColor : Color.primary)
+                            .foregroundStyle(store.focusedField == .time ? Color.accentColor : Color.primary)
                             .bipAnimation(trigger: store.focusedField == .rep)
                             .contentTransition(.numericText())
                             .onTapGesture {
-                                store.send(.focusedFieldChanged(.time), animation: .customSpring())
+                                store.send(.focusedFieldChanged(.time), animation: .default)
                             }
                     }
                     
@@ -245,7 +370,7 @@ struct RepInputView: View {
                     Text(store.weightText.isEmpty ? "0" : store.weightText)
                         .font(.title.bold())
                         .frame(maxWidth: .infinity)
-                        .foregroundStyle(store.focusedField == .weight ? appAccentColor : Color.primary)
+                        .foregroundStyle(store.focusedField == .weight ? Color.accentColor : Color.primary)
                         .bipAnimation(trigger: store.focusedField == .weight)
                         .contentTransition(.numericText())
                         .onTapGesture {
@@ -272,78 +397,20 @@ struct RepInputView: View {
             }
             .padding(EdgeInsets(top: 8, leading: 16, bottom: 4, trailing: 16))
             .pickerStyle(.segmented)
-                        
+            
             RepInputKeyboard(mode: getRepInputMode(), keyPressHandler:  { key in
-                if case .submit = key {
-                    
-                    let weight = store.weightText.double ?? 0.0
-                    let repCount = store.repCountText.int ?? 0
-                    let repTime = timeInterval(from: store.repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
-                    
-                    let calories = fitnessTrackingUseCase.trackCaloriesBurned(
-                        metValue: store.exercise.template?.category.met() ?? 0.0,
-                        weight: weight,
-                        repCountUnit: store.repCountUnit,
-                        duration: repTime,
-                        rep: repCount
-                    )
-                    
-                    if let rep = store.rep {
-                        rep.weight = weight
-                        rep.count = repCount
-                        rep.time = repTime
-                        rep.weightUnit = store.weightUnit
-                        rep.repType = store.repType
-                        rep.countUnit = store.repCountUnit
-                        rep.calories = calories
-                    } else {
-                        let rep = Rep(
-                            weight: weight,
-                            countUnit: store.repCountUnit,
-                            time: repTime,
-                            count: repCount,
-                            weightUnit: store.weightUnit,
-                            calories: calories,
-                            repType: store.repType
-                        )
-                        store.exercise.appendRep(rep)
-                        rep.exercise = store.exercise
-                    }
-                    
-                    // Update the calories whenever a rep is added/deleted or modified
-                    store.exercise.calories = Exercise.estimatedCaloriesBurned(reps: store.exercise.reps)
-                    
-                    if let workout = store.exercise.workout {
-                        let totalCaloriesBurnedForExercise = Workout.estimatedCaloriesBurned(exercises: workout.exercises)
-                        workout.calories = totalCaloriesBurnedForExercise
-                        workout.abbreviatedCategory = fitnessTrackingUseCase.abbreviatedCategory(exercises: workout.exercises) ?? .none
-                        workout.abbreviatedMuscle = fitnessTrackingUseCase.abbreviatedMuscle(exercises: workout.exercises) ?? .none
-                    }
-                    
-                    store.send(.delegate(.close), animation: .default)
-                } else if case CustomKey.digit(let num) = key {
-                    store.send(.keypadInputReceived(num), animation: .default)
-                } else if case CustomKey.delete = key {
-                    store.send(.keypadDeleteButtonPressed, animation: .default)
-                } else if case CustomKey.next = key {
-                    store.send(.focusedFieldChanged(.weight), animation: .default)
-                } else if case CustomKey.prev = key {
-                    store.send(.focusedFieldChanged(store.repCountUnit == .rep ? .rep : .time), animation: .default)
-                } else if case CustomKey.period = key {
-                    if store.focusedField == .weight {
-                        store.send(.keypadPeriodButtonPressed, animation: .default)
-                    }
-                }
+                store.send(.keypadInputReceived(key))
             }, timeChangeHandler: { time in
                 store.send(.repTimeChanged(time))
             })
         }
+        .alert($store.scope(state: \.destination?.alert, action: \.destination.alert) )
         .modifyIf(store.isRepSaved) {
             $0.safeAreaInset(edge: .bottom, spacing: 0) {
                 VStack {
                     Divider()
                     Button(role: .destructive, action: {
-                        store.send(.deleteButtonTapped, animation: .default)
+                        store.send(.deleteButtonTapped)
                     }, label: {
                         Label("Delete", systemImage: "trash.fill")
                             .padding(.buttonContentInsets)
@@ -357,13 +424,72 @@ struct RepInputView: View {
         }
     }
     
+    /**
+     Retrieves the current rep input mode based on the focused field and rep count unit.
+     - Returns: The current rep input mode.
+     */
     private func getRepInputMode() -> RepInputMode {
         if store.focusedField == .weight {
             return .weight
-        } else if store.repCountUnit == .rep {
+        } else if store.focusedField == .rep {
             return .repCount
         } else {
             return .timeCount
         }
     }
+}
+
+extension AlertState where Action == RepInput.Destination.Alert {
+    static var deleteRep = Self {
+        TextState("Delete Rep?")
+    } actions: {
+        ButtonState(role: .destructive, action: .confirmDelete) {
+            TextState("Yes")
+        }
+        ButtonState(role: .cancel, action: .cancelDelete) {
+            TextState("Nevermind")
+        }
+    } message: {
+        TextState("Are you sure you want to delete this rep?")
+    }
+}
+
+// TODO: Remove
+struct CheckToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            ZStack {
+                Capsule()
+                    .frame(width: 28, height: 64)
+                    .foregroundStyle(configuration.isOn ? Color.white : .black)
+                    .overlay {
+                        Capsule()
+                            .stroke(Color.black.opacity(0.1), lineWidth: 2)
+                    }
+                ZStack{
+                    Circle()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(.white)
+                    Image(systemName: configuration.isOn ? "textformat.123" : "timer")
+                        .symbolVariant(.fill)
+                        .contentTransition(.symbolEffect(.replace.downUp.wholeSymbol))
+                }
+                .shadow(color: .black.opacity(0.14), radius: 4, x: 0, y: 2)
+                .offset(y: configuration.isOn ? 18 : -18)
+                .padding(4)
+                .animation(.spring(), value: configuration.isOn)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+#Preview {
+    @State var isOn = false
+    return Toggle("21", isOn: $isOn)
+        .toggleStyle(CheckToggleStyle())
+//        .padding()
+        .previewBorder()
 }

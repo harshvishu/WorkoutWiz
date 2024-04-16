@@ -14,8 +14,21 @@ import ComposableArchitecture
 
 @Reducer
 public struct ExerciseRow {
+    @Reducer(state: .equatable)
+    public enum Destination {
+        case confirmationDialog(ConfirmationDialogState<ConfirmationDialog>)
+        
+        @CasePathable
+        public enum ConfirmationDialog {
+            case confirmDelete
+            case cancelDelete
+        }
+    }
+    
     @ObservableState
     public struct State: Equatable, Identifiable {
+        @Presents var destination: Destination.State?
+        
         public var id: ObjectIdentifier {
             exercise.id
         }
@@ -24,19 +37,46 @@ public struct ExerciseRow {
     
     public enum Action {
         case delegate(Delegate)
-        
+        case destination(PresentationAction<Destination.Action>)
+
+        case deleteButtonTapped
+
         public enum Delegate {
             case addNewSet
             case editSet(Rep)
+            case delete
         }
+    }
+    
+    // TODO: Move Delete Exercise action here
+    public var body: some ReducerOf<Self> {
+        Reduce {state, action in
+            switch action {
+            case .deleteButtonTapped:
+                state.destination = .confirmationDialog(.delete)
+                return .none
+                
+            case let .destination(.presented(.confirmationDialog(dialog))):
+                switch dialog {
+                case .confirmDelete:
+                    return .send(.delegate(.delete))
+                case .cancelDelete:
+                    return .none
+                }
+            case .destination:
+                return .none
+            case .delegate:
+                return .none
+            }
+        }
+        .ifLet(\.$destination, action: \.destination)
     }
 }
 
 public struct ExerciseRowView: View {
-    let store: StoreOf<ExerciseRow>
+    @Bindable var store: StoreOf<ExerciseRow>
     
     @State private var showExpandedSetView = true
-    @State private var messageQueue: ConcreteMessageQueue<(Rep,Int)> = .init()
     
     var isEditable: Bool
     
@@ -82,5 +122,22 @@ public struct ExerciseRowView: View {
             ExerciseRowFooterView(store: store, isEditable: isEditable)
                 .zIndex(-1)
         }
+        .confirmationDialog($store.scope(state: \.destination?.confirmationDialog, action: \.destination.confirmationDialog))
+    }
+}
+
+// TODO: Pending
+extension ConfirmationDialogState where Action == ExerciseRow.Destination.ConfirmationDialog {
+    static var delete = Self {
+        TextState("Delete Exercise?")
+    } actions: {
+        ButtonState(role: .destructive, action: .confirmDelete) {
+            TextState("Yes")
+        }
+        ButtonState(role: .cancel, action: .cancelDelete) {
+            TextState("Nevermind")
+        }
+    } message: {
+        TextState("Are you sure you want to delete this exercise?")
     }
 }

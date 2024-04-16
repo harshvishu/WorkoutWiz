@@ -14,14 +14,10 @@ import SwiftData
 
 @MainActor
 struct AppEnvironment: ViewModifier {
-    @Environment(\.modelContext) private var modelContext
-    
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: nil)
-    
+        
     func body(content: Content) -> some View {
         content
-            .environment(saveDataManager)
-            .withModelContainer(preview: false)
+            .withModelContainer()
             .addKeyboardVisibilityToEnvironment()
             .task {
                 await insertTemplatesData()
@@ -37,30 +33,22 @@ struct AppEnvironment: ViewModifier {
     
 }
 
-extension View {
-    @MainActor
-    func withAppEnvironment() -> some View {
-        modifier(AppEnvironment())
-    }
-}
-
 /// Preview Environment
-
 struct PreviewAppEnvironment: ViewModifier {
-    @Environment(\.modelContext) private var modelContext
-    
-    @State var saveDataManager = SaveDataManager(saveDataUseCase: SaveDataUseCase(saveDataRepository: UserDefaultsSaveDataRepository()))
     
     func body(content: Content) -> some View {
         content
-            .withModelContainer(preview: true)
-            .environment(saveDataManager)
+            .withPreviewModelContainer()
             .environment(SceneDelegate())
             .addKeyboardVisibilityToEnvironment()
     }
 }
 
 extension View {
+    @MainActor
+    func withAppEnvironment() -> some View {
+        modifier(AppEnvironment())
+    }
     
     func withPreviewEnvironment() -> some View {
         modifier(PreviewAppEnvironment())
