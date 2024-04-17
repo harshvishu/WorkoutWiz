@@ -1,5 +1,5 @@
 //
-//  ExerciseBluePrintsList.swift
+//  ExerciseTemplatesList.swift
 //
 //
 //  Created by harsh vishwakarma on 13/11/23.
@@ -17,45 +17,45 @@ import SwiftData
 import SwiftUI
 
 @Reducer
-public struct ExerciseBluePrintsList {
+public struct ExerciseTemplatesList {
     
     @ObservableState
     public struct State: Equatable {
         // MARK: - Properties
         
-        // Array to hold all fetched exercise blueprints
-        var results: [ExerciseBluePrint] = []
+        // Array to hold all fetched exercise templates
+        var results: [ExerciseTemplate] = []
         
-        // Array to hold exercise blueprints to be displayed
-        var displayResults: [ExerciseBluePrint] = []
+        // Array to hold exercise templates to be displayed
+        var displayResults: [ExerciseTemplate] = []
         
-        // Array to hold recently accessed exercise blueprints
-        var recentResults: [ExerciseBluePrint] = []
+        // Array to hold recently accessed exercise templates
+        var recentResults: [ExerciseTemplate] = []
         
-        // Set to store selected exercise blueprints
-        var selectedBluePrints: Set<ExerciseBluePrint> = Set()
+        // Set to store selected exercise templates
+        var selectedTemplates: Set<ExerciseTemplate> = Set()
         
         // Search query string
         var searchQuery: String = ""
         
-        // Descriptor for fetching exercise blueprints
-        var fetchDescriptor: FetchDescriptor<ExerciseBluePrint> {
+        // Descriptor for fetching exercise templates
+        var fetchDescriptor: FetchDescriptor<ExerciseTemplate> {
             var descriptor = FetchDescriptor(predicate: self.predicate, sortBy: self.sort)
             descriptor.fetchLimit = pageSize
             descriptor.fetchOffset = pageOffset
             return descriptor
         }
         
-        // Predicate for filtering exercise blueprints based on search query
-        var predicate: Predicate<ExerciseBluePrint>? {
+        // Predicate for filtering exercise templates based on search query
+        var predicate: Predicate<ExerciseTemplate>? {
             guard !searchQuery.isEmpty else { return nil }
             return #Predicate {
                 $0.searchString.localizedStandardContains(searchQuery)
             }
         }
         
-        // Sort descriptors for exercise blueprints
-        var sort: [SortDescriptor<ExerciseBluePrint>] {
+        // Sort descriptors for exercise templates
+        var sort: [SortDescriptor<ExerciseTemplate>] {
             return [
                 self.nameSort.descriptor,
                 self.frequencySort.descriptor
@@ -66,7 +66,7 @@ public struct ExerciseBluePrintsList {
         var nameSort: NameSort = .forward
         public enum NameSort {
             case forward, reverse
-            var descriptor: SortDescriptor<ExerciseBluePrint> {
+            var descriptor: SortDescriptor<ExerciseTemplate> {
                 switch self {
                 case .forward:
                     return .init(\.name, order: .forward)
@@ -80,7 +80,7 @@ public struct ExerciseBluePrintsList {
         var frequencySort: FrequencySort = .forward
         enum FrequencySort {
             case forward, reverse
-            var descriptor: SortDescriptor<ExerciseBluePrint> {
+            var descriptor: SortDescriptor<ExerciseTemplate> {
                 switch self {
                 case .forward: return .init(\.frequency, order: .forward)
                 case .reverse: return .init(\.frequency, order: .reverse)
@@ -88,13 +88,13 @@ public struct ExerciseBluePrintsList {
             }
         }
         
-        // Offset for fetching exercise blueprints
+        // Offset for fetching exercise templates
         var pageOffset = 0
         
-        // Limit for fetching exercise blueprints
+        // Limit for fetching exercise templates
         var pageSize = 50
         
-        // Flag indicating whether more exercise blueprints can be fetched
+        // Flag indicating whether more exercise templates can be fetched
         var canFetchMore = true
         
         // Flag indicating if the search field is focused
@@ -102,28 +102,28 @@ public struct ExerciseBluePrintsList {
         
         // MARK: - Filter Properties
         
-        // Array to hold filtered muscles for exercise blueprints
+        // Array to hold filtered muscles for exercise templates
         var filterMuscles: [ExerciseMuscles] = []
         
-        // Array to hold filtered equipment for exercise blueprints
+        // Array to hold filtered equipment for exercise templates
         var filterEquipments: [ExerciseEquipment] = []
         
-        // Flag indicating whether to display only selected exercise blueprints
+        // Flag indicating whether to display only selected exercise templates
         var showOnlySelected: Bool = false
         
         // MARK: - Initializer
         
         // Initializer with default parameter values
-        init(results: [ExerciseBluePrint] = [], selectedBluePrints: Set<ExerciseBluePrint> = .init()) {
+        init(results: [ExerciseTemplate] = [], selectedTemplates: Set<ExerciseTemplate> = .init()) {
             self.results = results
-            self.selectedBluePrints = selectedBluePrints
+            self.selectedTemplates = selectedTemplates
         }
         
         // MARK: - Fetching Functions
         
-        // Function to fetch exercise blueprints
-        fileprivate func fetchBluePrints() -> [ExerciseBluePrint] {
-            @Dependency(\.exerciseBluePrintDatabase.fetch) var fetch
+        // Function to fetch exercise templates
+        fileprivate func fetchTemplates() -> [ExerciseTemplate] {
+            @Dependency(\.exerciseTemplatesDatabase.fetch) var fetch
             do {
                 return try fetch(fetchDescriptor)
             } catch {
@@ -132,11 +132,11 @@ public struct ExerciseBluePrintsList {
             }
         }
         
-        // Function to fetch recently accessed exercise blueprints
-        fileprivate func fetchRecentBluePrints() -> [ExerciseBluePrint] {
-            @Dependency(\.exerciseBluePrintDatabase.fetch) var fetch
+        // Function to fetch recently accessed exercise templates
+        fileprivate func fetchMostUsedTemplates() -> [ExerciseTemplate] {
+            @Dependency(\.exerciseTemplatesDatabase.fetch) var fetch
             do {
-                var descriptor = FetchDescriptor<ExerciseBluePrint>(predicate: #Predicate {
+                var descriptor = FetchDescriptor<ExerciseTemplate>(predicate: #Predicate {
                     $0.frequency > 1
                 }, sortBy: [frequencySort.descriptor])
                 descriptor.fetchLimit = 10
@@ -155,13 +155,13 @@ public struct ExerciseBluePrintsList {
         // Binding action case to update state binding
         case binding(BindingAction<State>)
         
-        // Action to deselect a template exercise blueprint
-        case deSelectTemplate(ExerciseBluePrint)
+        // Action to deselect a template exercise templates
+        case deSelectTemplate(ExerciseTemplate)
         
         // Action to delegate an action to another component
         case delegate(Delegate)
         
-        // Action to fetch results (exercise blueprints)
+        // Action to fetch results (exercise templates)
         case fetchResults
         
         // Action when the finish button is tapped
@@ -179,13 +179,13 @@ public struct ExerciseBluePrintsList {
         // Action to debounce the search query change
         case searchQueryChangeDebounced
         
-        // Action to select a template exercise blueprint
-        case selectTemplate(ExerciseBluePrint)
+        // Action to select a template exercise template
+        case selectTemplate(ExerciseTemplate)
         
         // Action to toggle the filter for equipment
         case toggleEquipmentFilter(forEquipment: ExerciseEquipment)
         
-        // Action to toggle showing only selected exercise blueprints
+        // Action to toggle showing only selected exercise templates
         case toggleShowOnlySelected(Bool)
         
         // Action to toggle the filter for muscle
@@ -195,8 +195,8 @@ public struct ExerciseBluePrintsList {
         
         // Delegate cases for handling delegation actions
         public enum Delegate {
-            // Delegate action when blueprints are selected
-            case didSelectBluePrints(bluePrints: [ExerciseBluePrint])
+            // Delegate action when templates are selected
+            case didSelectExerciseTemplates(templates: [ExerciseTemplate])
             
             // Delegate action to pop to the root component
             case popToRoot
@@ -237,21 +237,21 @@ public struct ExerciseBluePrintsList {
                 
                 // Handle selecting a template action
             case .selectTemplate(let template):
-                // Insert the selected template into the set of selected blueprints
-                state.selectedBluePrints.insert(template)
+                // Insert the selected template into the set of selected templates
+                state.selectedTemplates.insert(template)
                 return .none
                 
                 // Handle deselecting a template action
             case .deSelectTemplate(let template):
-                // Remove the deselected template from the set of selected blueprints
-                state.selectedBluePrints.remove(template)
+                // Remove the deselected template from the set of selected templates
+                state.selectedTemplates.remove(template)
                 return .none
                 
                 // Handle filtering results action
             case .filterResults:
                 // Update displayed results based on showOnlySelected flag
                 if state.showOnlySelected {
-                    state.displayResults = Array(state.selectedBluePrints)
+                    state.displayResults = Array(state.selectedTemplates)
                 } else {
                     // Filter results based on search query, muscles, and equipment
                     var filteredResults = state.results
@@ -279,8 +279,8 @@ public struct ExerciseBluePrintsList {
                 
                 // Handle fetching results action
             case .fetchResults:
-                // Fetch exercise blueprints
-                let fetchResults = state.fetchBluePrints()
+                // Fetch exercise templates
+                let fetchResults = state.fetchTemplates()
                 let pageSize = state.pageSize
                 // Update state with fetched results
                 state.results += fetchResults
@@ -289,20 +289,20 @@ public struct ExerciseBluePrintsList {
                 if fetchResults.count < pageSize {
                     state.canFetchMore = false
                 }
-                // Fetch recent exercise blueprints
-                state.recentResults = state.fetchRecentBluePrints()
+                // Fetch recent exercise templates
+                state.recentResults = state.fetchMostUsedTemplates()
                 // Send filter results action
                 return .send(.filterResults, animation: .default)
                 
                 // Handle finish button tapped action
             case .finishButtonTapped:
-                // Get selected blueprints
-                let selectedBluePrints = Array(state.selectedBluePrints)
-                // Check if any blueprints are selected
-                guard selectedBluePrints.isNotEmpty else { return .none }
+                // Get selected templates
+                let selectedTemplates = Array(state.selectedTemplates)
+                // Check if any templates are selected
+                guard selectedTemplates.isNotEmpty else { return .none }
                 // Concatenate actions to send delegate action and pop to root action
                 return .run { send in
-                    await send(.delegate(.didSelectBluePrints(bluePrints: selectedBluePrints)), animation: .default)
+                    await send(.delegate(.didSelectExerciseTemplates(templates: selectedTemplates)), animation: .default)
                     await send(.delegate(.popToRoot), animation: .default)
                 }
                 
@@ -359,8 +359,8 @@ public struct ExerciseBluePrintsList {
 
 }
 
-struct ExerciseBluePrintsListView: View {
-    @Bindable var store: StoreOf<ExerciseBluePrintsList>
+struct ExerciseTemplatesListView: View {
+    @Bindable var store: StoreOf<ExerciseTemplatesList>
     @FocusState var isSearchFieldFocused: Bool
     
     var body: some View {
@@ -370,13 +370,13 @@ struct ExerciseBluePrintsListView: View {
             // Recent section
             if store.recentResults.isNotEmpty && store.searchQuery.isEmpty && store.showOnlySelected.not() {
                 Section("Recent") {
-                    exerciseBluePrintList(bluePrints: store.recentResults)
+                    exerciseTemplateList(templates: store.recentResults)
                 }.listSectionSeparator(.hidden)
             }
             
             // Exercises section
             Section("Exercises") {
-                exerciseBluePrintList(bluePrints: store.displayResults)
+                exerciseTemplateList(templates: store.displayResults)
             }
             .listSectionSeparator(.hidden)
             
@@ -438,11 +438,11 @@ struct ExerciseBluePrintsListView: View {
         }
         .overlay(alignment: .bottomTrailing) {
             // Add exercise button overlay
-            if store.selectedBluePrints.isNotEmpty {
+            if store.selectedTemplates.isNotEmpty {
                 Button(action: {
                     store.send(.finishButtonTapped)
                 }, label: {
-                    Text("^[Add \(store.selectedBluePrints.count) Exercise](inflect: true)")
+                    Text("^[Add \(store.selectedTemplates.count) Exercise](inflect: true)")
                 })
                 .buttonBorderShape(.capsule)
                 .buttonStyle(.borderedProminent)
@@ -468,33 +468,33 @@ struct ExerciseBluePrintsListView: View {
         .bind($store.isSearchFieldFocused, to: $isSearchFieldFocused) // Bind focus state
     }
     
-    // Exercise blueprint list
+    // Exercise template list
     @ViewBuilder
-    private func exerciseBluePrintList(bluePrints: [ExerciseBluePrint]) -> some View {
-        // Iterate over each ExerciseBluePrint in the provided array
-        ForEach(bluePrints) { bluePrint in
-            // Check if the current ExerciseBluePrint is selected
-            let isSelected = store.selectedBluePrints.contains(bluePrint)
+    private func exerciseTemplateList(templates: [ExerciseTemplate]) -> some View {
+        // Iterate over each ExerciseTemplate in the provided array
+        ForEach(templates) { template in
+            // Check if the current ExerciseTemplate is selected
+            let isSelected = store.selectedTemplates.contains(template)
             
-            // Create a NavigationLink to the detailed view of the ExerciseBluePrint
+            // Create a NavigationLink to the detailed view of the ExerciseTemplate
             NavigationLink(
                 state: WorkoutEditor.Path.State.exerciseDetails(
-                    ExerciseBluePrintDetails.State(exercise: bluePrint)
+                    ExerciseTemplateDetails.State(exercise: template)
                 )
             ) {
-                // Display the ExerciseBluePrintRowView with appropriate parameters
-                ExerciseBluePrintRowView(
-                    exercise: bluePrint,
+                // Display the ExerciseTemplateRowView with appropriate parameters
+                ExerciseTemplateRowView(
+                    exercise: template,
                     isSelected: isSelected,
                     highlightText: store.searchQuery
                 )
-                // Handle tap gesture on the ExerciseBluePrintRowView
+                // Handle tap gesture on the ExerciseTemplateRowView
                 .onTapGesture {
-                    // Toggle selection state of the ExerciseBluePrint when tapped
+                    // Toggle selection state of the ExerciseTemplate when tapped
                     if isSelected {
-                        store.send(.deSelectTemplate(bluePrint), animation: .default)
+                        store.send(.deSelectTemplate(template), animation: .default)
                     } else {
-                        store.send(.selectTemplate(bluePrint), animation: .default)
+                        store.send(.selectTemplate(template), animation: .default)
                     }
                 }
             }
@@ -508,7 +508,7 @@ struct ExerciseBluePrintsListView: View {
 }
 
 #Preview {
-    ExerciseBluePrintsListView(store: StoreOf<ExerciseBluePrintsList>(initialState: ExerciseBluePrintsList.State(), reducer: {
-        ExerciseBluePrintsList()
+    ExerciseTemplatesListView(store: StoreOf<ExerciseTemplatesList>(initialState: ExerciseTemplatesList.State(), reducer: {
+        ExerciseTemplatesList()
     }))
 }

@@ -14,21 +14,21 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
     public let imageBaseURL: URL = URL(string: "https://raw.githubusercontent.com/harshvishu/free-exercise-db/main/exercises/")!
 
     // private properties
-    private var cache = NSCache<NSString, StructWrapper<ExerciseTemplate>>()
+    private var cache = NSCache<NSString, StructWrapper<BaseExerciseTemplate>>()
     
     public init() {}
     
-    public func fetchExercises() async -> [Domain.ExerciseTemplate] {
+    public func fetchExercises() async -> [Domain.BaseExerciseTemplate] {
         let exersices = await readJSONFromBundle()
         return exersices
     }    
     
-    public func fetchExercises() -> [Domain.ExerciseTemplate] {
+    public func fetchExercises() -> [Domain.BaseExerciseTemplate] {
         let exersices = readJSONFromBundle()
         return exersices
     }
     
-    public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
+    public func fetchExercise(forID id: String) async -> BaseExerciseTemplate? {
         let key = NSString(string: id)
         if let cachedVersion = cache.object(forKey: key) {
             // use the cached version
@@ -47,13 +47,13 @@ public final class UserDefaultsExerciseTemplateRepository: ExerciseRepository {
 }
 
 fileprivate extension UserDefaultsExerciseTemplateRepository {
-    func readJSONFromBundle() async -> [ExerciseTemplate] {
-        let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
+    func readJSONFromBundle() async -> [BaseExerciseTemplate] {
+        let data = Bundle.module.decode([BaseExerciseTemplate].self, forResource: "exercises", withExtension: "json")
         return data
     }
     
-    func readJSONFromBundle() -> [ExerciseTemplate] {
-        let data = Bundle.module.decode([ExerciseTemplate].self, forResource: "exercises", withExtension: "json")
+    func readJSONFromBundle() -> [BaseExerciseTemplate] {
+        let data = Bundle.module.decode([BaseExerciseTemplate].self, forResource: "exercises", withExtension: "json")
         return data
     }
 }

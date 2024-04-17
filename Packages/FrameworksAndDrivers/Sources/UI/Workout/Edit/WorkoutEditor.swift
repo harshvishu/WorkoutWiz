@@ -23,8 +23,8 @@ public struct WorkoutEditor {
      */
     @Reducer(state: .equatable)
     public enum Path {
-        case exerciseLists(ExerciseBluePrintsList)
-        case exerciseDetails(ExerciseBluePrintDetails)
+        case exerciseLists(ExerciseTemplatesList)
+        case exerciseDetails(ExerciseTemplateDetails)
     }
     
     // MARK: - Inner Reducer for Destination
@@ -125,8 +125,8 @@ public struct WorkoutEditor {
         /**
          Add exercise to the workout.
          */
-        mutating func addExercises(bluePrints: [ExerciseBluePrint]) {
-            for item in bluePrints {
+        mutating func addExercises(templates: [ExerciseTemplate]) {
+            for item in templates {
                 let exercise = Exercise()
                 workout.appendExercise(exercise)
                 exercise.template = item
@@ -170,7 +170,7 @@ public struct WorkoutEditor {
      An enum `Action` defining the actions that can be performed in the workout editor.
      */
     public enum Action {
-        case addSelectedBluePrints(bluePrints: [ExerciseBluePrint])
+        case addSelectedTemplates(templates: [ExerciseTemplate])
         case cancelButtonTapped
         case delegate(Delegate)
         case deleteButtonTapped
@@ -228,10 +228,10 @@ public struct WorkoutEditor {
             
             switch action {
                 
-            case let .addSelectedBluePrints(bluePrints):
+            case let .addSelectedTemplates(templates):
                 
                 state.saveWorkoutIfNotExistsAndStart()
-                state.addExercises(bluePrints: bluePrints)
+                state.addExercises(templates: templates)
                 return .none
                 
             case .cancelButtonTapped:
@@ -260,9 +260,9 @@ public struct WorkoutEditor {
                 state.deleteExercise(exerciseID: exerciseID)
                 return .none
                 // MARK: - Handle Info button tapped on `Exercise Row Header`
-            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showBluePrintDetails)))):
-                guard let blueprint = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
-                state.path.append(.exerciseDetails(.init(exercise: blueprint)))
+            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showTemplateDetails)))):
+                guard let template = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
+                state.path.append(.exerciseDetails(.init(exercise: template)))
                 return .none
                 
             case .exercisesList:
@@ -297,14 +297,14 @@ public struct WorkoutEditor {
                 case let .element(id: id, action: .exerciseLists(.delegate(.popToRoot))):
                     state.path.pop(from: id)
                     return .none
-                case let .element(id: _, action: .exerciseLists(.delegate(.didSelectBluePrints(bluePrints)))):
-                    return .send(.addSelectedBluePrints(bluePrints: bluePrints))
+                case let .element(id: _, action: .exerciseLists(.delegate(.didSelectExerciseTemplates(templates)))):
+                    return .send(.addSelectedTemplates(templates: templates))
                 default:
                     return .none
                 }
                 
             case .showExerciseListButtonTapped:
-                state.path.append(.exerciseLists(ExerciseBluePrintsList.State()))
+                state.path.append(.exerciseLists(ExerciseTemplatesList.State()))
                 return .none
                 
             case .startWorkoutButtonTapped:

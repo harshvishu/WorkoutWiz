@@ -30,11 +30,10 @@ public class SwiftDataModelConfigurationProvider {
     public lazy var container: ModelContainer = {
         let schema = Schema(
             [
-                SD_SaveDataRecord.self,
                 Rep.self,
                 Exercise.self,
                 Workout.self,
-                ExerciseBluePrint.self
+                ExerciseTemplate.self
             ]
         )
         let configuration = ModelConfiguration(isStoredInMemoryOnly: isStoredInMemoryOnly)

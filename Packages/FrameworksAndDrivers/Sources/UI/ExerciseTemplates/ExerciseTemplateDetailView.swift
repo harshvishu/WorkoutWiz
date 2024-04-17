@@ -1,5 +1,5 @@
 //
-//  ExerciseBluePrintDetailView.swift
+//  ExerciseTemplateDetailView.swift
 //
 //
 //  Created by harsh vishwakarma on 05/04/24.
@@ -12,10 +12,10 @@ import DesignSystem
 import Persistence
 
 @Reducer
-public struct ExerciseBluePrintDetails {
+public struct ExerciseTemplateDetails {
     @ObservableState
     public struct State: Equatable {
-        var exercise: ExerciseBluePrint
+        var exercise: ExerciseTemplate
         
         public var images: [URL]? {
             @Dependency(\.exerciseThumbnailFetcher) var imageFetcher
@@ -29,8 +29,8 @@ public struct ExerciseBluePrintDetails {
     }
 }
 
-struct ExerciseDetailView: View {
-    let store: StoreOf<ExerciseBluePrintDetails>
+struct ExerciseTemplateDetailView: View {
+    let store: StoreOf<ExerciseTemplateDetails>
     
     var body: some View {
         Form {
@@ -120,8 +120,8 @@ struct ExerciseDetailView: View {
 
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
-    return ExerciseDetailView(store: StoreOf<ExerciseBluePrintDetails>(initialState: ExerciseBluePrintDetails.State(exercise: ExerciseBluePrint(ExerciseTemplate.mock_1)), reducer: {
-        ExerciseBluePrintDetails()
+    return ExerciseTemplateDetailView(store: StoreOf<ExerciseTemplateDetails>(initialState: ExerciseTemplateDetails.State(exercise: ExerciseTemplate(BaseExerciseTemplate.mock_1)), reducer: {
+        ExerciseTemplateDetails()
     }))
     .modelContainer(container)
 }

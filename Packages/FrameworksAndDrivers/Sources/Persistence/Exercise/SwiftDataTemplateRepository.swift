@@ -25,12 +25,12 @@ public final class SwiftDataTemplateRepository {
         
         do {
             let context = ModelContext(container)
-            let fetchDescriptor = FetchDescriptor<ExerciseBluePrint>()
+            let fetchDescriptor = FetchDescriptor<ExerciseTemplate>()
             let count = try context.fetchCount(fetchDescriptor)
             
             if count == 0 {
                 let allExerciseTemplates = await listExerciseUseCase.listExercise()
-                let templates = allExerciseTemplates.map(ExerciseBluePrint.init)
+                let templates = allExerciseTemplates.map(ExerciseTemplate.init)
                 for template in templates {
                     context.insert(template)
                     
@@ -55,8 +55,8 @@ public final class SwiftDataTemplateRepository {
     
 }
 
-public extension ExerciseBluePrint {
-    convenience init(_ exerciseTemplate: ExerciseTemplate) {
+public extension ExerciseTemplate {
+    convenience init(_ exerciseTemplate: BaseExerciseTemplate) {
         self.init(
             id: exerciseTemplate.id,
             name: exerciseTemplate.name,

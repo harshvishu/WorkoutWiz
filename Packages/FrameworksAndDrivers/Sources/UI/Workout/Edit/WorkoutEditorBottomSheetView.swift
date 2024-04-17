@@ -78,11 +78,11 @@ struct WorkoutEditorBottomSheetView: View {
             // Destination view based on the store's current state
             switch store.case {
             case let .exerciseLists(store):
-                // ExerciseBluePrintsListView when the store's case is .exerciseLists
-                ExerciseBluePrintsListView(store: store)
+                // ExerciseTemplatesListView when the store's case is .exerciseLists
+                ExerciseTemplatesListView(store: store)
             case let .exerciseDetails(store):
                 // ExerciseDetailView when the store's case is .exerciseDetails
-                ExerciseDetailView(store: store)
+                ExerciseTemplateDetailView(store: store)
             }
         }
     }

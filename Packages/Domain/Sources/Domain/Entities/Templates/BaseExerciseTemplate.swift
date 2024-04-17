@@ -1,5 +1,5 @@
 //
-//  ExerciseTemplate.swift
+//  BaseExerciseTemplate.swift
 //
 //
 //  Created by harsh vishwakarma on 03/01/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ExerciseTemplate: Identifiable, Codable, Hashable {
+public struct BaseExerciseTemplate: Identifiable, Codable, Hashable {
     public let id: String
     public let name: String
     public let force: ExerciseForce?
@@ -39,7 +39,7 @@ public struct ExerciseTemplate: Identifiable, Codable, Hashable {
     }
 }
 
-public extension ExerciseTemplate {
+public extension BaseExerciseTemplate {
     func abbreviatedMuscle() ->  ExerciseMuscles? {
         let wordCounts = primaryMuscles
             .reduce(into: [:]) { counts, word in
@@ -54,11 +54,11 @@ public extension ExerciseTemplate {
     }
 }
 
-// MARK: ExerciseTemplate convenience initializers and mutators
+// MARK: BaseExerciseTemplate convenience initializers and mutators
 
-public extension ExerciseTemplate {
+public extension BaseExerciseTemplate {
     init(data: Data) throws {
-        self = try newJSONDecoder().decode(ExerciseTemplate.self, from: data)
+        self = try newJSONDecoder().decode(BaseExerciseTemplate.self, from: data)
     }
     
     init(_ json: String, using encoding: String.Encoding = .utf8) throws {
@@ -96,8 +96,8 @@ private func newJSONEncoder() -> JSONEncoder {
 }
 
 //#if DEBUG
-public extension ExerciseTemplate {
-    static let mock_1: ExerciseTemplate = try! ExerciseTemplate("""
+public extension BaseExerciseTemplate {
+    static let mock_1: BaseExerciseTemplate = try! BaseExerciseTemplate("""
 {"name":"3/4 Sit-Up","force":"pull","level":"beginner","mechanic":"compound","equipment":"body only","primaryMuscles":["abdominals"],"secondaryMuscles":["abdominals","shoulders","adductors","glutes"],"instructions":["Lie down on the floor and secure your feet. Your legs should be bent at the knees.","Place your hands behind or to the side of your head. You will begin with your back on the ground. This will be your starting position.","Flex your hips and spine to raise your torso toward your knees.","At the top of the contraction your torso should be perpendicular to the ground. Reverse the motion, going only Â¾ of the way down.","Repeat for the recommended amount of repetitions."],"category":"strength","images":["3_4_Sit-Up/0.jpg","3_4_Sit-Up/1.jpg"],"id":"3_4_Sit-Up"}
 """)
 }

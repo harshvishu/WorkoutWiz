@@ -12,7 +12,7 @@ import SwiftData
 public final class Exercise: Identifiable {
     @Attribute(.unique) public var id: UUID = UUID()
     
-    public var template: ExerciseBluePrint?
+    public var template: ExerciseTemplate?
     public var workout: Workout?
     public var sortOrder: Int = 0
         

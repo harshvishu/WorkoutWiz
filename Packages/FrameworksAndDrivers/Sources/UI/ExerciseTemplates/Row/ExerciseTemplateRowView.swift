@@ -10,8 +10,8 @@ import Domain
 import DesignSystem
 import Dependencies
 
-struct ExerciseBluePrintRowView: View {
-    var exercise: ExerciseBluePrint
+struct ExerciseTemplateRowView: View {
+    var exercise: ExerciseTemplate
     var isSelected: Bool
     var highlightText: String?
     

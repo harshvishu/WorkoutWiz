@@ -9,7 +9,7 @@ import Foundation
 import Domain
 
 public protocol ExerciseRepository {
-    func fetchExercises() async -> [ExerciseTemplate]
-    func fetchExercise(forID id: String) async -> ExerciseTemplate?
+    func fetchExercises() async -> [BaseExerciseTemplate]
+    func fetchExercise(forID id: String) async -> BaseExerciseTemplate?
     var imageBaseURL: URL {get}
 }

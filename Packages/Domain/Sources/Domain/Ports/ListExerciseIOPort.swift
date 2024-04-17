@@ -8,8 +8,8 @@
 import Foundation
 
 public protocol ListExerciseIOPort {
-    func listExercise() async -> [ExerciseTemplate]
-    func imageUrlFor(exercise: ExerciseTemplate) -> [URL]
-    func fetchExercise(forID id: String) async -> ExerciseTemplate?
+    func listExercise() async -> [BaseExerciseTemplate]
+    func imageUrlFor(exercise: BaseExerciseTemplate) -> [URL]
+    func fetchExercise(forID id: String) async -> BaseExerciseTemplate?
     func url(forImageName imageName: String) -> URL
 }

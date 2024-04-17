@@ -14,13 +14,13 @@ public final class FirebaseExerciseRepository: ExerciseRepository {
     
     public init() {}
     
-    public func fetchExercises() async -> [ExerciseTemplate] {
+    public func fetchExercises() async -> [BaseExerciseTemplate] {
         // TODO: Must Call Firebase API
-        let exersices: [ExerciseTemplate] = []
+        let exersices: [BaseExerciseTemplate] = []
         return exersices
     }
     
-    public func fetchExercise(forID id: String) async -> ExerciseTemplate? {
+    public func fetchExercise(forID id: String) async -> BaseExerciseTemplate? {
         return nil
     }
     

@@ -1,5 +1,5 @@
 //
-//  ExerciseBluePrint.swift
+//  ExerciseTemplate.swift
 //  
 //
 //  Created by harsh vishwakarma on 15/02/24.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class ExerciseBluePrint: Identifiable, Hashable, Equatable {
+public final class ExerciseTemplate: Identifiable, Hashable, Equatable {
     @Attribute(.unique) public let id: String
     
     // Template properties
@@ -104,7 +104,7 @@ public final class ExerciseBluePrint: Identifiable, Hashable, Equatable {
     }
 }
 
-public extension ExerciseBluePrint {
+public extension ExerciseTemplate {
     func abbreviatedMuscle() ->  ExerciseMuscles? {
         let wordCounts = primaryMuscles
             .reduce(into: [:]) { counts, word in
