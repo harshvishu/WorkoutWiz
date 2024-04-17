@@ -41,8 +41,8 @@ public struct ExerciseBluePrintsList {
         // Descriptor for fetching exercise blueprints
         var fetchDescriptor: FetchDescriptor<ExerciseBluePrint> {
             var descriptor = FetchDescriptor(predicate: self.predicate, sortBy: self.sort)
-            descriptor.fetchLimit = fetchLimit
-            descriptor.fetchOffset = fetchOffset
+            descriptor.fetchLimit = pageSize
+            descriptor.fetchOffset = pageOffset
             return descriptor
         }
         
@@ -89,10 +89,10 @@ public struct ExerciseBluePrintsList {
         }
         
         // Offset for fetching exercise blueprints
-        var fetchOffset = 0
+        var pageOffset = 0
         
         // Limit for fetching exercise blueprints
-        var fetchLimit = 50
+        var pageSize = 50
         
         // Flag indicating whether more exercise blueprints can be fetched
         var canFetchMore = true
@@ -281,12 +281,12 @@ public struct ExerciseBluePrintsList {
             case .fetchResults:
                 // Fetch exercise blueprints
                 let fetchResults = state.fetchBluePrints()
-                let fetchLimit = state.fetchLimit
+                let pageSize = state.pageSize
                 // Update state with fetched results
                 state.results += fetchResults
-                state.fetchOffset += fetchResults.count
+                state.pageOffset += fetchResults.count
                 // Check if more results can be fetched
-                if fetchResults.count < fetchLimit {
+                if fetchResults.count < pageSize {
                     state.canFetchMore = false
                 }
                 // Fetch recent exercise blueprints
@@ -301,10 +301,10 @@ public struct ExerciseBluePrintsList {
                 // Check if any blueprints are selected
                 guard selectedBluePrints.isNotEmpty else { return .none }
                 // Concatenate actions to send delegate action and pop to root action
-                return .concatenate(
-                    .send(.delegate(.didSelectBluePrints(bluePrints: selectedBluePrints)), animation: .default),
-                    .send(.delegate(.popToRoot), animation: .default)
-                )
+                return .run { send in
+                    await send(.delegate(.didSelectBluePrints(bluePrints: selectedBluePrints)), animation: .default)
+                    await send(.delegate(.popToRoot), animation: .default)
+                }
                 
                 // Handle loading next page action
             case .loadNextPage:
@@ -318,7 +318,7 @@ public struct ExerciseBluePrintsList {
                 // Reset results, offset, and flag to allow fetching more results
                 state.results = []
                 state.displayResults = []
-                state.fetchOffset = 0
+                state.pageOffset = 0
                 state.canFetchMore = true
                 // Run action to fetch results
                 return .run { @MainActor send in
@@ -368,7 +368,7 @@ struct ExerciseBluePrintsListView: View {
             ScrollToView()
             
             // Recent section
-            if store.recentResults.isNotEmpty && store.searchQuery.isEmpty {
+            if store.recentResults.isNotEmpty && store.searchQuery.isEmpty && store.showOnlySelected.not() {
                 Section("Recent") {
                     exerciseBluePrintList(bluePrints: store.recentResults)
                 }.listSectionSeparator(.hidden)

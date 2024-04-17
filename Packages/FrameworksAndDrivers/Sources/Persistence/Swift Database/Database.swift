@@ -23,12 +23,9 @@ struct Database {
 }
 
 extension Database: DependencyKey {
+    @MainActor
     public static let liveValue = Self(
         context: { appContext }
-    )
-    
-    public static let previewValue  = Self(
-        context: { preivewAppContext }
     )
 }
 
@@ -36,7 +33,6 @@ extension Database: DependencyKey {
 let appContext: ModelContext = {
     let container = SwiftDataModelConfigurationProvider.shared.container
     let context = ModelContext(container)
-    context.autosaveEnabled = true
     return context
 }()
 
@@ -44,6 +40,5 @@ let appContext: ModelContext = {
 let preivewAppContext: ModelContext = {
     let container = SwiftDataModelConfigurationProvider.preview.container
     let context = ModelContext(container)
-    context.autosaveEnabled = true
     return context
 }()

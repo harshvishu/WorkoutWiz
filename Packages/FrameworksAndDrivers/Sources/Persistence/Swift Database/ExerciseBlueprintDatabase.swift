@@ -21,6 +21,7 @@ public extension DependencyValues {
 public struct ExerciseBlueprintDatabase {
     public var fetchAll: @Sendable () throws -> [ExerciseBluePrint]
     public var fetch: @Sendable (FetchDescriptor<ExerciseBluePrint>) throws -> [ExerciseBluePrint]
+    public var count: @Sendable (FetchDescriptor<ExerciseBluePrint>) throws -> Int
 }
 
 extension ExerciseBlueprintDatabase: DependencyKey {
@@ -45,6 +46,16 @@ extension ExerciseBlueprintDatabase: DependencyKey {
             } catch {
                 print(error)
                 return []
+            }
+        }, count: { descriptor in
+            do {
+                @Dependency(\.databaseService.context) var context
+                let databaseContext = try context()
+                
+                return try databaseContext.fetchCount(descriptor)
+            } catch {
+                print(error)
+                return 0
             }
         }
     )

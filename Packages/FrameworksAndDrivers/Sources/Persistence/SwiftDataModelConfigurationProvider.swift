@@ -9,7 +9,6 @@ import Foundation
 import SwiftData
 import Domain
 
-
 public class SwiftDataModelConfigurationProvider {
     public static let shared = SwiftDataModelConfigurationProvider(isStoredInMemoryOnly: false, autosaveEnabled: true)
     

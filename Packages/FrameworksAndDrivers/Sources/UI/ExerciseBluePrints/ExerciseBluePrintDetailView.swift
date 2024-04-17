@@ -9,12 +9,19 @@ import SwiftUI
 import Domain
 import ComposableArchitecture
 import DesignSystem
+import Persistence
 
 @Reducer
 public struct ExerciseBluePrintDetails {
     @ObservableState
     public struct State: Equatable {
         var exercise: ExerciseBluePrint
+        
+        public var images: [URL]? {
+            @Dependency(\.exerciseThumbnailFetcher) var imageFetcher
+            let images = imageFetcher.imageUrlFor(imageNames: exercise.images)
+            return images.isEmpty ? nil : images
+        }
     }
     
     public enum Action: Equatable {
@@ -27,9 +34,14 @@ struct ExerciseDetailView: View {
     
     var body: some View {
         Form {
-//            Text(store.exercise.name)
-//                .font(.title)
-//                .bold()
+            
+            if let images = store.images {
+                Section {
+                    imagesCarouselView(images)
+                }
+                .listRowInsets(EdgeInsets())
+                .previewBorder()
+            }
             
             if let force = store.exercise.force?.rawValue {
                 
@@ -73,12 +85,43 @@ struct ExerciseDetailView: View {
         .formStyle(.grouped)
         .navigationTitle(store.exercise.name)
     }
+    
+    fileprivate func imagesCarouselView(_ images: [URL]) -> some View {
+        ScrollView(.horizontal) {
+            LazyHStack(alignment: .center, spacing: 0) {
+                ForEach(images, id: \.self) { url in
+                    AsyncImage(url: url, transaction: Transaction(animation: .easeInOut)) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .transition(.opacity)
+                        case .failure:
+                            Image(systemName: "wifi.slash")
+                        @unknown default:
+                            EmptyView()
+                        }
+                    }
+                    .containerRelativeFrame(.horizontal)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                PagingIndicator(activeTint: .white, inActiveTint: .black.opacity(0.25), opacityEffect: false, clipEdges: true)
+            }
+        }
+        .scrollIndicators(.hidden)
+        .scrollTargetBehavior(.paging)
+        .frame(height: 220)
+    }
 }
 
-struct ExerciseDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExerciseDetailView(store: StoreOf<ExerciseBluePrintDetails>(initialState: ExerciseBluePrintDetails.State(exercise: ExerciseBluePrint(ExerciseTemplate.mock_1)), reducer: {
-            ExerciseBluePrintDetails()
-        }))
-    }
+#Preview {
+    let container = SwiftDataModelConfigurationProvider.shared.container
+    return ExerciseDetailView(store: StoreOf<ExerciseBluePrintDetails>(initialState: ExerciseBluePrintDetails.State(exercise: ExerciseBluePrint(ExerciseTemplate.mock_1)), reducer: {
+        ExerciseBluePrintDetails()
+    }))
+    .modelContainer(container)
 }

@@ -416,6 +416,5 @@ extension ConfirmationDialogState where Action == WorkoutsListFeature.Destinatio
             }
         )
     )
-    .withPreviewEnvironment()
     .modelContainer(container)
 }
