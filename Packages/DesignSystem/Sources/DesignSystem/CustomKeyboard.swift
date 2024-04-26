@@ -68,7 +68,7 @@ public enum CustomKey: Equatable {
         case .digit(let value):
             Text("\(value)")
         case .submit:
-            Text("done")
+            Text("Done")
         case .next:
             Text("next")
         case .empty:

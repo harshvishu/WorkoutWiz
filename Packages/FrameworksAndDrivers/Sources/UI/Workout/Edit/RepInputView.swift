@@ -36,6 +36,9 @@ public struct RepInput {
         public enum Alert {
             case confirmDelete
             case cancelDelete
+            
+            case confirmSave
+            case cancelSave
         }
     }
     
@@ -108,6 +111,55 @@ public struct RepInput {
             repCountText = String(format: "%d", rep.count)
             isRepSaved = true
         }
+        
+        func saveRep() {
+            @Dependency(\.fitnessTrackingUseCase) var fitnessTrackingUseCase
+            
+            let weight = weightText.double ?? 0.0
+            let repCount = repCountText.int ?? 0
+            let repTime = timeInterval(from: repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
+            
+            
+            let calories = fitnessTrackingUseCase.trackCaloriesBurned(
+                metValue: exercise.template?.category.met() ?? 0.0,
+                weight: weight,
+                repCountUnit: repCountUnit,
+                duration: repTime,
+                rep: repCount
+            )
+            
+            if let rep = rep {
+                rep.weight = weight
+                rep.count = repCount
+                rep.time = repTime
+                rep.weightUnit = weightUnit
+                rep.repType = repType
+                rep.countUnit = repCountUnit
+                rep.calories = calories
+            } else {
+                let rep = Rep(
+                    weight: weight,
+                    countUnit: repCountUnit,
+                    time: repTime,
+                    count: repCount,
+                    weightUnit: weightUnit,
+                    calories: calories,
+                    repType: repType
+                )
+                exercise.appendRep(rep)
+                rep.exercise = exercise
+            }
+            
+            // Update the calories whenever a rep is added/deleted or modified
+            exercise.calories = Exercise.estimatedCaloriesBurned(reps: exercise.reps)
+            
+            if let workout = exercise.workout {
+                let totalCaloriesBurnedForExercise = Workout.estimatedCaloriesBurned(exercises: workout.exercises)
+                workout.calories = totalCaloriesBurnedForExercise
+                workout.abbreviatedCategory = fitnessTrackingUseCase.abbreviatedCategory(exercises: workout.exercises) ?? .none
+                workout.abbreviatedMuscle = fitnessTrackingUseCase.abbreviatedMuscle(exercises: workout.exercises) ?? .none
+            }
+        }
     }
     
     /**
@@ -170,6 +222,9 @@ public struct RepInput {
             // Handling presentation of alerts
             case .destination(.presented(.alert(.confirmDelete))):
                 return .send(.deleteRep)
+            case .destination(.presented(.alert(.confirmSave))):
+                state.saveRep()
+                return .send(.delegate(.close), animation: .default)
             case .destination:
                 return .none
                 
@@ -230,7 +285,7 @@ public struct RepInput {
                     return .none
                 case .switchRep, .switchTime:
                     let newRepInputMode: RepCountUnit = (state.repCountUnit == .rep) ? .time : .rep
-                    return .send(.changeRepCountUnit(newRepInputMode))
+                    return .send(.changeRepCountUnit(newRepInputMode), animation: .default)
                     
                 // Action when submit button is tapped
                 case .submit:
@@ -238,51 +293,17 @@ public struct RepInput {
                     let repCount = state.repCountText.int ?? 0
                     let repTime = timeInterval(from: state.repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
                     
-                    let calories = fitnessTrackingUseCase.trackCaloriesBurned(
-                        metValue: state.exercise.template?.category.met() ?? 0.0,
-                        weight: weight,
-                        repCountUnit: state.repCountUnit,
-                        duration: repTime,
-                        rep: repCount
-                    )
-                    
-                    if let rep = state.rep {
-                        rep.weight = weight
-                        rep.count = repCount
-                        rep.time = repTime
-                        rep.weightUnit = state.weightUnit
-                        rep.repType = state.repType
-                        rep.countUnit = state.repCountUnit
-                        rep.calories = calories
-                    } else {
-                        let rep = Rep(
-                            weight: weight,
-                            countUnit: state.repCountUnit,
-                            time: repTime,
-                            count: repCount,
-                            weightUnit: state.weightUnit,
-                            calories: calories,
-                            repType: state.repType
-                        )
-                        state.exercise.appendRep(rep)
-                        rep.exercise = state.exercise
+                    if weight == .zero || (repTime == 0 && repCount == 0) {
+                        state.destination = .alert(.saveEmptyRep)
+                        return .none
                     }
-                    
-                    // Update the calories whenever a rep is added/deleted or modified
-                    state.exercise.calories = Exercise.estimatedCaloriesBurned(reps: state.exercise.reps)
-                    
-                    if let workout = state.exercise.workout {
-                        let totalCaloriesBurnedForExercise = Workout.estimatedCaloriesBurned(exercises: workout.exercises)
-                        workout.calories = totalCaloriesBurnedForExercise
-                        workout.abbreviatedCategory = fitnessTrackingUseCase.abbreviatedCategory(exercises: workout.exercises) ?? .none
-                        workout.abbreviatedMuscle = fitnessTrackingUseCase.abbreviatedMuscle(exercises: workout.exercises) ?? .none
-                    }
+                    state.saveRep()
                     return .send(.delegate(.close), animation: .default)
                     
                 case .next:
-                    return .send(.focusedFieldChanged(.weight))
+                    return .send(.focusedFieldChanged(.weight), animation: .default)
                 case .prev:
-                    return .send(.focusedFieldChanged(state.repCountUnit == .rep ? .rep : .time))
+                    return .send(.focusedFieldChanged(state.repCountUnit == .rep ? .rep : .time), animation: .default)
                     
                 // TODO: Pending Implementations
                 case .plus:
@@ -399,9 +420,9 @@ struct RepInputView: View {
             .pickerStyle(.segmented)
             
             RepInputKeyboard(mode: getRepInputMode(), keyPressHandler:  { key in
-                store.send(.keypadInputReceived(key))
+                store.send(.keypadInputReceived(key), animation: .default)
             }, timeChangeHandler: { time in
-                store.send(.repTimeChanged(time))
+                store.send(.repTimeChanged(time), animation: .default)
             })
         }
         .alert($store.scope(state: \.destination?.alert, action: \.destination.alert) )
@@ -410,7 +431,7 @@ struct RepInputView: View {
                 VStack {
                     Divider()
                     Button(role: .destructive, action: {
-                        store.send(.deleteButtonTapped)
+                        store.send(.deleteButtonTapped, animation: .default)
                     }, label: {
                         Label("Delete", systemImage: "trash.fill")
                             .padding(.buttonContentInsets)
@@ -451,6 +472,19 @@ extension AlertState where Action == RepInput.Destination.Alert {
         }
     } message: {
         TextState("Are you sure you want to delete this rep?")
+    } 
+    
+    static var saveEmptyRep = Self {
+        TextState("Empty rep?")
+    } actions: {
+        ButtonState(role: .destructive, action: .confirmSave) {
+            TextState("Yes")
+        }
+        ButtonState(role: .cancel, action: .cancelSave) {
+            TextState("Nevermind")
+        }
+    } message: {
+        TextState("Are you sure you want to save empty rep?")
     }
 }
 
