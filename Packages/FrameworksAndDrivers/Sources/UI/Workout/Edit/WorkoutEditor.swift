@@ -264,7 +264,7 @@ public struct WorkoutEditor {
                 guard let template = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
                 state.path.append(.exerciseDetails(.init(exercise: template)))
                 return .none
-                
+            
             case .exercisesList:
                 return .none
                 
@@ -299,6 +299,9 @@ public struct WorkoutEditor {
                     return .none
                 case let .element(id: _, action: .exerciseLists(.delegate(.didSelectExerciseTemplates(templates)))):
                     return .send(.addSelectedTemplates(templates: templates))
+                case let .element(id: _, action: .exerciseLists(.delegate(.showTemplateDetails(template: template)))):
+                    state.path.append(.exerciseDetails(.init(exercise: template)))
+                    return .none
                 default:
                     return .none
                 }

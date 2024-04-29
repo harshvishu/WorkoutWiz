@@ -31,6 +31,7 @@ public struct TabBarFeature {
         var showTabBar = true
         
         // Child States
+        var calendar = CalendarTab.State()
         var dashboard = DashboardTab.State()
         var workoutEditor = WorkoutEditor.State()
         var settings = Settings.State()
@@ -47,6 +48,7 @@ public struct TabBarFeature {
     }
     
     public enum Action {
+        case calendar(CalendarTab.Action)
         case dashboard(DashboardTab.Action)
         case settings(Settings.Action)
         
@@ -62,6 +64,10 @@ public struct TabBarFeature {
     }
     
     public var body: some ReducerOf<Self> {
+        Scope(state: \.calendar, action: \.calendar) {
+            CalendarTab()
+        }
+        
         Scope(state: \.dashboard, action: \.dashboard) {
             DashboardTab()
         }
@@ -76,17 +82,23 @@ public struct TabBarFeature {
         
         Reduce<State,Action> { state, action in
             switch action {
+//            case let .calendar(.workoutsList(.delegate(.openWorkout(workout)))):
+//                state.calendar.path.append(.workout(.init(isWorkoutSaved: true, isWorkoutInProgress: false, workout: workout)))
+//                return .none
+            case let .calendar(.delegate(.showTabBar(visibility))):
+                return .send(.toggleTabBar(visibility), animation: .customSpring()) // Show/Hide our custom TabBar when NavigationStack in CalendarTabView is chagned
+            case .calendar:
+                return .none
                 
                 // MARK: - Handle Dashboard Action
             case let .dashboard(.workoutsList(.delegate(delegateAction))):
                 switch delegateAction {
                     // Handle tap on workout list
-                case let .editWorkout(workout):
+                case let .openWorkout(workout):
                     if !(state.workoutEditor.isWorkoutInProgress && state.workoutEditor.workout.id == workout.id) {
                         state.workoutEditor = WorkoutEditor.State(isWorkoutSaved: true, isWorkoutInProgress: false, workout: workout)
                     }
                     return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)  // expand the bottom sheet
-                    // Handle
                 case .startNewWorkout:
                     return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)
                 case .showCalendarScreen:
@@ -196,13 +208,38 @@ public struct TabBarView: View {
         }), content:  {
             ForEach(store.availableTabs) { tab in
                 tab.makeContentView(store: store)
-                    .hideNativeTabBar() /// Hides the native TabBarView we use `CustomTabBar`
+                    .toolbar(store.showTabBar ? .automatic : .hidden, for: .tabBar)
+                    .toolbar(store.showTabBar ? .automatic : .hidden, for: .bottomBar)
+                    .toolbarBackground(store.showTabBar ? .automatic : .hidden, for: .tabBar)
+                    .toolbarBackground(store.showTabBar ? .automatic : .hidden, for: .bottomBar)
                     .tabItem {
                         tab.label
                     }
                     .tag(tab)
             }
         })
+        .onAppear {
+            // MARK: - TabBar Appearance
+            // Set the apperarance for Default TabBar to transparent and frame to zero
+            let appearance = UITabBarAppearance()
+            appearance.configureWithTransparentBackground()
+            appearance.backgroundColor = .clear
+            appearance.selectionIndicatorTintColor = .clear
+            appearance.shadowColor = .clear
+            appearance.backgroundEffect = nil
+            appearance.backgroundImage = nil
+            appearance.selectionIndicatorImage = nil
+            
+            appearance.stackedLayoutAppearance.normal.iconColor = .white
+            appearance.stackedLayoutAppearance.normal.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.clear]
+            appearance.stackedLayoutAppearance.selected.iconColor = .clear
+            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor(Color.clear)]
+            
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+            UITabBar.appearance().isTranslucent = true
+            UITabBar.appearance().frame = .zero
+        }
         .tabSheet(
             initialHeight: Constants.InitialSheetHeight,
             sheetCornerRadius: .sheetCornerRadius,

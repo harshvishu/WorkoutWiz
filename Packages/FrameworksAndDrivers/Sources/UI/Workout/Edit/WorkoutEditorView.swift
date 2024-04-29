@@ -102,70 +102,70 @@ struct WorkoutEditorView: View {
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.automatic)
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                // Bottom safe area content
-                
-                VStack(spacing: .defaultVerticalSpacing) {
-                    Divider()
-                    
-                    if store.isWorkoutInProgress {
-                        // Buttons for in-progress workout
-                        
-                        // Button to show all exercises
-                        Button(action: {
-                            store.send(.showExerciseListButtonTapped, animation: .default)
-                        }, label: {
-                            Text("Show All Exercises")
-                                .frame(maxWidth: .infinity)
-                        })
-                        .buttonBorderShape(.capsule)
-                        .buttonStyle(.bordered)
-                        .foregroundStyle(.primary)
-                        .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
-                        .padding(.horizontal, .defaultHorizontalSpacing)
-                        
-                        HStack {
-                            // Cancel button
-                            Button(role: .destructive, action: {
-                                store.send(.cancelButtonTapped, animation: .default)
-                            }, label: {
-                                Text("Cancel")
-                                    .padding(.horizontal)
-                            })
-                            .foregroundStyle(Color.red)
-                            
-                            // Finish button if exercises are added
-                            if store.workout.exercises.isNotEmpty {
-                                Button(action: {
-                                    store.send(.finishButtonTapped, animation: .default)
-                                }, label: {
-                                    // Label for finish button
-                                    Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
-                                        .frame(maxWidth: .infinity)
-                                })
-                                .buttonBorderShape(.capsule)
-                                .buttonStyle(.borderedProminent)
-                                .tint(.primary)
-                                .foregroundStyle(.background)
-                            }
-                        }
-                        .padding(.horizontal, .defaultHorizontalSpacing)
-                    } else {
-                        
-                        // Button to start or resume workout
-                        Button(action: {
-                            store.send(.startWorkoutButtonTapped, animation: .default)
-                        }, label: {
-                            Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
-                        })
-                        .frame(maxWidth: .infinity)
-                    }
-                }
-                .transition(.identity)
-                .background(.ultraThinMaterial)
-                .foregroundStyle(.primary)
-                .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
-            }
+//            .safeAreaInset(edge: .bottom, spacing: 0) {
+//                // Bottom safe area content
+//                
+//                VStack(spacing: .defaultVerticalSpacing) {
+//                    Divider()
+//                    
+//                    if store.isWorkoutInProgress {
+//                        // Buttons for in-progress workout
+//                        
+//                        // Button to show all exercises
+//                        Button(action: {
+//                            store.send(.showExerciseListButtonTapped, animation: .default)
+//                        }, label: {
+//                            Text("Show All Exercises")
+//                                .frame(maxWidth: .infinity)
+//                        })
+//                        .buttonBorderShape(.capsule)
+//                        .buttonStyle(.bordered)
+//                        .foregroundStyle(.primary)
+//                        .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
+//                        .padding(.horizontal, .defaultHorizontalSpacing)
+//                        
+//                        HStack {
+//                            // Cancel button
+//                            Button(role: .destructive, action: {
+//                                store.send(.cancelButtonTapped, animation: .default)
+//                            }, label: {
+//                                Text("Cancel")
+//                                    .padding(.horizontal)
+//                            })
+//                            .foregroundStyle(Color.red)
+//                            
+//                            // Finish button if exercises are added
+//                            if store.workout.exercises.isNotEmpty {
+//                                Button(action: {
+//                                    store.send(.finishButtonTapped, animation: .default)
+//                                }, label: {
+//                                    // Label for finish button
+//                                    Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
+//                                        .frame(maxWidth: .infinity)
+//                                })
+//                                .buttonBorderShape(.capsule)
+//                                .buttonStyle(.borderedProminent)
+//                                .tint(.primary)
+//                                .foregroundStyle(.background)
+//                            }
+//                        }
+//                        .padding(.horizontal, .defaultHorizontalSpacing)
+//                    } else {
+//                        
+//                        // Button to start or resume workout
+//                        Button(action: {
+//                            store.send(.startWorkoutButtonTapped, animation: .default)
+//                        }, label: {
+//                            Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
+//                        })
+//                        .frame(maxWidth: .infinity)
+//                    }
+//                }
+//                .transition(.identity)
+//                .background(.ultraThinMaterial)
+//                .foregroundStyle(.primary)
+//                .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
+//            }
             .overlay {
                 // Overlay views for empty state messages
                 

@@ -14,9 +14,87 @@ import OSLog
 import SwiftData
 import ComposableArchitecture
 
+@Reducer
+public struct CalendarTab {
+    // MARK: - Inner Reducer for Path
+    @Reducer(state: .equatable)
+    public enum Path {
+        case workout(WorkoutEditor)
+        case exerciseLists(ExerciseTemplatesList)
+        case exerciseDetails(ExerciseTemplateDetails)
+    }
+    
+    @ObservableState
+    public struct State: Equatable {
+        var workoutsList = WorkoutsList.State(filter: .none, grouping: true)
+        var path = StackState<Path.State>()
+    }
+    
+    public enum Action {
+        case path(StackAction<Path.State, Path.Action>)
+        
+        case showExerciseListButtonTapped
+        
+        case workoutsList(WorkoutsList.Action)
+        
+        case delegate(Delegate)
+        
+        public enum Delegate {
+            case showTabBar(Bool)
+            case openWorkout(Workout)
+        }
+    }
+    
+    public var body: some ReducerOf<Self> {
+        Scope(state: \.workoutsList, action: \.workoutsList) {
+            WorkoutsList()
+        }
+        
+        Reduce<State, Action> { state, action in
+            switch action {
+            case .delegate:
+                return .none
+                
+            case let .path(.element(id: _, action: .exerciseLists(.delegate(.showTemplateDetails(template: template))))):
+                state.path.append(.exerciseDetails(.init(exercise: template)))
+                return .none
+            case .path:
+                return .none
+                
+            case .showExerciseListButtonTapped:
+                state.path.append(.exerciseLists(ExerciseTemplatesList.State()))
+                return .none
+                
+            case let .workoutsList(.delegate(.openWorkout(workout))):
+                state.path.append(.workout(.init(isWorkoutSaved: true, isWorkoutInProgress: false, workout: workout)))
+                return .none
+                
+            case .workoutsList:
+                return .none
+            }
+        }
+        .forEach(\.path, action: \.path)
+        .onChange(of: \.path) { _, newValue in
+            Reduce { state, _ in
+                // MARK: Show/Hide Tabbar & Change BottomSheet size when we have items in navigation stack
+                if state.path.isEmpty {
+                    /// Show Bottom TabBar when navigation path is empty
+                    return .send(.delegate(.showTabBar(true)))
+                } else {
+                    /// Hide Bottom TabBar when navigation path is not empty
+                    return .send(.delegate(.showTabBar(false)))
+                }
+            }
+        }
+    }
+}
+
 struct CalendarTabView: View {
     
     @Environment(\.isPresented) var isPresented
+    
+    // Keyboard state environment variable
+    @Environment(\.keyboardShowing) private var keyboardShowing
     
     @State private var resetScroll: Day? = nil
     @State private var isTodayVisible: Bool = true
@@ -24,12 +102,14 @@ struct CalendarTabView: View {
     @State private var selectedDate: Day = Day(date: .now)
     @State private var today: Day = Day(date: .now)
     
-    let store = StoreOf<WorkoutsListFeature>(initialState: WorkoutsListFeature.State(filter: .none, grouping: true)) {
-        WorkoutsListFeature()
+    init(store: StoreOf<CalendarTab>) {
+        self.store = store
     }
     
+    @Bindable var store: StoreOf<CalendarTab>
+    
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $store.scope(state: \.path, action: \.path), root: {
             ZStack {
                 ScrollViewReader { proxy in
                     ZStack {
@@ -45,14 +125,14 @@ struct CalendarTabView: View {
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             
-                            WorkoutsListView(store: store)
+                            WorkoutsListView(store: store.scope(state: \.workoutsList, action: \.workoutsList))
                         }
                         .listStyle(.plain)
                         .listSectionSeparator(.hidden)
                         .task {
                             // TODO: find a proper place
                             let (firstDay, lastDay) = getFirstAndLastDayOfMonth(for: Date()) ?? (Date(), Date())
-                            store.send(.setFilter(.dates(date1: firstDay, date2: lastDay)))
+                            store.send(.workoutsList(.setFilter(.dates(date1: firstDay, date2: lastDay))))
                         }
                     }
                     // MARK: Day Select View Bindings
@@ -101,12 +181,98 @@ struct CalendarTabView: View {
                 }
                 .toolbarTitleDisplayMode(.inline)
             }
-        }
+        }, destination: { path in
+            // Destination view based on the store's current state
+            switch path.case {
+            case let .workout(editor):
+                WorkoutEditorView(store: editor)
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
+                        VStack(spacing: .defaultVerticalSpacing) {
+                            Divider()
+                            
+                            if editor.isWorkoutInProgress {
+                                // Button to show all exercises
+                                Button(action: {
+                                    editor.send(.showExerciseListButtonTapped, animation: .default)
+                                }, label: {
+                                    Text("Show All Exercises")
+                                        .frame(maxWidth: .infinity)
+                                })
+                                .buttonBorderShape(.capsule)
+                                .buttonStyle(.bordered)
+                                .foregroundStyle(.primary)
+                                .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
+                                .padding(.horizontal, .defaultHorizontalSpacing)
+                                
+                                HStack {
+                                    // Cancel button
+                                    Button(role: .destructive, action: {
+                                        editor.send(.cancelButtonTapped, animation: .default)
+                                    }, label: {
+                                        Text("Cancel")
+                                            .padding(.horizontal)
+                                    })
+                                    .foregroundStyle(Color.red)
+                                    
+                                    // Finish button if exercises are added
+                                    Button(action: {
+                                        editor.send(.finishButtonTapped, animation: .default)
+                                    }, label: {
+                                        Text("Save Changes")
+                                            .frame(maxWidth: .infinity)
+                                    })
+                                    .buttonBorderShape(.capsule)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.primary)
+                                    .foregroundStyle(.background)
+                                }
+                                .padding(.horizontal, .defaultHorizontalSpacing)
+                            } else {
+                                // Button to start or resume workout
+                                Button {
+                                    // Send a delegate action to edit the workout
+                                    editor.send(.startWorkoutButtonTapped, animation: .default)
+                                } label: {
+                                    Label("Edit Workout", systemImage: "pencil.and.list.clipboard")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonBorderShape(.capsule)
+                                .buttonStyle(.bordered)
+                                .foregroundStyle(.primary)
+                                .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
+                                .padding(.horizontal, .defaultHorizontalSpacing)
+                            }
+                        }
+                        .transition(.identity)
+                        .background(.ultraThinMaterial)
+                        .foregroundStyle(.primary)
+                        .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
+                    }
+                    .navigationTitle("\(editor.workout.name.isEmpty ? "Unnamed Workout" : editor.workout.name)")
+            case let .exerciseLists(store):
+                // ExerciseTemplatesListView when the store's case is .exerciseLists
+                ExerciseTemplatesListView(store: store)
+            case let .exerciseDetails(store):
+                // ExerciseDetailView when the store's case is .exerciseDetails
+                ExerciseTemplateDetailView(store: store)
+            }
+        })
     }
 }
 
 #Preview {
+    @State var appscreen = AppScreen.logs
+    @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+        TabBarFeature()
+    })
     let container = SwiftDataModelConfigurationProvider.shared.container
-    return CalendarTabView()
+    
+    return NavigationStack {
+        ZStack(alignment: .bottom) {
+            CalendarTabView(store: store.scope(state: \.calendar, action: \.calendar))
+                .previewBorder()
+            CustomTabBar(store: store)
+        }
         .modelContainer(container)
+    }
 }

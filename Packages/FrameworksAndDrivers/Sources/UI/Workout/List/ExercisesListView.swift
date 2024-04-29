@@ -64,6 +64,8 @@ public struct ExercisesList {
         case deleteButtonTapped(id: ObjectIdentifier)
         
         case destination(PresentationAction<Destination.Action>)
+        
+        case move(IndexSet, Int)
     }
     
     /// The body of the reducer.
@@ -95,6 +97,13 @@ public struct ExercisesList {
                 }
                 
             case .destination:
+                return .none
+                
+            case let .move(source, destination):
+                if let workout = state.exercises.first?.exercise.workout {
+                    workout.moveExercise(fromOffsets: source, toOffset: destination)
+                }
+                state.exercises.move(fromOffsets: source, toOffset: destination)
                 return .none
             }
         }
@@ -131,7 +140,9 @@ struct ExercisesListView: View {
              }*/
         }
         .onDelete(perform: delete)
+        .onMove(perform: move)
         .deleteDisabled(isEditable.not())
+        .moveDisabled(isEditable.not())
     }
     
     /**
@@ -143,6 +154,10 @@ struct ExercisesListView: View {
             let exercise = store.exercises[index]
             store.send(.exercises(.element(id: exercise.id, action: .delegate(.delete))))
         }
+    }
+    
+    func move(from source: IndexSet, to destination: Int) {
+        store.send(.move(source, destination))
     }
 }
 

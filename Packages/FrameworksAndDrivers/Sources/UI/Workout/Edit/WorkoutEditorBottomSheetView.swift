@@ -17,6 +17,8 @@ import ComposableArchitecture
 struct WorkoutEditorBottomSheetView: View {
     
     // MARK: - Environment
+    // Keyboard state environment variable
+    @Environment(\.keyboardShowing) private var keyboardShowing
     
     // MARK: - State Variables
     
@@ -42,6 +44,70 @@ struct WorkoutEditorBottomSheetView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .opacity(selectedDetent.isCollapsed ? 0 : 1)
                 .scrollIndicators(.hidden)
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    // Bottom safe area content
+                    
+                    VStack(spacing: .defaultVerticalSpacing) {
+                        Divider()
+                        
+                        if store.isWorkoutInProgress {
+                            // Buttons for in-progress workout
+                            
+                            // Button to show all exercises
+                            Button(action: {
+                                store.send(.showExerciseListButtonTapped, animation: .default)
+                            }, label: {
+                                Text("Show All Exercises")
+                                    .frame(maxWidth: .infinity)
+                            })
+                            .buttonBorderShape(.capsule)
+                            .buttonStyle(.bordered)
+                            .foregroundStyle(.primary)
+                            .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
+                            .padding(.horizontal, .defaultHorizontalSpacing)
+                            
+                            HStack {
+                                // Cancel button
+                                Button(role: .destructive, action: {
+                                    store.send(.cancelButtonTapped, animation: .default)
+                                }, label: {
+                                    Text("Cancel")
+                                        .padding(.horizontal)
+                                })
+                                .foregroundStyle(Color.red)
+                                
+                                // Finish button if exercises are added
+                                if store.workout.exercises.isNotEmpty {
+                                    Button(action: {
+                                        store.send(.finishButtonTapped, animation: .default)
+                                    }, label: {
+                                        // Label for finish button
+                                        Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
+                                            .frame(maxWidth: .infinity)
+                                    })
+                                    .buttonBorderShape(.capsule)
+                                    .buttonStyle(.borderedProminent)
+                                    .tint(.primary)
+                                    .foregroundStyle(.background)
+                                }
+                            }
+                            .padding(.horizontal, .defaultHorizontalSpacing)
+                        } else {
+                            
+                            // Button to start or resume workout
+                            Button(action: {
+                                store.send(.startWorkoutButtonTapped, animation: .default)
+                            }, label: {
+                                Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
+                            })
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .transition(.identity)
+                    .background(.ultraThinMaterial)
+                    .foregroundStyle(.primary)
+                    .opacity(selectedDetent.isCollapsed || keyboardShowing ? 0 : 1) // Hide when keyboard is showing
+                }
                 .toolbar {
                     // Top bar leading items
                     ToolbarItemGroup(placement: .topBarLeading) {
@@ -87,12 +153,3 @@ struct WorkoutEditorBottomSheetView: View {
         }
     }
 }
-
-
-//#Preview {
-//    @State var selectedDetent: PresentationDetent = .ExpandedSheetDetent
-//    @State var viewModel = WorkoutEditorViewModel(recordWorkoutUseCase: RecordWorkoutUseCase(workoutRepository: MockWorkoutRepository()))
-//
-//    return WorkoutEditorBottomSheetView(viewModel: viewModel, selectedDetent: $selectedDetent)
-//        .withPreviewEnvironment()
-//}

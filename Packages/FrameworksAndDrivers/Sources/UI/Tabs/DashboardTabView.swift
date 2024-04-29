@@ -16,22 +16,20 @@ import ComposableArchitecture
 @Reducer
 public struct DashboardTab {
     public struct State: Equatable {
-        var workoutsList = WorkoutsListFeature.State(filter: .today(limit: 1))
+        var workoutsList = WorkoutsList.State(filter: .today(limit: 1))
     }
     
     public enum Action {
-        case workoutsList(WorkoutsListFeature.Action)
+        case workoutsList(WorkoutsList.Action)
     }
     
     public var body: some ReducerOf<Self> {
         Scope(state: \.workoutsList, action: \.workoutsList) {
-            WorkoutsListFeature()
+            WorkoutsList()
         }
         
         Reduce<State, Action> { state, action in
             switch action {
-//            case let .workoutsList(.delegate(.editWorkout(_))):
-//                return .none
             case .workoutsList:
                 return .none
             }

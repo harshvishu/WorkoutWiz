@@ -200,6 +200,8 @@ public struct ExerciseTemplatesList {
             
             // Delegate action to pop to the root component
             case popToRoot
+            
+            case showTemplateDetails(template: ExerciseTemplate)
         }
     }
     
@@ -476,12 +478,7 @@ struct ExerciseTemplatesListView: View {
             // Check if the current ExerciseTemplate is selected
             let isSelected = store.selectedTemplates.contains(template)
             
-            // Create a NavigationLink to the detailed view of the ExerciseTemplate
-            NavigationLink(
-                state: WorkoutEditor.Path.State.exerciseDetails(
-                    ExerciseTemplateDetails.State(exercise: template)
-                )
-            ) {
+            HStack {
                 // Display the ExerciseTemplateRowView with appropriate parameters
                 ExerciseTemplateRowView(
                     exercise: template,
@@ -497,6 +494,15 @@ struct ExerciseTemplatesListView: View {
                         store.send(.selectTemplate(template), animation: .default)
                     }
                 }
+                
+                Button {
+                    // push NavigationLink to the detailed view of the ExerciseTemplate
+                    store.send(.delegate(.showTemplateDetails(template: template)))
+                } label: {
+                    Image(systemName: "chevron.forward")
+                }
+                .foregroundStyle(.secondary)
+
             }
             // Customize list row appearance
             .listRowSeparator(.hidden, edges: .top) // Hide top separator

@@ -23,7 +23,7 @@ enum Filter: Equatable {
 }
 
 @Reducer
-public struct WorkoutsListFeature {
+public struct WorkoutsList {
     /**
      An inner reducer enum `Destination` for manging alerts and presentations.
      */
@@ -171,7 +171,7 @@ public struct WorkoutsListFeature {
         case delegate(Delegate)
         @CasePathable
         public enum Delegate {
-            case editWorkout(Workout)
+            case openWorkout(Workout)
             case workoutListInvalidated
             case startNewWorkout
             case showCalendarScreen
@@ -252,10 +252,7 @@ public struct WorkoutsListFeature {
                     state.canFetchMore = true
                     state.fetchOffset = 0
                     return .send(.fetchWorkouts, animation: .default)
-                case .editWorkout(_):
-                    // TODO: update that particular workout
-                    return .none
-                case  .startNewWorkout, .showCalendarScreen:
+                case  .startNewWorkout, .showCalendarScreen, .openWorkout:
                     return .none
                 }
             }
@@ -280,8 +277,8 @@ public struct WorkoutsListFeature {
 struct WorkoutsListView: View {
     /// Environment variable to check if the view is presented.
     @Environment(\.isPresented) var isPresented
-    /// The store of `WorkoutsListFeature`.
-    @Bindable var store: StoreOf<WorkoutsListFeature>
+    /// The store of `WorkoutsList`.
+    @Bindable var store: StoreOf<WorkoutsList>
     
     var body: some View {
         // Scroll to view
@@ -362,7 +359,7 @@ struct WorkoutsListView: View {
                 .confirmationDialog($store.scope(state: \.destination?.confirmationDialog, action: \.destination.confirmationDialog))
                 .onTapGesture {
                     // Send a delegate action to edit the workout
-                    store.send(.delegate(.editWorkout(workout)), animation: .default)
+                    store.send(.delegate(.openWorkout(workout)), animation: .default)
                 }
                 .swipeActions(edge: .trailing) {
                     Button {
@@ -385,11 +382,11 @@ struct WorkoutsListView: View {
     }
 }
 
-extension AlertState where Action == WorkoutsListFeature.Destination.Alert {
+extension AlertState where Action == WorkoutsList.Destination.Alert {
     
 }
 
-extension ConfirmationDialogState where Action == WorkoutsListFeature.Destination.ConfirmationDialog {
+extension ConfirmationDialogState where Action == WorkoutsList.Destination.ConfirmationDialog {
     static func deleteWorkout(workout: Workout) -> Self {
         Self {
             TextState("Delete \(workout.name)?")
@@ -409,10 +406,10 @@ extension ConfirmationDialogState where Action == WorkoutsListFeature.Destinatio
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
     return WorkoutsListView(
-        store: StoreOf<WorkoutsListFeature>(
-            initialState: WorkoutsListFeature.State(),
+        store: StoreOf<WorkoutsList>(
+            initialState: WorkoutsList.State(),
             reducer: {
-                WorkoutsListFeature()
+                WorkoutsList()
             }
         )
     )

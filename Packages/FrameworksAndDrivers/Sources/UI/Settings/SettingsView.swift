@@ -81,7 +81,6 @@ struct SettingsView: View {
                         .keyboardType(.numbersAndPunctuation)
                     }
                 }
-                .hideNativeTabBar()
             }
             .navigationBarTitle("Settings")
         }
