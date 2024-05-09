@@ -28,6 +28,7 @@ public struct CalendarTab {
     public struct State: Equatable {
         var workoutsList = WorkoutsList.State(filter: .none, grouping: true)
         var path = StackState<Path.State>()
+        var isWorkoutInProgress = false
     }
     
     public enum Action {
@@ -40,7 +41,8 @@ public struct CalendarTab {
         case delegate(Delegate)
         
         public enum Delegate {
-            case showTabBar(Bool)
+//            case showTabBar(Bool)
+            case workoutInProgress(Bool)
             case openWorkout(Workout)
         }
     }
@@ -52,12 +54,41 @@ public struct CalendarTab {
         
         Reduce<State, Action> { state, action in
             switch action {
+            case .delegate(.workoutInProgress(let value)):
+                state.isWorkoutInProgress = value
+                return .none
+                
             case .delegate:
                 return .none
                 
+                // MARK: - Handling Actions of exerciseLists
+                /// Show exercise details
             case let .path(.element(id: _, action: .exerciseLists(.delegate(.showTemplateDetails(template: template))))):
                 state.path.append(.exerciseDetails(.init(exercise: template)))
                 return .none
+                
+                /// Handles the action where the user requests to show details of a workout template.
+                /// - Parameters:
+                ///    - id: The ID of the workout.
+                ///    - exerciseID: The ID of the exercise within the workout.
+            case let .path(.element(id: id, action: .workout(.exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showTemplateDetails))))))):
+                guard let template = state.path[id: id, case: \.workout]?.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
+                state.path.append(.exerciseDetails(.init(exercise: template)))
+                return .none
+                
+                /// Added selected exercises to the current editing Workout   `state.path[id: id, case: \.workout]`
+            case let .path(.element(id: _, action: .exerciseLists(.delegate(.didSelectExerciseTemplates(templates))))):
+                /// Iterate over all ids and modify the first instance of \.workout
+                for (id, element) in zip(state.path.ids, state.path) {
+                    if element.is(\.workout) {
+                        /// This will trigger existing action ``WorkoutEditor.Action.addSelectedTemplates` in active instance
+                        return .send(.path(.element(id: id, action: .workout(.addSelectedTemplates(templates: templates)))))
+                    }
+                }
+                return .none
+                /// A call to `popToRoot` exists in ``ExerciseTemplatesList``
+            case let .path(.element(id: id, action: .exerciseLists(.delegate(.popToRoot)))):
+                return .send(.path(.popFrom(id: id)), animation: .default)
             case .path:
                 return .none
                 
@@ -79,10 +110,10 @@ public struct CalendarTab {
                 // MARK: Show/Hide Tabbar & Change BottomSheet size when we have items in navigation stack
                 if state.path.isEmpty {
                     /// Show Bottom TabBar when navigation path is empty
-                    return .send(.delegate(.showTabBar(true)))
+                    return .send(.delegate(.workoutInProgress(false)))
                 } else {
                     /// Hide Bottom TabBar when navigation path is not empty
-                    return .send(.delegate(.showTabBar(false)))
+                    return .send(.delegate(.workoutInProgress(true)))
                 }
             }
         }
@@ -193,7 +224,7 @@ struct CalendarTabView: View {
                             if editor.isWorkoutInProgress {
                                 // Button to show all exercises
                                 Button(action: {
-                                    editor.send(.showExerciseListButtonTapped, animation: .default)
+                                    store.send(.showExerciseListButtonTapped, animation: .default)
                                 }, label: {
                                     Text("Show All Exercises")
                                         .frame(maxWidth: .infinity)

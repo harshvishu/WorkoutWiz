@@ -82,11 +82,10 @@ public struct TabBarFeature {
         
         Reduce<State,Action> { state, action in
             switch action {
-//            case let .calendar(.workoutsList(.delegate(.openWorkout(workout)))):
-//                state.calendar.path.append(.workout(.init(isWorkoutSaved: true, isWorkoutInProgress: false, workout: workout)))
-//                return .none
-            case let .calendar(.delegate(.showTabBar(visibility))):
-                return .send(.toggleTabBar(visibility), animation: .customSpring()) // Show/Hide our custom TabBar when NavigationStack in CalendarTabView is chagned
+            case let .calendar(.delegate(.workoutInProgress(value))):
+                let visibility = !value
+                return .send(.toggleTabBar(visibility), animation: .customSpring()) // Show/Hide our custom TabBar when NavigationStack in CalendarTabView is changed
+                
             case .calendar:
                 return .none
                 
@@ -168,20 +167,26 @@ public struct TabBarFeature {
                 return .send(.showTabBottomSheet(show), animation: .default)
             }
         }
+        .onChange(of: \.calendar.isWorkoutInProgress) { _, isWorkoutInProgress in
+            Reduce { state, _ in
+                let hideTabBar = state.tabBottomSheetDetent != .InitialSheetDetent || state.isKeyboardVisible || isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
+            }
+        }
         .onChange(of: \.tabBottomSheetDetent) { _, detent in
             Reduce { state, _ in
                 if detent == .InitialSheetDetent && state.currentTab == .dashboard && state.workoutEditor.isWorkoutInProgress.not() {
                     state.resetWorkoutEditorState()
                 }
                 
-                let showTabBar = detent == .InitialSheetDetent && state.isKeyboardVisible.not() // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
-                return .send(.toggleTabBar(showTabBar), animation: .customSpring())
+                let hideTabBar = detent != .InitialSheetDetent || state.isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
             }
         }
         .onChange(of: \.isKeyboardVisible, { _, isKeyboardVisible in
             Reduce { state, _ in
-                let showTabBar = state.tabBottomSheetDetent == .InitialSheetDetent && isKeyboardVisible.not() // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
-                return .send(.toggleTabBar(showTabBar), animation: .customSpring())
+                let hideTabBar = state.tabBottomSheetDetent != .InitialSheetDetent || isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
             }
         })
         .onChange(of: \.workoutEditor.workout) { _, workout in
