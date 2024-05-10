@@ -404,7 +404,9 @@ struct ExerciseTemplatesListView: View {
                 Divider()
                 
                 HStack {
-                    // Search bar
+                    
+                    // Explore different versions of exercises to find what suits you.
+                    // Try searching by exercise type, muscle group, or equipment name to narrow down your options.
                     SearchBar(searchText: $store.searchQuery.sending(\.searchQueryChanged), prompt: "Search") {
                         hideKeyboard()
                     }
@@ -412,8 +414,8 @@ struct ExerciseTemplatesListView: View {
                     
                     Spacer()
                     
-                    // Toggle selected vs all
                     // TODO: - Navigate to create new template (Backlog)
+                    
                     // MARK: - Toggle selected vs all
                     Button(action: {
                         store.send(.toggleShowOnlySelected(!store.showOnlySelected), animation: .default)
@@ -421,10 +423,34 @@ struct ExerciseTemplatesListView: View {
                         Label("Selected", systemImage: store.showOnlySelected ? "checklist.checked" : "checklist.unchecked")
                     })
                     
-                    // Filter menu
                     // MARK: - Filter Menu
-                    Button {
-                        // Filter menu action
+                    Menu {
+                        Menu {
+                            ForEach(ExerciseMuscles.allCases, id: \.self) { muscle in
+                                Button {
+                                    store.send(.toggleMuscleFilter(forMuscle: muscle), animation: .default)
+                                } label: {
+                                    Text(muscle.rawValue)
+                                        .selectableRow(isSelected: store.filterMuscles.contains(muscle), edge: .leading, alignment: .center)
+                                }
+                            }
+                        } label: {
+                            Label("Muscle", systemImage: "figure")
+                        }
+                        
+                        Menu {
+                            ForEach(ExerciseEquipment.allCases, id: \.self) { equipment in
+                                Button {
+                                    store.send(.toggleEquipmentFilter(forEquipment: equipment), animation: .default)
+                                } label: {
+                                    Text(equipment.rawValue)
+                                        .selectableRow(isSelected: store.filterEquipments.contains(equipment), edge: .leading, alignment: .center)
+                                }
+                            }
+                        } label: {
+                            Label("Equipment", systemImage: "figure.indoor.cycle")
+                        }
+                        
                     } label: {
                         Label("Filter", systemImage: "line.3.horizontal.decrease.circle.fill")
                     }

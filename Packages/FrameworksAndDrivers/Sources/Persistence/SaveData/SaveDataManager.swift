@@ -26,7 +26,6 @@ public final class SaveDataManager {
     public func load<T: Codable>(forKey key: String) -> T? {
         userDefaults.retrieveCodable(forKey: key)
     }
-    
 }
 
 public extension DependencyValues {
@@ -39,4 +38,10 @@ public extension DependencyValues {
 extension SaveDataManager: DependencyKey {
     public static var liveValue: SaveDataManager = .init(userDefaults: sharedDefaults)
     public static var previewValue: SaveDataManager = .init(userDefaults: .standard)
+}
+
+public extension SaveDataManager {
+    struct Keys {
+        
+    }
 }
