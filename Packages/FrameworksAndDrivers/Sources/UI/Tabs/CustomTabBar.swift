@@ -19,6 +19,17 @@ public struct CustomTabBar: View, KeyboardReadable {
     }
     
     public var body: some View {
+//        TabView {
+//            ForEach(store.state.availableTabs) { tab in
+//                Color.clear
+//                    .frame(height: 1)
+//                    .tabItem {
+//                        tab.label
+//                    }
+//            }
+//           
+//        }
+        
         VStack(spacing: 0) {
             HStack(spacing: 0) {
                 ForEach(store.state.availableTabs) { tab in
@@ -53,6 +64,8 @@ public struct CustomTabBar: View, KeyboardReadable {
         .onChange(of: isKeyboardShowing) { _, visibility in
             store.send(.toggleKeyboardVisiblity(visibility))
         }
+        .tag(4)
+         
     }
 }
 

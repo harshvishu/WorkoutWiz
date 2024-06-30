@@ -18,8 +18,8 @@ public class SwiftDataModelConfigurationProvider {
         return provider
     }()
     
-    private var isStoredInMemoryOnly: Bool
-    private var autosaveEnabled: Bool
+    private(set) public var isStoredInMemoryOnly: Bool
+    private(set) public var autosaveEnabled: Bool
     
     private init(isStoredInMemoryOnly: Bool, autosaveEnabled: Bool) {
         self.isStoredInMemoryOnly = isStoredInMemoryOnly

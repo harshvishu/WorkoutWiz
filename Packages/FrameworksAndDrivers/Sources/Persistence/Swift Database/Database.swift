@@ -19,13 +19,15 @@ extension DependencyValues {
 }
 
 struct Database {
-    var context: () throws -> ModelContext
+    var context: () -> ModelContext
+    var undoManager: () -> UndoManager?
 }
 
 extension Database: DependencyKey {
     @MainActor
     public static let liveValue = Self(
-        context: { appContext }
+        context: { appContext },
+        undoManager: {appContext.undoManager}
     )
 }
 
@@ -33,6 +35,8 @@ extension Database: DependencyKey {
 let appContext: ModelContext = {
     let container = SwiftDataModelConfigurationProvider.shared.container
     let context = ModelContext(container)
+    context.undoManager = UndoManager()
+    context.autosaveEnabled = SwiftDataModelConfigurationProvider.shared.autosaveEnabled
     return context
 }()
 

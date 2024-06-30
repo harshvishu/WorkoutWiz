@@ -10,6 +10,8 @@ import SwiftUI
 
 public struct WheelPicker: View {
     
+    private enum CancelID { case load }
+    
     public init(config: Config, value: Binding<Double>) {
         self.config = config
         self._value = value
@@ -55,11 +57,13 @@ public struct WheelPicker: View {
             .scrollIndicators(.hidden)
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: .init(get: {
-                let position: Int? = isLoaded ? (Int(value) * config.steps) / config.multiplier : nil
+                let position: Int? = isLoaded ? Int(value * CGFloat(config.steps)) / config.multiplier : nil
                 return position
             }, set: { newValue in
                 if let newValue {
-                    value = (CGFloat(newValue) / CGFloat(config.steps)) * CGFloat(config.multiplier)
+                    withAnimation {
+                        value = (CGFloat(newValue) / CGFloat(config.steps)) * CGFloat(config.multiplier)
+                    }
                 }
             }))
             .overlay(alignment: .center) {
@@ -68,10 +72,17 @@ public struct WheelPicker: View {
                     .padding(.bottom, 20)
             }
             .safeAreaPadding(.horizontal, horizontalPadding)
-            .onAppear {
-                if !isLoaded {
-                    isLoaded = true
-                }
+            .task(id: CancelID.load) {
+                await setLoadWithDelay()
+            }
+        }
+    }
+    
+    private func setLoadWithDelay() async {
+        try? await Task.sleep(nanoseconds: 100_000_000)
+        if !isLoaded {
+            withAnimation {
+                isLoaded = true
             }
         }
     }

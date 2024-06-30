@@ -21,15 +21,19 @@ public extension DependencyValues {
 public struct WorkoutDatabase {
     public var fetchAll: @Sendable () throws -> [Workout]
     public var fetch: @Sendable (FetchDescriptor<Workout>) throws -> [Workout]
+    public var model: @Sendable (PersistentIdentifier) throws -> Workout?
     public var fetchCount: @Sendable (FetchDescriptor<Workout>) throws -> Int
     public var add: @Sendable (Workout) throws -> Void
     public var delete: @Sendable (Workout) throws -> Void
     public var save: @Sendable () throws -> Void
+    public var undo: @Sendable () throws -> Void
+    public var undoManager: @Sendable () -> UndoManager?
     
     enum WorkoutError: Error {
         case add
         case delete
         case save
+        case undo
     }
 }
 
@@ -38,7 +42,7 @@ extension WorkoutDatabase: DependencyKey {
         fetchAll: {
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
                 
                 let descriptor = FetchDescriptor<Workout>(sortBy: [SortDescriptor(\Workout.startDate, order: .reverse)])
                 return try databaseContext.fetch(descriptor)
@@ -49,17 +53,22 @@ extension WorkoutDatabase: DependencyKey {
         }, fetch: { descriptor in
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
 
                 return try databaseContext.fetch(descriptor)
             } catch {
                 print(error)
                 return []
             }
+        }, model: { id in
+            @Dependency(\.databaseService) var databaseService
+            let databaseContext = databaseService.context()
+            
+            return databaseContext.registeredModel(for: id)
         }, fetchCount: { descriptor in
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
 
                 return try databaseContext.fetchCount(descriptor)
             } catch {
@@ -69,7 +78,7 @@ extension WorkoutDatabase: DependencyKey {
         }, add: { model in
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
                 
                 databaseContext.insert(model)
                 
@@ -79,21 +88,29 @@ extension WorkoutDatabase: DependencyKey {
         }, delete: { model in
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
                 
                 databaseContext.delete(model)
             } catch {
                 throw WorkoutError.delete
             }
-        }) {
+        }, save: {
             @Dependency(\.databaseService) var databaseService
-            let databaseContext = try databaseService.context()
+            let databaseContext = databaseService.context()
             do { 
                 try databaseContext.save()
             } catch {
                 throw WorkoutError.save
             }
-        }
+        }, undo: {
+            @Dependency(\.databaseService) var databaseService
+            guard let undoManager = databaseService.undoManager() else {return}
+            guard undoManager.canUndo else {throw WorkoutError.undo}
+            undoManager.undo()
+        }, undoManager: {
+            @Dependency(\.databaseService) var databaseService
+            return databaseService.undoManager()
+        })
 }
 
 extension WorkoutDatabase: TestDependencyKey {
@@ -101,6 +118,8 @@ extension WorkoutDatabase: TestDependencyKey {
         [.mock]
     } fetch: { _ in
         [.mock]
+    } model: { _ in
+        nil
     } fetchCount: { _ in
         1
     } add: { _ in
@@ -109,6 +128,10 @@ extension WorkoutDatabase: TestDependencyKey {
         
     } save: {
         
+    } undo: {
+        
+    } undoManager: {
+        return nil
     }
 }
 

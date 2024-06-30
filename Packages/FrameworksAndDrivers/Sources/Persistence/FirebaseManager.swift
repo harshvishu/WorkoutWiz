@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import FirebaseCore
+// import FirebaseCore
 
 public class FirebaseManager {
     public static func configure() {
-        FirebaseApp.configure()
+        // FirebaseApp.configure()
     }
 }

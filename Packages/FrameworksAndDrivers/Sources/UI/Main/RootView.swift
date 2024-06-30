@@ -20,20 +20,27 @@ public struct RootView: View {
     @Bindable var popupStore: StoreOf<PopupPresenter>
     
     public var body: some View {
-        TabBarView(store: tabBarStore)
-            .task {
-                initializeCustomTabBar()
-                initializePopupContainer()
-            }
+        ZStack(alignment: .bottom) {
+            TabBarView(store: tabBarStore)
+                .frame(maxHeight: .infinity)
+            CustomTabBar(store: tabBarStore)
+                .frame(alignment: .bottom)
+        }
+        .task {
+            initializePopupContainer()
+        }
     }
 }
 
 extension RootView {
+    @available(*, deprecated, message: "Not using `initializeCustomTabBar()` since it is not working on ios18.")
     fileprivate func initializeCustomTabBar() {
         guard sceneDelegate.tabWindow == nil else {return}
         sceneDelegate.addTabBar(store: tabBarStore)
     }
     
+    /// - Warning: Window does not respond to touch events unless it as alert level. So, only default sheets, alerts are working. Needs potential replacement like `initializeCustomTabBar()`
+    @available(*, message: "Window does not respond to touch events unless it as alert level. So, only default sheets, alerts are working")
     fileprivate func initializePopupContainer() {
         guard sceneDelegate.popWindow == nil else {return}
         sceneDelegate.addPopupContainerView(store: popupStore)

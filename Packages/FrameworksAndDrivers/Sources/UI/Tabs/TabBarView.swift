@@ -24,7 +24,7 @@ public struct TabBarFeature {
     public struct State: Equatable {
         var availableTabs = AppScreen.availableTabs
         var currentTab = AppScreen.dashboard
-        var tabBottomSheetDetent = PresentationDetent.InitialSheetDetent
+        var tabBottomSheetDetent = BottomSheetPresentationState.collapsed  // TODO: Rename
         var showTabBottomSheet = false
         var isBottomSheetResizable = true
         var isKeyboardVisible = false
@@ -53,7 +53,7 @@ public struct TabBarFeature {
         case settings(Settings.Action)
         
         case selectTab(AppScreen)
-        case setBottomSheetPresentationDetent(PresentationDetent)
+        case setBottomSheetPresentationDetent(BottomSheetPresentationState)
         
         case toggleKeyboardVisiblity(Bool)
         case toggleBottomSheetResizable(Bool)
@@ -97,9 +97,9 @@ public struct TabBarFeature {
                     if !(state.workoutEditor.isWorkoutInProgress && state.workoutEditor.workout.id == workout.id) {
                         state.workoutEditor = WorkoutEditor.State(isWorkoutSaved: true, isWorkoutInProgress: false, workout: workout)
                     }
-                    return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)  // expand the bottom sheet
+                    return .send(.setBottomSheetPresentationDetent(.expanded), animation: .default)  // expand the bottom sheet
                 case .startNewWorkout:
-                    return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)
+                    return .send(.setBottomSheetPresentationDetent(.expanded), animation: .default)
                 case .showCalendarScreen:
                     state.currentTab = .logs
                     return .none
@@ -122,7 +122,7 @@ public struct TabBarFeature {
                 // MARK: - Handle TabBar Actions
             case let .selectTab(tab):
                 state.currentTab = tab
-                return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .customSpring())
+                return .send(.setBottomSheetPresentationDetent(.collapsed), animation: .customSpring())
           
             case let .setBottomSheetPresentationDetent(detent):
                 state.tabBottomSheetDetent = detent
@@ -149,9 +149,9 @@ public struct TabBarFeature {
                     if state.workoutEditor.isWorkoutInProgress.not() {
                         state.resetWorkoutEditorState()
                     }
-                    return .send(.setBottomSheetPresentationDetent(.InitialSheetDetent), animation: .default)
+                    return .send(.setBottomSheetPresentationDetent(.collapsed), animation: .default)
                 case .expand:
-                    return .send(.setBottomSheetPresentationDetent(.ExpandedSheetDetent), animation: .default)
+                        return .send(.setBottomSheetPresentationDetent(.expanded), animation: .default)
                 case .workoutSaved, .workoutDeleted:
                     return .send(.dashboard(.workoutsList(.delegate(.workoutListInvalidated))))
                 case .isBottomSheetResizable(let resizable):
@@ -169,23 +169,23 @@ public struct TabBarFeature {
         }
         .onChange(of: \.calendar.isWorkoutInProgress) { _, isWorkoutInProgress in
             Reduce { state, _ in
-                let hideTabBar = state.tabBottomSheetDetent != .InitialSheetDetent || state.isKeyboardVisible || isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                let hideTabBar = state.tabBottomSheetDetent != .collapsed || state.isKeyboardVisible || isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
                 return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
             }
         }
         .onChange(of: \.tabBottomSheetDetent) { _, detent in
             Reduce { state, _ in
-                if detent == .InitialSheetDetent && state.currentTab == .dashboard && state.workoutEditor.isWorkoutInProgress.not() {
+                if detent == .collapsed && state.currentTab == .dashboard && state.workoutEditor.isWorkoutInProgress.not() {
                     state.resetWorkoutEditorState()
                 }
                 
-                let hideTabBar = detent != .InitialSheetDetent || state.isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                let hideTabBar = detent != .collapsed || state.isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
                 return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
             }
         }
         .onChange(of: \.isKeyboardVisible, { _, isKeyboardVisible in
             Reduce { state, _ in
-                let hideTabBar = state.tabBottomSheetDetent != .InitialSheetDetent || isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
+                let hideTabBar = state.tabBottomSheetDetent != .collapsed || isKeyboardVisible || state.calendar.isWorkoutInProgress // Hide TabBar when BottomSheet is fully presented && Keyboard is not visible
                 return .send(.toggleTabBar(!hideTabBar), animation: .customSpring())
             }
         })
@@ -250,14 +250,14 @@ public struct TabBarView: View {
             sheetCornerRadius: .sheetCornerRadius,
             showSheet: $store.showTabBottomSheet.sending(\.showTabBottomSheet),
             resizable: $store.isBottomSheetResizable.sending(\.toggleBottomSheetResizable),
-            detents: Self.AvailableSheetDetents,
-            selectedDetent: $store.tabBottomSheetDetent.sending(\.setBottomSheetPresentationDetent),
+            states: .constant(Self.AvailableSheetDetents),
+            presentationState: $store.tabBottomSheetDetent.sending(\.setBottomSheetPresentationDetent),
             bottomPadding: store.showTabBar ? .bottomTabSheetCollapsedHeight : .zero,
             content: tabSheetContent
         )
     }
     
-    static var AvailableSheetDetents: Set<PresentationDetent> = [.InitialSheetDetent, .ExpandedSheetDetent]
+    static var AvailableSheetDetents: Set<BottomSheetPresentationState> = [.collapsed, .expanded]
 }
 
 fileprivate extension TabBarView {

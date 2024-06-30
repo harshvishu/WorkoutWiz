@@ -48,17 +48,24 @@ public extension View {
 #endif
     }
     
-    func debugBorder(_ color: Color = .red, width: CGFloat = 1) -> some View {
+    func debugBorder(_ color: Color = .red.opacity(0.2), width: CGFloat = 1) -> some View {
         debugModifier {
             $0.border(color, width: width)
         }
     }
     
-    func debugBackground(_ color: Color = .red) -> some View {
+    func debugBackground(_ color: Color = .red.opacity(0.2)) -> some View {
         debugModifier {
             $0.background(color)
         }
     }
+    
+    func debugOverlay(_ color: Color = .red) -> some View {
+        debugModifier {
+            $0.overlay(Rectangle().fill(color).opacity(0.2))
+        }
+    }
+    
         
     @ViewBuilder
     func previewModifier<T: View>(_ modifier: (Self) -> T) -> some View {
@@ -77,7 +84,14 @@ public extension View {
     
     func previewBackground(_ color: Color = .red) -> some View {
         previewModifier {
-            $0.background(color)
+            $0.background(color.opacity(0.2))
+        }
+    }
+    
+    
+    func previewOverlay(_ color: Color = .red) -> some View {
+        previewModifier {
+            $0.overlay(Rectangle().fill(color).opacity(0.2))
         }
     }
     
@@ -154,9 +168,9 @@ public extension View {
 }
 
 public extension View {
-    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, resizable: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
+    @ViewBuilder func tabSheet<SheetContent: View>(initialHeight: CGFloat = 100.0, sheetCornerRadius: CGFloat = 15.0, showSheet: Binding<Bool>, resizable: Binding<Bool>, states: Binding<Set<BottomSheetPresentationState>>, presentationState: Binding<BottomSheetPresentationState>, bottomPadding: CGFloat, @ViewBuilder content: @escaping () -> SheetContent) -> some View {
         self
-            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, resizable: resizable, detents: detents, selectedDetent: selectedDetent, bottomPadding: bottomPadding, sheetView: content))
+            .modifier(BottomSheetModifier(initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, showSheet: showSheet, resizable: resizable, states: states, presentationState: presentationState, bottomPadding: bottomPadding, sheetView: content))
     }
 }
 
@@ -165,66 +179,73 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     
     @Binding private var showSheet: Bool
     @Binding private var resizable: Bool
-    @Binding private var selectedDetent: PresentationDetent
+    @Binding private var presentationState: BottomSheetPresentationState
+    @Binding private var states: Set<BottomSheetPresentationState>
     
-    private var detents: Set<PresentationDetent>
     private var initialHeight: CGFloat
     private var sheetCornerRadius: CGFloat
     private var sheetView: SheetContent
     private var bottomPadding: CGFloat
     
-    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, resizable: Binding<Bool>, detents: Set<PresentationDetent>, selectedDetent: Binding<PresentationDetent>, bottomPadding: CGFloat, sheetView: @escaping () -> SheetContent) {
+    init(initialHeight: CGFloat, sheetCornerRadius: CGFloat, showSheet: Binding<Bool>, resizable: Binding<Bool>, states: Binding<Set<BottomSheetPresentationState>>, presentationState: Binding<BottomSheetPresentationState>, bottomPadding: CGFloat, sheetView: @escaping () -> SheetContent) {
         self.initialHeight = initialHeight
         self.sheetCornerRadius = sheetCornerRadius
         self._showSheet = showSheet
         self._resizable = resizable
-        self.detents = detents
-        self._selectedDetent = selectedDetent
+        self._states = states
+        self._presentationState = presentationState
         self.sheetView = sheetView()
         self.bottomPadding = bottomPadding
     }
     
     func body(content: Content) -> some View {
-        content
-            .sheet(isPresented: $showSheet) {
-                sheetView
-                    .padding(.bottom, bottomPadding)
-                    .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
-                    .presentationCornerRadius(sheetCornerRadius)
-                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
-                    .presentationBackground(.background)
-                    .interactiveDismissDisabled()
+        if showSheet {
+            content.overlay {
+                BottomSheetView(isPresented: $showSheet, resizable: $resizable, presentationState: $presentationState, initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, bottomPadding: bottomPadding, states: $states, content: sheetView)
             }
+        } else {
+            content
+        }
+//        content
+//            .sheet(isPresented: $showSheet) {
+//                sheetView
+//                    .padding(.bottom, bottomPadding)
+//                    .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
+//                    .presentationCornerRadius(sheetCornerRadius)
+//                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
+//                    .presentationBackground(.background)
+//                    .interactiveDismissDisabled()
+//            }
     }
 }
 
-public extension PresentationDetent {
-    static let InitialSheetDetent: PresentationDetent = .height(110.0)
-    static let ExpandedSheetDetent: PresentationDetent = .fraction(0.99)
-}
+//public extension PresentationDetent {
+//    static let InitialSheetDetent: PresentationDetent = .height(110.0)
+//    static let ExpandedSheetDetent: PresentationDetent = .fraction(0.99)
+//}
 
-public enum PresentationDetentState {
-    case collapsed
-    case expanded
-}
+//public enum PresentationDetentState {
+//    case collapsed
+//    case expanded
+//}
 
-public extension PresentationDetent {
-    var state: PresentationDetentState {
-        isExpanded ? .expanded : .collapsed
-    }
-    
-    var isExpanded: Bool {
-        self == .ExpandedSheetDetent
-    }
-    
-    var isCollapsed: Bool {
-        !isExpanded
-    }
-    
-    mutating func toggle() {
-        self = isExpanded ? .InitialSheetDetent : .ExpandedSheetDetent
-    }
-}
+//public extension PresentationDetent {
+//    var state: PresentationDetentState {
+//        isExpanded ? .expanded : .collapsed
+//    }
+//    
+//    var isExpanded: Bool {
+//        self == .ExpandedSheetDetent
+//    }
+//    
+//    var isCollapsed: Bool {
+//        !isExpanded
+//    }
+//    
+//    mutating func toggle() {
+//        self = isExpanded ? .InitialSheetDetent : .ExpandedSheetDetent
+//    }
+//}
 
 /// Publisher to read keyboard changes.
 public protocol KeyboardReadable {

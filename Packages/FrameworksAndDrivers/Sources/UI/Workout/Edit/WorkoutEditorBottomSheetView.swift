@@ -25,12 +25,12 @@ struct WorkoutEditorBottomSheetView: View {
     // Bindable store for managing the workout editor state
     @Bindable var store: StoreOf<WorkoutEditor>
     // Binding variable for the selected presentation detent
-    @Binding var selectedDetent: PresentationDetent
+    @Binding var selectedDetent: BottomSheetPresentationState
     
     // MARK: - Initializer
     
     // Custom initializer to set the store and selectedDetent
-    init(store: StoreOf<WorkoutEditor>, selectedDetent: Binding<PresentationDetent>) {
+    init(store: StoreOf<WorkoutEditor>, selectedDetent: Binding<BottomSheetPresentationState>) {
         self.store = store
         self._selectedDetent = selectedDetent
     }
@@ -82,7 +82,7 @@ struct WorkoutEditorBottomSheetView: View {
                                         store.send(.finishButtonTapped, animation: .default)
                                     }, label: {
                                         // Label for finish button
-                                        Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
+                                        Text(store.isNewWorkout ? "Finish Workout" : "Done")
                                             .frame(maxWidth: .infinity)
                                     })
                                     .buttonBorderShape(.capsule)

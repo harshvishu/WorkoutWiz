@@ -23,7 +23,7 @@ struct WorkoutEditorSheetHeaderView: View {
     // Bindable store for managing the workout editor state
     @Bindable var store: StoreOf<WorkoutEditor>
     // Binding variable for the selected presentation detent
-    @Binding var selectedDetent: PresentationDetent
+    @Binding var selectedDetent: BottomSheetPresentationState
     
     // State variable to control the animation state
     @State private var isAnimating: Bool = false

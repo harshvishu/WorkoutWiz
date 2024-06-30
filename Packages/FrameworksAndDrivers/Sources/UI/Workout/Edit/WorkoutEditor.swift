@@ -9,6 +9,7 @@ import Domain
 import SwiftUI
 import ComposableArchitecture
 import OSLog
+import SwiftData
 
 /**
  A reducer struct `WorkoutEditor` that manages the state and actions related to the workout editor.
@@ -65,13 +66,21 @@ public struct WorkoutEditor {
         
         var path = StackState<Path.State>()
         var exercisesList: ExercisesList.State
+        var canUndo: Bool {
+            workout.modelContext?.undoManager?.canUndo ?? false
+        }
+        var canRedo: Bool {
+            workout.modelContext?.undoManager?.canRedo ?? false
+        }
         
         /**
          Initializes the state with default values.
          */
         init() {
-            @Dependency(\.workoutDatabase.fetchAll) var fetchAll
-            _ = try? fetchAll()
+            @Dependency(\.workoutDatabase.fetchCount) var fetchCount
+            let fetchDescriptor = FetchDescriptor<Workout>()
+            _ = try? fetchCount(fetchDescriptor)
+            
             self.workout = Workout()
             self.isWorkoutSaved = false
             self.isWorkoutInProgress = false
@@ -122,9 +131,7 @@ public struct WorkoutEditor {
             isWorkoutInProgress = true
         }
         
-        /**
-         Add exercise to the workout.
-         */
+        // MARK: - Add exercises to the workout.
         mutating func addExercises(templates: [ExerciseTemplate]) {
             for item in templates {
                 let exercise = Exercise()
@@ -162,6 +169,19 @@ public struct WorkoutEditor {
                 }
             }
         }
+        
+        // MARK: Fetch the exercies from database and mutate
+        mutating func refetchExercise() {
+            @Dependency(\.workoutDatabase) var database
+            
+            workout = try! database.model(workout.persistentModelID) ?? Workout()
+            let exercises = IdentifiedArray(
+                uniqueElements: workout.exercises
+                    .map({ExerciseRow.State(exercise: $0)})
+                    .sorted(using: KeyPathComparator(\.exercise.sortOrder, order: .forward))    // use forward for descending order
+            )
+            self.exercisesList = ExercisesList.State(exercises: exercises)
+        }
     }
     
     // MARK: - Actions
@@ -188,10 +208,12 @@ public struct WorkoutEditor {
         @available(*, message: "Use with caution as this action is irreversible. Do not call directly. Use `finishButtonTapped` instead")
         case finishWorkout
         case nameChanged(String)
+        case nameChangedDebounce(String)
         case path(StackAction<Path.State, Path.Action>)
         case showExerciseListButtonTapped
         case startWorkoutButtonTapped
         
+        case undoButtonTapped
         /**
          An enum `Delegate` defining delegate actions for the workout editor.
          */
@@ -207,10 +229,10 @@ public struct WorkoutEditor {
     
     // MARK: - Dependencies
     
-    /**
-     A dependency `now` for accessing the current date.
-     */
     @Dependency(\.date.now) var now
+    @Dependency(\.workoutDatabase.undoManager) var undoManager
+    
+    private enum CancelID { case nameChange }
     
     // MARK: - Reducer Body
     
@@ -223,141 +245,170 @@ public struct WorkoutEditor {
             ExercisesList()
         }
         
-        Reduce<State, Action> {
-            state, action in
+//        CombineReducers {
             
-            switch action {
+            Reduce<State, Action> { state, action in
                 
-            case let .addSelectedTemplates(templates):
-                
-                state.saveWorkoutIfNotExistsAndStart()
-                state.addExercises(templates: templates)
-                return .none
-                
-            case .cancelButtonTapped:
-                state.isWorkoutInProgress = false
-                if state.isNewWorkout {
-                    // TODO: Use Undo manager and manual context save
-                    state.deleteWorkout()               // Delete new workout
+                switch action {
+                    // MARK: - Add templates to workout
+                case let .addSelectedTemplates(templates):
+                    state.saveWorkoutIfNotExistsAndStart()
+                    state.addExercises(templates: templates)
+                    return .none
                     
-                    return .concatenate(
-                        .send(.delegate(.collapse))    // Collapse the bottom sheet
-                    )
-                }
-                return .none
-                
-            case .deleteButtonTapped:
-                state.destination = .alert(.deleteWorkout)
-                return .none
-                
-            case .deleteWorkout:
-                state.deleteWorkout()               // Delete workout
-                return .none
-                
-                /// Handle delegate actions for each ExerciseRow from ExerciseList
-                // MARK: - Delete exercise
-            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.delete)))):
-                state.deleteExercise(exerciseID: exerciseID)
-                return .none
-                // MARK: - Handle Info button tapped on `Exercise Row Header`
-            case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showTemplateDetails)))):
-                guard let template = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
-                state.path.append(.exerciseDetails(.init(exercise: template)))
-                return .none
-            
-            case .exercisesList:
-                return .none
-                
-            case .finishButtonTapped:
-                guard state.workout.isValid() else {
-                    state.destination = .alert(.saveInvalidWorkout)
+                    // MARK: handle cancel button tap
+                case .cancelButtonTapped:
+                    state.isWorkoutInProgress = false
+                    
+                    state.refetchExercise()
+                    
+                    if state.isNewWorkout {
+                        // TODO: Use Undo manager and manual context save
+                        state.deleteWorkout()               // Delete new workout
+                        
+                        return .concatenate(
+                            .send(.delegate(.collapse))    // Collapse the bottom sheet
+                        )
+                    }
                     return .none
-                }
-                return .send(.finishWorkout)
-                
-            case .finishWorkout:
-                state.workout.endDate = self.now                // Set end date
-                let sessionTime = state.sessionStartDate.distance(to: self.now)
-                state.workout.duration += sessionTime           // Add the current session time
-                state.isWorkoutInProgress = false
-                
-                if state.isNewWorkout {
-                    return .concatenate(.send(.delegate(.workoutSaved)), .send(.delegate(.collapse)))
-                }
-                
-                return .send(.delegate(.workoutSaved))
-                
-            case let .nameChanged(text):
-                state.workout.name = text
-                return .none
-                
-                // MARK: Action Handler for Navigation stack
-            case let .path(element):
-                switch element {
-                case let .element(id: id, action: .exerciseLists(.delegate(.popToRoot))):
-                    state.path.pop(from: id)
+                    
+                    // MARK: handle delete button tap
+                case .deleteButtonTapped:
+                    state.destination = .alert(.deleteWorkout)
                     return .none
-                case let .element(id: _, action: .exerciseLists(.delegate(.didSelectExerciseTemplates(templates)))):
-                    return .send(.addSelectedTemplates(templates: templates))
-                case let .element(id: _, action: .exerciseLists(.delegate(.showTemplateDetails(template: template)))):
+                    
+                    // MARK: Action delete workout
+                case .deleteWorkout:
+                    state.deleteWorkout()               // Delete workout
+                    return .none
+                    
+                    /// Handle delegate actions for each ExerciseRow from ExerciseList
+                    // MARK: - Delete exercise
+                case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.delete)))):
+                    state.deleteExercise(exerciseID: exerciseID)
+                    return .none
+                    
+                    // MARK: - Handle Info button tapped on `Exercise Row Header`
+                case let .exercisesList(.exercises(.element(id: exerciseID, action: .delegate(.showTemplateDetails)))):
+                    guard let template = state.exercisesList.exercises[id: exerciseID]?.exercise.template else {return .none}
                     state.path.append(.exerciseDetails(.init(exercise: template)))
                     return .none
-                default:
+                    
+                case .exercisesList:
                     return .none
-                }
-                
-            case .showExerciseListButtonTapped:
-                state.path.append(.exerciseLists(ExerciseTemplatesList.State()))
-                return .none
-                
-            case .startWorkoutButtonTapped:
-                if state.isNewWorkout {
-                    state.workout.startDate = .now
-                }
-                state.isWorkoutInProgress = true
-                if state.exercisesList.exercises.isEmpty {
-                    return .send(.showExerciseListButtonTapped, animation: .default)
-                }
-                return .none
-                
-                // MARK: Action Handler for Destination
-            case let .destination(.presented(.alert(alertAction))):
-                switch alertAction {
-                case .confirmCancel:
-                    return .none
-                case .confirmDeleteWorkout:
-                    return .run { send in
-                        await send(.deleteWorkout)
-                        await send(.delegate(.collapse))
-                        await send(.delegate(.workoutDeleted))
+                    
+                    // MARK: Handle finish button tap
+                case .finishButtonTapped:
+                    guard state.workout.isValid() else {
+                        state.destination = .alert(.saveInvalidWorkout)
+                        return .none
                     }
-                case .confirmSaveWorkout:
                     return .send(.finishWorkout)
+                    
+                    // MARK: Finish workout
+                case .finishWorkout:
+                    state.workout.endDate = self.now                // Set end date
+                    let sessionTime = state.sessionStartDate.distance(to: self.now)
+                    state.workout.duration += sessionTime           // Add the current session time
+                    state.isWorkoutInProgress = false
+                                        
+                    if state.isNewWorkout {
+                        return .concatenate(.send(.delegate(.workoutSaved)), .send(.delegate(.collapse)))
+                    }
+                    return .send(.delegate(.workoutSaved))
+                    
+                    // MARK: Handle name change
+                case let .nameChanged(text):
+                    return .send(.nameChangedDebounce(text), animation: .default).debounce(id: CancelID.nameChange, for: 0.5, scheduler: DispatchQueue.main)
+                    
+                    // MARK: Handle name change with debounce
+                case let .nameChangedDebounce(text):
+                    state.workout.name = text
+                    return .none
+                    
+                    // MARK: Action Handler for Navigation stack
+                case let .path(element):
+                    switch element {
+                        // MARK: Pop the current view from Navigation Stack
+                    case let .element(id: id, action: .exerciseLists(.delegate(.popToRoot))):
+                        state.path.pop(from: id)
+                        return .none
+                    case let .element(id: _, action: .exerciseLists(.delegate(.didSelectExerciseTemplates(templates)))):
+                        return .send(.addSelectedTemplates(templates: templates))
+                    case let .element(id: _, action: .exerciseLists(.delegate(.showTemplateDetails(template: template)))):
+                        state.path.append(.exerciseDetails(.init(exercise: template)))
+                        return .none
+                    default:
+                        return .none
+                    }
+                    
+                case .showExerciseListButtonTapped:
+                    state.path.append(.exerciseLists(ExerciseTemplatesList.State()))
+                    return .none
+                    
+                case .startWorkoutButtonTapped:
+                    if state.isNewWorkout {
+                        state.workout.startDate = .now
+                    }
+                    state.sessionStartDate = .now
+                    state.isWorkoutInProgress = true
+                    
+                    if state.exercisesList.exercises.isEmpty {
+                        return .send(.showExerciseListButtonTapped, animation: .default)
+                    }
+                    return .none
+                    
+                    // MARK: Action Handler for Destination
+                case let .destination(.presented(.alert(alertAction))):
+                    switch alertAction {
+                    case .confirmCancel:
+                        return .none
+                    case .confirmDeleteWorkout:
+                        return .run { send in
+                            await send(.deleteWorkout)
+                            await send(.delegate(.collapse))
+                            await send(.delegate(.workoutDeleted))
+                        }
+                    case .confirmSaveWorkout:
+                        return .send(.finishWorkout)
+                    }
+                    
+                    // MARK: Undo Button handler
+                case .undoButtonTapped:
+                    undoManager()?.undo()
+                    state.refetchExercise()
+                    return .none
+                    
+                case .destination:
+                    return .none
+                    
+                case .delegate:
+                    return .none
                 }
-                
-            case .destination:
-                return .none
-                
-            case .delegate:
-                return .none
             }
-        }
-        .ifLet(\.$destination, action: \.destination)
-        .forEach(\.path, action: \.path)
-        .onChange(of: \.path) { _, newValue in
-            Reduce { state, action in
-                // MARK: Show/Hide Tabbar & Change BottomSheet size when we have items in navigation stack
-                if newValue.isEmpty {
-                    /// Make bottom sheet non-resizable/ non-collapsible
-                    /// Make custom tabbar hidden to show full screen view
-                    return .send(.delegate(.isBottomSheetResizable(true)))
-                } else {
-                    /// Make bottom sheet resizable/collapsible
-                    /// Make custom tabbar visible
-                    return .send(.delegate(.isBottomSheetResizable(false)))
+            .ifLet(\.$destination, action: \.destination)
+            .forEach(\.path, action: \.path)
+            .onChange(of: \.path) { _, newValue in
+                Reduce { state, action in
+                    // MARK: Show/Hide Tabbar & Change BottomSheet size when we have items in navigation stack
+                    if newValue.isEmpty {
+                        /// Make bottom sheet non-resizable/ non-collapsible
+                        /// Make custom tabbar hidden to show full screen view
+                        return .send(.delegate(.isBottomSheetResizable(true)))
+                    } else {
+                        /// Make bottom sheet resizable/collapsible
+                        /// Make custom tabbar visible
+                        return .send(.delegate(.isBottomSheetResizable(false)))
+                    }
                 }
             }
-        }
+            
+//            Reduce<State, Action> { state, _ in
+//                state.canUndo = state.workout.modelContext?.undoManager?.canUndo ?? false
+//                state.canRedo = state.workout.modelContext?.undoManager?.canRedo ?? false
+//                return .none
+//            }
+//        }
     }
 }
 

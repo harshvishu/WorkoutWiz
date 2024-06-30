@@ -29,6 +29,8 @@ struct WorkoutEditorView: View {
     // Bindable store for managing the workout editor state
     @Bindable var store: StoreOf<WorkoutEditor>
     
+    @Dependency(\.workoutDatabase.undoManager) var undoManager
+    
     // MARK: - Body
     
     public var body: some View {
@@ -41,7 +43,7 @@ struct WorkoutEditorView: View {
                     // MARK: Workout name text field
                     VStack(alignment: .leading) {
                         HStack(spacing: 0) {
-                            TextField("Workout name", text: $store.workout.name.sending(\.nameChanged))
+                            TextField("Workout name", text: $store.workout.name.sending(\.nameChanged).animation(.default))
                                 .disabled(store.isWorkoutInProgress.not()) // Disable if workout is not in progress
                                 .font(.title3)
                                 .padding(.trailing)
@@ -102,70 +104,6 @@ struct WorkoutEditorView: View {
             .listSectionSeparator(.hidden)
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.automatic)
-//            .safeAreaInset(edge: .bottom, spacing: 0) {
-//                // Bottom safe area content
-//                
-//                VStack(spacing: .defaultVerticalSpacing) {
-//                    Divider()
-//                    
-//                    if store.isWorkoutInProgress {
-//                        // Buttons for in-progress workout
-//                        
-//                        // Button to show all exercises
-//                        Button(action: {
-//                            store.send(.showExerciseListButtonTapped, animation: .default)
-//                        }, label: {
-//                            Text("Show All Exercises")
-//                                .frame(maxWidth: .infinity)
-//                        })
-//                        .buttonBorderShape(.capsule)
-//                        .buttonStyle(.bordered)
-//                        .foregroundStyle(.primary)
-//                        .overlay(Capsule().stroke(Color.secondary, lineWidth: 2))
-//                        .padding(.horizontal, .defaultHorizontalSpacing)
-//                        
-//                        HStack {
-//                            // Cancel button
-//                            Button(role: .destructive, action: {
-//                                store.send(.cancelButtonTapped, animation: .default)
-//                            }, label: {
-//                                Text("Cancel")
-//                                    .padding(.horizontal)
-//                            })
-//                            .foregroundStyle(Color.red)
-//                            
-//                            // Finish button if exercises are added
-//                            if store.workout.exercises.isNotEmpty {
-//                                Button(action: {
-//                                    store.send(.finishButtonTapped, animation: .default)
-//                                }, label: {
-//                                    // Label for finish button
-//                                    Text(store.isNewWorkout ? "Finish Workout" : "Save Changes")
-//                                        .frame(maxWidth: .infinity)
-//                                })
-//                                .buttonBorderShape(.capsule)
-//                                .buttonStyle(.borderedProminent)
-//                                .tint(.primary)
-//                                .foregroundStyle(.background)
-//                            }
-//                        }
-//                        .padding(.horizontal, .defaultHorizontalSpacing)
-//                    } else {
-//                        
-//                        // Button to start or resume workout
-//                        Button(action: {
-//                            store.send(.startWorkoutButtonTapped, animation: .default)
-//                        }, label: {
-//                            Label(store.isWorkoutSaved ? "Resume Workout" : "Start Workout", systemImage: "play.fill")
-//                        })
-//                        .frame(maxWidth: .infinity)
-//                    }
-//                }
-//                .transition(.identity)
-//                .background(.ultraThinMaterial)
-//                .foregroundStyle(.primary)
-//                .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
-//            }
             .overlay {
                 // Overlay views for empty state messages
                 
@@ -177,6 +115,27 @@ struct WorkoutEditorView: View {
                     EmptyStateView(title: "No Exercises", subtitle: "Tap on Show All Exercises at the bottom to see list of all exercises.", resource: .placeholderList)
                 }
             }
+            .safeAreaPadding(.bottom, .defaultVerticalSpacing)
+            // FIXME: Undo manager needs a separate Undo Stack. Will add this feature later
+            /*
+            .overlay(alignment: .bottomTrailing) {
+                // Add exercise button overlay
+                if store.isWorkoutInProgress && undoManager()?.canUndo == true {
+                    Button(action: {
+                        store.send(.undoButtonTapped, animation: .default)
+                    }, label: {
+                        Label("Undo", systemImage: "arrow.uturn.backward")
+                    })
+                    .buttonBorderShape(.capsule)
+                    .buttonStyle(.borderedProminent)
+                    .shadow(radius: 2)
+                    .padding(.horizontal, .defaultHorizontalSpacing)
+                    .padding(.vertical, .defaultVerticalSpacing)
+                    .transition(.scale)
+                } else {
+                    EmptyView()
+                }
+            }*/
             // Alerts for workout editor view
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
         }

@@ -20,7 +20,9 @@ public struct Settings {
     
     @ObservableState
     public struct State: Equatable {
-        var bmi: BMI = .init()
+//        var bmi: BMI = .init()
+//        @Shared(.appStorage("weight")) var weight = 2
+        @Shared(.fileStorage(URL.documentsDirectory.appending(path: "bmi"))) var bmi: BMI = .init()
         
         init(bmi: BMI) {
             self.bmi = bmi
@@ -31,8 +33,8 @@ public struct Settings {
         }
         
         private mutating func fetchBMI() {
-            @Dependency(\.saveData) var saveData
-            self.bmi = saveData.load(forKey: SaveDataManager.Keys.user_bmi) ?? .init()
+//            @Dependency(\.saveData) var saveData
+//            self.bmi = saveData.load(forKey: SaveDataManager.Keys.user_bmi) ?? .init()
         }
     }
     
@@ -40,7 +42,12 @@ public struct Settings {
         case heightChange(Double)
         case weightChange(Double)
         
-        case saveChanges
+        case delegate(Delegate)
+        @CasePathable
+        public enum Delegate {
+            case heightPickerRuler
+            case weightPickerRuler
+        }
     }
     
     // MARK: - Dependencies
@@ -52,12 +59,11 @@ public struct Settings {
             switch action {
             case .heightChange(let height):
                 state.bmi.height = height
-                return .send(.saveChanges)
+                return .none
             case .weightChange(let weight):
                 state.bmi.weight = weight
-                return .send(.saveChanges)
-            case .saveChanges:
-                saveData.save(state.bmi, forKey: SaveDataManager.Keys.user_bmi)
+                return .none
+            case .delegate:
                 return .none
             }
         }
@@ -74,13 +80,12 @@ struct SettingsView: View {
                     
                     LabeledContent("Weight") {
                         HStack {
-                            TextField("Weight", value: Binding(get: {
-                                store.bmi.weight
-                            }, set: { height in
-                                store.send(.weightChange(height), animation: .default)
-                            }) , format: .number)
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.numberPad)
+                            
+                            Button {
+                                store.send(.delegate(.weightPickerRuler))
+                            } label: {
+                                Text(store.bmi.weight, format: .number)
+                            }
                             .contentTransition(.numericText(value: store.bmi.weight))
                             .animation(.snappy, value: store.bmi.weight)
                             
@@ -93,37 +98,30 @@ struct SettingsView: View {
                                     .symbolVariant(.fill)
                             }
                             .foregroundStyle(.primary)
-                            
-//                            .overlay(alignment: .center) {
-//                                Text("Kg")
-//                                    .font(.footnote)
-//                                    .fontWeight(.semibold)
-//                                    .foregroundStyle(.background)
-//                                    .fixedSize()
-//                            }
-                            
-                            //                            WheelPicker(config: .init(count: 200, multiplier: 1), value: $store.bmi.weight.sending(\.weightChange))
-                            //                                .frame(height: 60)
                         }
                     }
                     
                     
                     LabeledContent("Height") {
                         HStack {
-                            TextField("Height", value: Binding(get: {
-                                store.bmi.height
-                            }, set: { height in
-                                store.send(.heightChange(height), animation: .default)
-                            }) , format: .number)
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.numberPad)
+                            
+                            Button {
+                                store.send(.delegate(.heightPickerRuler))
+                            } label: {
+                                Text(store.bmi.height, format: .number)
+                            }
                             .contentTransition(.numericText(value: store.bmi.height))
                             .animation(.snappy, value: store.bmi.height)
                             
-                            Button(action: {}, label: {
-                                Image(systemName: "ruler")
+                            
+                            Menu {
+                                ForEach(HeightUnit.allCases, id: \.self) {
+                                    Text($0.sfSymbol)
+                                }
+                            } label: {
+                                Image(systemName: "scalemass")
                                     .symbolVariant(.fill)
-                            })
+                            }
                             .foregroundStyle(.primary)
                         }
                     }

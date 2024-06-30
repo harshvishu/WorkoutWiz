@@ -106,7 +106,18 @@ public struct AppFeature {
                     /// This is handled in ``CalendarTab``
                     return .none
                 }
-                // For other tab bar actions, return .none
+                // MARK:  - Handling Settings Tab action
+            case .tabs(.settings(.delegate(let delegateAction))):
+                switch delegateAction {
+                    // send user weight change action to popup screen
+                case .weightPickerRuler:
+                    return .send(.popup(.userWeightChangeRuler), animation: .default) 
+                case .heightPickerRuler:
+                    return .send(.popup(.userHeightChangeRuler), animation: .default)
+                case .heightPickerRuler:
+                    return .none
+                }
+                // MARK: Default Tabs actions (Profile, Logs)
             case .tabs:
                 return .none
             }
@@ -129,6 +140,7 @@ public extension WorkoutWizApp {
     var body: some Scene {
         WindowGroup {
             RootView(tabBarStore: tabBarStore, popupStore: popupStore)
+                .tag(1)
                 .task {Logger.ui.log("Welcome to WorkoutWiz!")}
                 .withAppEnvironment()
         }

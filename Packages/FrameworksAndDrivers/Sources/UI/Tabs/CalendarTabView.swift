@@ -280,6 +280,7 @@ struct CalendarTabView: View {
                         .opacity(keyboardShowing ? 0 : 1) // Hide when keyboard is showing
                     }
                     .navigationTitle("\(editor.workout.name.isEmpty ? "Unnamed Workout" : editor.workout.name)")
+                    .navigationBarBackButtonHidden(editor.isWorkoutInProgress)
             case let .exerciseLists(store):
                 // ExerciseTemplatesListView when the store's case is .exerciseLists
                 ExerciseTemplatesListView(store: store)

@@ -19,20 +19,20 @@ let package = Package(
         .package(path: "../Domain"),
         .package(path: "../ApplicationServices"),
         .package(path: "../DesignSystem"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "10.17.0"), // Firebase
-        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.9.2")    // swift-composable-architecture
+        //.package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.17.0"), // Firebase
+        .package(url: "https://github.com/pointfreeco/swift-composable-architecture.git", from: "1.11.1")    // swift-composable-architecture
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(name: "Persistence",
                 dependencies: ["Domain", "ApplicationServices",
-                               .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
-                               .product(name: "FirebaseDatabase", package: "firebase-ios-sdk"),
-                               .product(name: "FirebaseDatabaseSwift", package: "firebase-ios-sdk"),
-                               .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
-                               .product(name: "FirebaseFirestoreSwift", package: "firebase-ios-sdk"),
-                               .product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseDatabase", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseDatabaseSwift", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseFirestoreSwift", package: "firebase-ios-sdk"),
+                               //.product(name: "FirebaseStorage", package: "firebase-ios-sdk"),
                                .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
                 ],
                 resources: [.copy("Resources/exercises.json")]),
