@@ -109,6 +109,7 @@ struct WorkoutRowView: View {
 // MARK: - Preview WorkoutRowView
 import Persistence
 
+@available(iOS 18.0, *)
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
 

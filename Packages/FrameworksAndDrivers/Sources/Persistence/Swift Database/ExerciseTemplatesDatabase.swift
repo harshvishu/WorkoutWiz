@@ -29,7 +29,7 @@ extension ExerciseTemplatesDatabase: DependencyKey {
         fetchAll: {
             do {
                 @Dependency(\.databaseService) var databaseService
-                let databaseContext = try databaseService.context()
+                let databaseContext = databaseService.context()
                 
                 let descriptor = FetchDescriptor<ExerciseTemplate>(sortBy: [SortDescriptor(\ExerciseTemplate.name)])
                 return try databaseContext.fetch(descriptor)
@@ -40,7 +40,7 @@ extension ExerciseTemplatesDatabase: DependencyKey {
         }, fetch: { descriptor in
             do {
                 @Dependency(\.databaseService.context) var context
-                let databaseContext = try context()
+                let databaseContext = context()
                 
                 return try databaseContext.fetch(descriptor)
             } catch {
@@ -50,7 +50,7 @@ extension ExerciseTemplatesDatabase: DependencyKey {
         }, count: { descriptor in
             do {
                 @Dependency(\.databaseService.context) var context
-                let databaseContext = try context()
+                let databaseContext = context()
                 
                 return try databaseContext.fetchCount(descriptor)
             } catch {

@@ -95,6 +95,7 @@ public typealias TimeChangeHandler = (TimeInterval) -> ()
 
 public enum RepInputMode {
     case repCount
+    case repCountWithoutWeight
     case timeCount
     case weight
 }
@@ -120,7 +121,7 @@ public struct RepInputKeyboard: View {
     public var body: some View {
         Group {
             switch mode {
-            case .repCount, .weight:
+                case .repCount, .repCountWithoutWeight, .weight:
                 keypadInputView
             case .timeCount:
                 wheelInputView
@@ -140,6 +141,11 @@ public struct RepInputKeyboard: View {
     
     private var keysSet: [CustomKey] {
         switch mode {
+            case .repCountWithoutWeight:
+                [.digit(1), .digit(2), .digit(3), .switchTime,
+                 .digit(4), .digit(5), .digit(6), .plus,
+                 .digit(7), .digit(8), .digit(9), .minus,
+                 .empty, .digit(0), .delete, .submit]
         case .repCount:
             [.digit(1), .digit(2), .digit(3), .switchTime,
              .digit(4), .digit(5), .digit(6), .plus,
@@ -320,10 +326,11 @@ public struct TimeInputKeyboard: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
-    @State var value: String = "12"
-    @State var mode: RepInputMode = .timeCount
-    @State var mode2: RepInputMode = .repCount
+    @Previewable @State var value: String = "12"
+    @Previewable @State var mode: RepInputMode = .timeCount
+    @Previewable @State var mode2: RepInputMode = .repCount
     
     return VStack(spacing: 40) {
         RepInputKeyboard(mode: mode)

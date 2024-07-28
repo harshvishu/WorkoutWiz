@@ -52,28 +52,28 @@ public struct PopupPresenter {
     public var body: some ReducerOf<Self> {
         Reduce<State, Action> { state, action in
             switch action {
-            case let .addNewSet(exercise):
-                state.destination = .repInput(RepInput.State(exercise: exercise))
-                return .none
-            case let .editSet(exercise, rep):
-                state.destination = .repInput(RepInput.State(exercise: exercise, rep: rep))
-                return .none
-            case .destination(.presented(.repInput(.delegate(.close)))):
-                state.destination = nil
-                return .none
-                
-                // Handle user weight change from Settings screen. BMI
-            case .userWeightChangeRuler:
-                state.destination = .userWeightChangeRuler(Settings.State())
-                return .none
-                       
-                // Handle user height change from Settings screen. BMI
-            case .userHeightChangeRuler:
-                state.destination = .userHeightChangeRuler(Settings.State())
-                return .none
-                
-            case .destination:
-                return .none
+                case let .addNewSet(exercise):
+                    state.destination = .repInput(RepInput.State(exercise: exercise))
+                    return .none
+                case let .editSet(exercise, rep):
+                    state.destination = .repInput(RepInput.State(exercise: exercise, rep: rep))
+                    return .none
+                case .destination(.presented(.repInput(.delegate(.close)))):
+                    state.destination = nil
+                    return .none
+                    
+                    // Handle user weight change from Settings screen. BMI
+                case .userWeightChangeRuler:
+                    state.destination = .userWeightChangeRuler(Settings.State())
+                    return .none
+                    
+                    // Handle user height change from Settings screen. BMI
+                case .userHeightChangeRuler:
+                    state.destination = .userHeightChangeRuler(Settings.State())
+                    return .none
+                    
+                case .destination:
+                    return .none
             }
         }
         .ifLet(\.$destination, action: \.destination)
@@ -88,9 +88,6 @@ struct PopupPresenterView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.clear
-//                .onTapGesture {
-//                    fatalError()
-//                }
         }
         .sheet(item: $store.scope(state: \.destination?.repInput, action: \.destination.repInput)) { store in
             RepInputView(store: store)
@@ -100,7 +97,7 @@ struct PopupPresenterView: View {
         .sheet(item: $store.scope(state: \.destination?.userWeightChangeRuler, action: \.destination.userWeightChangeRuler)) { store in
             
             VStack(alignment: .center) {
-                WheelPicker(config: .init(count: 200, multiplier: 1), value: .init(get: {
+                WheelPicker(config: .init(count: store.bmi.preferredWeightUnit == .kg ? Settings.MAX_WEIGHT_KG : Settings.MAX_WEIGHT_POUND, multiplier: 1), value: .init(get: {
                     return store.bmi.weight
                 }, set: { newValue in
                     store.send(.weightChange(newValue), animation: .default)
@@ -126,7 +123,7 @@ struct PopupPresenterView: View {
         .sheet(item: $store.scope(state: \.destination?.userHeightChangeRuler, action: \.destination.userHeightChangeRuler)) { store in
             
             VStack(alignment: .center) {
-                WheelPicker(config: .init(count: 200, multiplier: 1), value: .init(get: {
+                WheelPicker(config: .init(count: store.bmi.preferredHeightUnit == .centimeter ? Settings.MAX_HEIGHT_CENTIMETER : Settings.MAX_HEIGHT_FEET, steps: 10, multiplier: 1), value: .init(get: {
                     return store.bmi.height
                 }, set: { newValue in
                     store.send(.heightChange(newValue), animation: .default)
@@ -155,4 +152,11 @@ struct PopupPresenterView: View {
             .presentationContentInteraction(.resizes)
         }
     }
+}
+
+@available(iOS 18.0, *)
+#Preview {
+    PopupPresenterView(store: StoreOf<PopupPresenter>(initialState: PopupPresenter.State(), reducer: {
+        PopupPresenter()
+    }))
 }

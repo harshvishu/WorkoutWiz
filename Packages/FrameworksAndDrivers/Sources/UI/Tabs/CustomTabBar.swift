@@ -69,11 +69,13 @@ public struct CustomTabBar: View, KeyboardReadable {
     }
 }
 
-//#Preview {
-//    @State var selectedScreen: AppScreen = .dashboard
-//    @State var popToRootScreen: AppScreen = .other
-//    
-//    return CustomTabBar(selectedScreen: $selectedScreen, popToRootScreen: $popToRootScreen)
-//        .frame(maxHeight: .infinity, alignment: .bottom)
-//        .withPreviewEnvironment()
-//}
+@available(iOS 18.0, *)
+#Preview {
+    @Previewable @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+        TabBarFeature()
+    })
+    
+    CustomTabBar(store: store)
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .withPreviewEnvironment()
+}

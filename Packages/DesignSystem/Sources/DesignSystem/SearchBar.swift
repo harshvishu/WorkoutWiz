@@ -47,6 +47,7 @@ public struct SearchBar: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     @State var searchText = ""
     

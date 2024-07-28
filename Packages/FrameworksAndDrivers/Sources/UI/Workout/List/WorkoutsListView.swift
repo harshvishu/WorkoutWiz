@@ -403,6 +403,7 @@ extension ConfirmationDialogState where Action == WorkoutsList.Destination.Confi
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
     return WorkoutsListView(

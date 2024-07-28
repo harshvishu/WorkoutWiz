@@ -539,6 +539,7 @@ struct ExerciseTemplatesListView: View {
     
 }
 
+@available(iOS 18.0, *)
 #Preview {
     ExerciseTemplatesListView(store: StoreOf<ExerciseTemplatesList>(initialState: ExerciseTemplatesList.State(), reducer: {
         ExerciseTemplatesList()

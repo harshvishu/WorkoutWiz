@@ -11,6 +11,7 @@ import ApplicationServices
 import Persistence
 import DesignSystem
 import ComposableArchitecture
+import TipKit
 
 // TODO: The view need performance improvements
 public enum FocusField: Hashable {
@@ -48,6 +49,7 @@ public struct RepInput {
     @ObservableState
     public struct State: Equatable {
         @Presents var destination: Destination.State?
+        @Shared(.fileStorage(URL.documentsDirectory.appending(path: "bmi"))) var bmi: BMI = .init()
         
         var exercise: Exercise
         var rep: Rep?
@@ -74,7 +76,10 @@ public struct RepInput {
             
             // TODO: Use save manager to get last saved info
             self.repCountUnit = exercise.preferredRepCountUnit
-            self.weightUnit = .kg
+            self.weightUnit = bmi.preferredWeightUnit   // get the unit from user preference
+            if exercise.isBodyWeightOnly {
+                self.weightText = bmi.weight.isZero ? "" : String(format: hasFraction(bmi.weight) ? "%.2f" : "%.0f", bmi.weight)
+            }
             self.repType = .standard
             
             switch repCountUnit  {
@@ -115,10 +120,15 @@ public struct RepInput {
         func saveRep() {
             @Dependency(\.fitnessTrackingUseCase) var fitnessTrackingUseCase
             
-            let weight = weightText.double ?? 0.0
+            // Determine the weight used for the exercise. If the exercise is body-weight only, use the user's weight.
+            // Otherwise, use the weight entered by the user (converted from text to double). Default to 0.0 if conversion fails.
+            let weight = exercise.isBodyWeightOnly ? bmi.weight : weightText.double ?? 0.0
+            
             let repCount = repCountText.int ?? 0
             let repTime = timeInterval(from: repTimeText, formatter: minutesSecondsFormatter) ?? 0.0
             
+            // Calculate the calories burned using the fitness tracking use case.
+            // The MET (Metabolic Equivalent of Task) value is retrieved from the exercise template category.
             
             let calories = fitnessTrackingUseCase.trackCaloriesBurned(
                 metValue: exercise.template?.category.met() ?? 0.0,
@@ -128,6 +138,7 @@ public struct RepInput {
                 rep: repCount
             )
             
+            // If the rep already exists, update its properties with the new values.
             if let rep = rep {
                 rep.weight = weight
                 rep.count = repCount
@@ -137,6 +148,7 @@ public struct RepInput {
                 rep.countUnit = repCountUnit
                 rep.calories = calories
             } else {
+                // If the rep does not exist, create a new rep with the given values and add it to the exercise.
                 let rep = Rep(
                     weight: weight,
                     countUnit: repCountUnit,
@@ -349,7 +361,9 @@ public struct RepInput {
 struct RepInputView: View {
     @Bindable var store: StoreOf<RepInput>
     @State var isDeleteButtonEnabled = false
-        
+    
+    let bodyWeightTip = BodyWeightTip()
+    
     var body: some View {
         
         VStack {
@@ -387,23 +401,44 @@ struct RepInputView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 
                 // MARK: Weight
-                VStack(alignment: .center) {
-                    Text(store.weightText.isEmpty ? "0" : store.weightText)
-                        .font(.title.bold())
-                        .frame(maxWidth: .infinity)
-                        .foregroundStyle(store.focusedField == .weight ? Color.accentColor : Color.primary)
-                        .bipAnimation(trigger: store.focusedField == .weight)
-                        .contentTransition(.numericText())
-                        .onTapGesture {
-                            store.send(.focusedFieldChanged(.weight), animation: .default)
+                    VStack(alignment: .center) {
+                        HStack(spacing: 0) {
+                            Text(store.weightText.isEmpty ? "0" : store.weightText)
+                                .font(.title.bold())
+                                .bipAnimation(trigger: store.focusedField == .weight)
+                                .contentTransition(.numericText())
+                                .modifyIf(!store.exercise.isBodyWeightOnly) {
+                                    $0
+                                        .foregroundStyle(store.focusedField == .weight ? Color.accentColor : Color.primary)
+                                        .onTapGesture {
+                                        store.send(.focusedFieldChanged(.weight), animation: .default)
+                                    }
+                                }
+                                .modifyIf(store.exercise.isBodyWeightOnly) {
+                                    $0.offset(x: 10)
+                                    .foregroundStyle(.secondary)
+                                    .onTapGesture {
+                                        // FIXME: needs to be fixed
+//                                        Tips.showTipsForTesting([BodyWeightTip.self])
+                                        print(bodyWeightTip.status, BodyWeightTip.showTip)
+                                    }
+                                }
+                            
+                            
+                            if store.exercise.isBodyWeightOnly {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundStyle(.secondary)
+                                    .font(.caption)
+                                    .offset(x: 10, y: -10)
+                                    .popoverTip(bodyWeightTip, arrowEdge: .top)
+                            }
                         }
-                    
-                    Text("\(store.weightUnit.sfSymbol)")
-                        .font(.caption2)
-                }
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .frame(maxWidth: .infinity, alignment: .center)
+                        Text("\(store.weightUnit.sfSymbol)")
+                            .font(.caption2)
+                    }
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
             .frame(maxWidth: .infinity)
@@ -453,11 +488,20 @@ struct RepInputView: View {
         if store.focusedField == .weight {
             return .weight
         } else if store.focusedField == .rep {
-            return .repCount
+            return store.exercise.isBodyWeightOnly ? .repCountWithoutWeight : .repCount
         } else {
             return .timeCount
         }
     }
+}
+
+
+@available(iOS 18.0, *)
+#Preview {
+    @Previewable @State var isOn = false
+    RepInputView(store: StoreOf<RepInput>(initialState: RepInput.State(exercise: Exercise()), reducer: {
+        RepInput()
+    }))
 }
 
 extension AlertState where Action == RepInput.Destination.Alert {
@@ -520,10 +564,10 @@ struct CheckToggleStyle: ToggleStyle {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
-    @State var isOn = false
+    @Previewable @State var isOn = false
     return Toggle("21", isOn: $isOn)
         .toggleStyle(CheckToggleStyle())
-//        .padding()
         .previewBorder()
 }

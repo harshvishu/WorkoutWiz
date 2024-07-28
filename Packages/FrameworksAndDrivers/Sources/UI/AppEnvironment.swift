@@ -11,6 +11,7 @@ import ApplicationServices
 import Persistence
 import DesignSystem
 import SwiftData
+import TipKit
 
 @MainActor
 struct AppEnvironment: ViewModifier {
@@ -21,6 +22,9 @@ struct AppEnvironment: ViewModifier {
             .addKeyboardVisibilityToEnvironment()
             .task {
                 await insertTemplatesData()
+            }
+            .task {
+                try? Tips.configure([.datastoreLocation(.applicationDefault)])
             }
     }
     
@@ -41,6 +45,10 @@ struct PreviewAppEnvironment: ViewModifier {
             .withPreviewModelContainer()
             .environment(SceneDelegate())
             .addKeyboardVisibilityToEnvironment()
+            .task {
+//                try? Tips.resetDatastore()
+                try? Tips.configure([.datastoreLocation(.applicationDefault)])
+            }
     }
 }
 

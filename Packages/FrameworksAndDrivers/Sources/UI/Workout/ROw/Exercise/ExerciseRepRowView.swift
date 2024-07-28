@@ -46,8 +46,8 @@ struct ExerciseRepRowView: View {
                     Text(set.count, format: .number)
                         .font(.title.bold())
                     
-//                    Text("\(set.countUnit.description)")
-//                        .font(.caption2)
+                    //                    Text("\(set.countUnit.description)")
+                    //                        .font(.caption2)
                 }
                 .frame(maxWidth: .infinity, alignment: .topLeading)
             }
@@ -59,9 +59,6 @@ struct ExerciseRepRowView: View {
             HStack(alignment: .top) {
                 Text(set.weight, format: .number.precision(.fractionLength(2)))
                     .font(.title.bold())
-                
-//                Text("\(set.weightUnit.sfSymbol)")
-//                    .font(.caption2)
             }
             .lineLimit(1)
             .truncationMode(.tail)
@@ -70,4 +67,10 @@ struct ExerciseRepRowView: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
+}
+
+@available(iOS 18.0, *)
+#Preview {
+    ExerciseRepRowView(set: Rep(weight: 0, countUnit: .rep, time: 0, count: 0, weightUnit: .kg, calories: 0, repType: .standard), position: 0)
+        .previewBorder()
 }

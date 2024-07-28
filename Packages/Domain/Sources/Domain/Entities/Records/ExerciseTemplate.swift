@@ -10,7 +10,7 @@ import SwiftData
 
 @Model
 public final class ExerciseTemplate: Identifiable, Hashable, Equatable {
-    @Attribute(.unique) public let id: String
+    @Attribute(.unique) public var id: String
     
     // Template properties
     public var name: String

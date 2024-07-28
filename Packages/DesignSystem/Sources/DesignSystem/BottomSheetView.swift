@@ -22,7 +22,7 @@ public struct BottomSheetView<SheetContent: View>: View {
     public var content: SheetContent
     
     @State private var translation: CGSize = .zero
-    @State private var offsetY: CGFloat = .zero
+    @State private var offsetY: CGFloat = 1000
     
     private var dragIndicatorHeight = CGFloat(32)
     private var contentSpacing = CGFloat(8)
@@ -53,10 +53,10 @@ public struct BottomSheetView<SheetContent: View>: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             .background(.background)
             .animation(.easeInOut, value: isPresented)
-            .mask(RoundedRectangle(cornerRadius: 15, style: .continuous))
-            .shadow(radius: 1)
+            .mask(RoundedRectangle(cornerRadius: sheetCornerRadius, style: .continuous))
+            .shadow(radius: 4.0, x: 0, y: 2)
             .ignoresSafeArea(edges: .bottom)
-            .offset(y: translation.height + offsetY)
+            .offset(y: max(0, translation.height + offsetY))
             .gesture(DragGesture()
                 .onChanged{ value in
                     translation = value.translation
@@ -79,14 +79,14 @@ public struct BottomSheetView<SheetContent: View>: View {
                     } else if snap < -100 && states.contains(.expanded) {
                         presentationState = .expanded
                     } else {
-                        withAnimation(.interactiveSpring()) {
+                        withAnimation(.interactiveSpring(duration: 0.3)) {
                             translation = .zero
                         }
                     }
                 }
             )
             .onChange(of: presentationState, initial: true) { _, newValue in
-                withAnimation(.interactiveSpring()) {
+                withAnimation(.interactiveSpring(duration: 0.3)) {
                     onStateChange(proxy: proxy)
                 }
             }

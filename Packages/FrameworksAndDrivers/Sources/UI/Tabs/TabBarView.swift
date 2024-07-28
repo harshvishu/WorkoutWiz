@@ -216,7 +216,7 @@ public struct TabBarView: View {
                     .toolbar(store.showTabBar ? .automatic : .hidden, for: .tabBar)
                     .toolbar(store.showTabBar ? .automatic : .hidden, for: .bottomBar)
                     .toolbarBackground(store.showTabBar ? .automatic : .hidden, for: .tabBar)
-                    .toolbarBackground(store.showTabBar ? .automatic : .hidden, for: .bottomBar)
+//                    .toolbarBackground(store.showTabBar ? .automatic : .hidden, for: .bottomBar)
                     .tabItem {
                         tab.label
                     }
@@ -248,7 +248,7 @@ public struct TabBarView: View {
         .tabSheet(
             initialHeight: Constants.InitialSheetHeight,
             sheetCornerRadius: .sheetCornerRadius,
-            showSheet: $store.showTabBottomSheet.sending(\.showTabBottomSheet),
+            showSheet: $store.showTabBottomSheet.sending(\.showTabBottomSheet).animation(),
             resizable: $store.isBottomSheetResizable.sending(\.toggleBottomSheetResizable),
             states: .constant(Self.AvailableSheetDetents),
             presentationState: $store.tabBottomSheetDetent.sending(\.setBottomSheetPresentationDetent),
@@ -275,8 +275,9 @@ fileprivate extension TabBarView {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
-    @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+    @Previewable @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
         TabBarFeature()
     })
     let container = SwiftDataModelConfigurationProvider.shared.container

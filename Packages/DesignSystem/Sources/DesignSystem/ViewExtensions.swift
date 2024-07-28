@@ -199,53 +199,26 @@ fileprivate struct BottomSheetModifier<SheetContent: View>: ViewModifier {
     }
     
     func body(content: Content) -> some View {
+//        ZStack {
+//            content
+//            if showSheet {
+//                BottomSheetView(isPresented: $showSheet, resizable: $resizable, presentationState: $presentationState, initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, bottomPadding: bottomPadding, states: $states, content: sheetView)
+//                    .transition(.move(edge: .bottom))
+//                    .zIndex(1)
+//            }
+//        }
+        
         if showSheet {
             content.overlay {
                 BottomSheetView(isPresented: $showSheet, resizable: $resizable, presentationState: $presentationState, initialHeight: initialHeight, sheetCornerRadius: sheetCornerRadius, bottomPadding: bottomPadding, states: $states, content: sheetView)
+                    .transition(.move(edge: .bottom))
+                    .zIndex(1)
             }
         } else {
             content
         }
-//        content
-//            .sheet(isPresented: $showSheet) {
-//                sheetView
-//                    .padding(.bottom, bottomPadding)
-//                    .presentationDetents(resizable ? [.InitialSheetDetent, .ExpandedSheetDetent] : [.ExpandedSheetDetent], selection: $selectedDetent)
-//                    .presentationCornerRadius(sheetCornerRadius)
-//                    .presentationBackgroundInteraction(.enabled(upThrough: .ExpandedSheetDetent))
-//                    .presentationBackground(.background)
-//                    .interactiveDismissDisabled()
-//            }
     }
 }
-
-//public extension PresentationDetent {
-//    static let InitialSheetDetent: PresentationDetent = .height(110.0)
-//    static let ExpandedSheetDetent: PresentationDetent = .fraction(0.99)
-//}
-
-//public enum PresentationDetentState {
-//    case collapsed
-//    case expanded
-//}
-
-//public extension PresentationDetent {
-//    var state: PresentationDetentState {
-//        isExpanded ? .expanded : .collapsed
-//    }
-//    
-//    var isExpanded: Bool {
-//        self == .ExpandedSheetDetent
-//    }
-//    
-//    var isCollapsed: Bool {
-//        !isExpanded
-//    }
-//    
-//    mutating func toggle() {
-//        self = isExpanded ? .InitialSheetDetent : .ExpandedSheetDetent
-//    }
-//}
 
 /// Publisher to read keyboard changes.
 public protocol KeyboardReadable {

@@ -90,6 +90,7 @@ struct DashboardTabView: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     @State var appscreen = AppScreen.dashboard
     @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {

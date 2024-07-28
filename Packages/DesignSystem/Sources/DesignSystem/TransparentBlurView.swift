@@ -52,6 +52,7 @@ public class TransparentBlurViewHelper: UIVisualEffectView {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     TransparentBlurView(removeAllFilters: true)
         .padding()

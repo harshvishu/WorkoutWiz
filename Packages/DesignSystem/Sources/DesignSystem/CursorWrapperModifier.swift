@@ -43,6 +43,7 @@ public extension View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     return Text("1234")
         .frame(maxWidth: .infinity)

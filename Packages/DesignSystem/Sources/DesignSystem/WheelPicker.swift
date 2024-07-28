@@ -104,6 +104,7 @@ public struct WheelPicker: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     @State var value: Double = 0
     

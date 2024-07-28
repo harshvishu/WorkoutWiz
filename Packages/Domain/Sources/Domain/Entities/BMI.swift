@@ -12,9 +12,9 @@ public struct BMI: Codable, Equatable {
     public var weight: Double = 0.0
     public var height: Double = 0.0
     public var preferredWeightUnit = WeightUnit.kg
-    public var preferredHeightUnit = HeightUnit.meter
+    public var preferredHeightUnit = HeightUnit.centimeter
     
-    public init(weight: Double, height: Double, preferredWeightUnit: WeightUnit = WeightUnit.kg, preferredHeightUnit: HeightUnit = HeightUnit.meter) {
+    public init(weight: Double, height: Double, preferredWeightUnit: WeightUnit = WeightUnit.kg, preferredHeightUnit: HeightUnit = HeightUnit.centimeter) {
         self.weight = weight
         self.height = height
         self.preferredWeightUnit = preferredWeightUnit

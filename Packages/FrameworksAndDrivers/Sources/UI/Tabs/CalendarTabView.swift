@@ -292,6 +292,7 @@ struct CalendarTabView: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     @State var appscreen = AppScreen.logs
     @State var store = StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {

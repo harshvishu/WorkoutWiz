@@ -154,6 +154,7 @@ struct WorkoutEditorView: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
     

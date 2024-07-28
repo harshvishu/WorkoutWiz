@@ -59,6 +59,7 @@ public struct NextPageView: View {
 }
 
 
+@available(iOS 18.0, *)
 #Preview {
   List {
     Text("Item 1")

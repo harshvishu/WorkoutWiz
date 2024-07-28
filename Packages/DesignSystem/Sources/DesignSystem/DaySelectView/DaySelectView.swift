@@ -160,6 +160,7 @@ public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day]
 }
 
 
+@available(iOS 18.0, *)
 #Preview {
     ZStack {
         DaySelectView(

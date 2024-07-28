@@ -74,6 +74,7 @@ public struct PagingIndicator: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     ScrollView(.horizontal) {
         LazyHStack(alignment: .center, spacing: 0) {

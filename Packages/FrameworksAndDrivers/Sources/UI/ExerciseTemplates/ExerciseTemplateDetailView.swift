@@ -118,6 +118,7 @@ struct ExerciseTemplateDetailView: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     let container = SwiftDataModelConfigurationProvider.shared.container
     return ExerciseTemplateDetailView(store: StoreOf<ExerciseTemplateDetails>(initialState: ExerciseTemplateDetails.State(exercise: ExerciseTemplate(BaseExerciseTemplate.mock_1)), reducer: {

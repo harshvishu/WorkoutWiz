@@ -42,6 +42,7 @@ public struct SizeClassAdaptiveView<Compact: View, Regular: View>: View {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     SizeClassAdaptiveView {
         Text("compact")

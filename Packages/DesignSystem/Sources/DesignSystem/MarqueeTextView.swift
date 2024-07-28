@@ -117,6 +117,7 @@ private extension Font {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     MarqueeTextView("This is a test of scrolling text.  This is only a test.", textStyle: .body)
         .frame(height: 64)

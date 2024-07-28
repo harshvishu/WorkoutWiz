@@ -182,6 +182,7 @@ extension ConfirmationDialogState where Action == ExercisesList.Destination.Conf
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
     ExercisesListView(store: StoreOf<ExercisesList>(initialState: ExercisesList.State(), reducer: {
         ExercisesList()

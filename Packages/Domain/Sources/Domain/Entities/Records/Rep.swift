@@ -143,16 +143,74 @@ public enum WeightUnit: Int, Codable, CaseIterable {
         case .pound: "lbs"
         }
     }
+    
+   public func systemUnit() -> UnitMass {
+        switch self {
+            case .kg: .kilograms
+            case .pound: .pounds
+        }
+    }
+    public var name: String {
+        switch self {
+            case .kg: return "Kilogram"
+            case .pound: return "Pound"
+        }
+    }
+    
+    public func convertInto(_ value: Double) -> Double {
+        switch self {
+            case .kg: return poundsToKilograms(value)
+            case .pound: return kilogramsToPounds(value)
+        }
+    }
 }
 
 public enum HeightUnit: Int, Codable, CaseIterable {
-    case meter = 0
+    case centimeter = 0
     case feet = 1
     
     public var sfSymbol: String {
         switch self {
-        case .meter: return "m"
+        case .centimeter: return "cm"
         case .feet: return "ft"
         }
     }
+    
+    public func systemUnit() -> UnitLength {
+        switch self {
+            case .centimeter: .centimeters
+            case .feet: .feet
+        }
+    }
+    public var name: String {
+        switch self {
+            case .centimeter: return "Centimeter"
+            case .feet: return "Feet"
+        }
+    }
+    
+    public func convertInto(_ value: Double) -> Double {
+        switch self {
+            case .centimeter: return feetToCentimeters(value)
+            case .feet: return centimetersToFeet(value)
+        }
+    }
+}
+
+// MARK: - Conversion functions
+public func feetToCentimeters(_ feet: Double) -> Double {
+    return feet * 30.48
+}
+
+public func centimetersToFeet(_ centimeters: Double) -> Double {
+    return centimeters / 30.48
+}
+
+
+public func kilogramsToPounds(_ kilograms: Double) -> Double {
+    return kilograms * 2.20462
+}
+
+public func poundsToKilograms(_ pounds: Double) -> Double {
+    return pounds / 2.20462
 }

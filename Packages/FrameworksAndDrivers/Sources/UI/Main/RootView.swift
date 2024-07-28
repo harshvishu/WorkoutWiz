@@ -47,8 +47,9 @@ extension RootView {
     }
 }
 
+@available(iOS 18.0, *)
 #Preview {
-    return RootView(tabBarStore: StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
+    RootView(tabBarStore: StoreOf<TabBarFeature>(initialState: TabBarFeature.State(), reducer: {
         TabBarFeature()
     }), popupStore: StoreOf<PopupPresenter>(initialState: PopupPresenter.State(), reducer: {
         PopupPresenter()
