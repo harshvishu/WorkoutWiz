@@ -49,6 +49,7 @@ public struct Settings {
         case weightChange(Double)
         case heightUnitChange(HeightUnit)
         case weightUnitChange(WeightUnit)
+        case distanceUnitChange(DistanceUnit)
         
         case delegate(Delegate)
         @CasePathable
@@ -101,6 +102,11 @@ public struct Settings {
                         send(.weightChange(newWeight), animation: .default)
                     }
                     
+                case .distanceUnitChange(let unit):
+                    guard unit != state.bmi.preferredDistanceUnit else {return .none}
+                    state.bmi.preferredDistanceUnit = unit
+                    return .none
+                    
                 case .delegate:
                     return .none
             }
@@ -116,31 +122,6 @@ struct SettingsView: View {
             Form {
                 Section("BMI") {
                     
-                    LabeledContent("Weight") {
-                        Button {
-                            store.send(.delegate(.weightPickerRuler))
-                        } label: {
-                            let weight: Measurement<UnitMass> = Measurement(value: store.bmi.weight, unit: store.bmi.preferredWeightUnit.systemUnit())
-                            Text(weight.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(2)))))
-                        }
-                        .contentTransition(.numericText(value: store.bmi.weight))
-                        .animation(.snappy, value: store.bmi.weight)
-                        .frame(maxWidth:  .infinity, alignment: .trailing)
-                        
-                        Menu {
-                            ForEach(WeightUnit.allCases, id: \.self) { unit in
-                                Button {
-                                    store.send(.weightUnitChange(unit))
-                                } label: {
-                                    Text(unit.name)
-                                }
-                            }
-                        } label: {
-                            Image(systemName: "scalemass")
-                                .frame(width: 25)
-                        }
-                    }
-                    
                     LabeledContent("Height") {
                         Button {
                             store.send(.delegate(.heightPickerRuler))
@@ -152,23 +133,71 @@ struct SettingsView: View {
                         .animation(.snappy, value: store.bmi.height)
                         .frame(maxWidth:  .infinity, alignment: .trailing)
                         
-                        Menu {
-                            ForEach(HeightUnit.allCases, id: \.self) { unit in
-                                Button {
-                                    store.send(.heightUnitChange(unit))
-                                } label: {
-                                    Text(unit.name)
-                                }
-                            }
+//                        Menu {
+//                            ForEach(HeightUnit.allCases, id: \.self) { unit in
+//                                Button {
+//                                    store.send(.heightUnitChange(unit))
+//                                } label: {
+//                                    Text(unit.name)
+//                                }
+//                            }
+//                        } label: {
+//                            Image(systemName: "ruler")
+//                                .frame(width: 25)
+//                        }
+                    }
+                    
+                    LabeledContent("Weight") {
+                        Button {
+                            store.send(.delegate(.weightPickerRuler))
                         } label: {
-                            Image(systemName: "ruler")
-                                .frame(width: 25)
+                            let weight: Measurement<UnitMass> = Measurement(value: store.bmi.weight, unit: store.bmi.preferredWeightUnit.systemUnit())
+                            Text(weight.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(2)))))
+                        }
+                        .contentTransition(.numericText(value: store.bmi.weight))
+                        .animation(.snappy, value: store.bmi.weight)
+                        .frame(maxWidth:  .infinity, alignment: .trailing)
+                        
+                        //                        Menu {
+                        //                            ForEach(WeightUnit.allCases, id: \.self) { unit in
+                        //                                Button {
+                        //                                    store.send(.weightUnitChange(unit))
+                        //                                } label: {
+                        //                                    Text(unit.name)
+                        //                                }
+                        //                            }
+                        //                        } label: {
+                        //                            Image(systemName: "scalemass")
+                        //                                .frame(width: 25)
+                        //                        }
+                    }
+                }
+                
+                Section("UNITS") {
+                    
+                    Picker(selection: $store.bmi.preferredHeightUnit.sending(\.heightUnitChange), label: Text("Height Unit")) {
+                        ForEach(HeightUnit.allCases, id: \.self) {  unit in
+                            Text(unit.name)
+                                .tag(unit.rawValue)
+                        }
+                    }
+                    
+                    Picker(selection: $store.bmi.preferredWeightUnit.sending(\.weightUnitChange), label: Text("Weight Unit")) {
+                        ForEach(WeightUnit.allCases, id: \.self) {  unit in
+                            Text(unit.name)
+                                .tag(unit.rawValue)
+                        }
+                    }
+                    
+                    Picker(selection: $store.bmi.preferredDistanceUnit.sending(\.distanceUnitChange), label: Text("Distance Unit")) {
+                        ForEach(DistanceUnit.allCases, id: \.self) {  unit in
+                            Text(unit.name)
+                                .tag(unit.rawValue)
                         }
                     }
                 }
             }
             .listRowSeparator(.hidden)
-            
             .navigationBarTitle("Settings")
         }
     }

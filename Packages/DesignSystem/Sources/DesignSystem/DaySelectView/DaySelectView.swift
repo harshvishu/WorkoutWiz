@@ -31,12 +31,14 @@ public struct DaySelectView: View {
     
     public var body: some View {
         GeometryReader { (geometry: GeometryProxy) in
+            let size = geometry.size
+            
             ScrollViewReader { (scrollView: ScrollViewProxy) in
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 0) {
                         ForEach(currentDayRange, id: \.self) { day in
                             // MARK: Item
-                            DaySelectItemView(viewModel: DaySelectItemViewModel(day: day, isSelected: selectedDate == day), itemSize: getSelectDayItemViewSize(proxy: geometry))
+                            DaySelectItemView(viewModel: DaySelectItemViewModel(day: day, isSelected: selectedDate == day), itemSize: getSelectDayItemViewSize(proxy: geometry, padding: CGSize(width: 10, height: 0)))
                                 .onAppear {
                                     if day == today {
                                         isTodayVisible = true
@@ -56,6 +58,7 @@ public struct DaySelectView: View {
                                 }
                         }
                     }
+                    .frame(height: size.height)
                     .scrollTargetLayout()
                 }
                 .scrollTargetBehavior(.viewAligned)
@@ -88,7 +91,7 @@ public struct DaySelectScrollViewContainer: View {
         ScrollViewReader { (proxy: ScrollViewProxy) in
             LazyHStack(spacing: 0) {
                 ForEach(viewModel.currentDayRange, id: \.self) { day in
-                    DaySelectItemView(viewModel: DaySelectItemViewModel(day: day, isSelected: selectedDate == day), itemSize: itemSize)
+                    DaySelectItemView(viewModel: DaySelectItemViewModel(day: day, isSelected: selectedDate == day), itemSize: itemSize, padding: 5)
                     // MARK: Day Selection
                         .onTapGesture {
                             selectedDate = day
@@ -113,29 +116,31 @@ public struct DaySelectScrollViewContainer: View {
 }
 
 extension DaySelectView {
-    private func getSelectDayItemViewSize(proxy: GeometryProxy) -> CGSize {
-        return CGSize(width: (proxy.size.width / CGFloat(7)) - 10, height: 90)
+    private func getSelectDayItemViewSize(proxy: GeometryProxy, padding: CGSize) -> CGSize {
+        let itemWidth = (proxy.size.width / CGFloat(7)) - padding.width
+        let itemHeight = proxy.size.height - padding.height
+        return CGSize(width: itemWidth, height: itemHeight)
     }
 }
 
 public func getDaysOfCurrentMonth(date: Date) -> [Day] {
     let calendar = Calendar.current
-     
-     // Get the range of days in the current month
-     guard let monthRange = calendar.range(of: .day, in: .month, for: date),
-           let firstMonthDay = calendar.date(from: calendar.dateComponents([.year, .month], from: date)) else {
-         return []
-     }
-     
-     // Create an array of dates for each day in the current month
-     let days = (0..<monthRange.count).compactMap { offset in
-         calendar.date(byAdding: .day, value: offset, to: firstMonthDay)
-     }
-     
-     // Convert dates to Day objects
-     let dayObjects = days.compactMap { Day(date: $0) }
-     
-     return dayObjects
+    
+    // Get the range of days in the current month
+    guard let monthRange = calendar.range(of: .day, in: .month, for: date),
+          let firstMonthDay = calendar.date(from: calendar.dateComponents([.year, .month], from: date)) else {
+        return []
+    }
+    
+    // Create an array of dates for each day in the current month
+    let days = (0..<monthRange.count).compactMap { offset in
+        calendar.date(byAdding: .day, value: offset, to: firstMonthDay)
+    }
+    
+    // Convert dates to Day objects
+    let dayObjects = days.compactMap { Day(date: $0) }
+    
+    return dayObjects
 }
 
 public func getFirstAndLastDayOfMonth(for date: Date) -> (firstDay: Date, lastDay: Date)? {
@@ -162,7 +167,7 @@ public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day]
 
 @available(iOS 18.0, *)
 #Preview {
-    ZStack {
+    VStack {
         DaySelectView(
             currentDayRange: .constant([Day(date: Date().addingTimeInterval(-900000)),
                                         Day(date: Date().addingTimeInterval(-890000)),
@@ -176,11 +181,11 @@ public func getNextMonthDayRangeByAdding(count: Int, toDate date: Date) -> [Day]
                                         Day(date: Date().addingTimeInterval(-200000)),
                                        ]),
             scrollTarget: .constant(Day(date: Date().addingTimeInterval(-700000))),
-            selectedDate: .constant(Day(date: Date().addingTimeInterval(-700000))),
+            selectedDate: .constant(Day(date: Date())),
             isTodayVisible: .constant(true),
             today: Day(date: Date())
         )
-        .padding()
     }
+    .frame(height: 90)
     .previewBorder()
 }

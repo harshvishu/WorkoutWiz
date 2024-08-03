@@ -1,5 +1,5 @@
 //
-//  WheelPicker.swift
+//  HorizontalRulerView.swift
 //
 //
 //  Created by harsh vishwakarma on 10/05/24.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-public struct WheelPicker: View {
+public struct HorizontalRulerView: View {
     
     private enum CancelID { case load }
     
@@ -106,12 +106,12 @@ public struct WheelPicker: View {
 
 @available(iOS 18.0, *)
 #Preview {
-    @State var value: Double = 0
+    @Previewable @State var value: Double = 0
     
     return VStack {
         Text("\(value)")
         
-        WheelPicker(config: .init(count: 10), value: $value)
+        HorizontalRulerView(config: .init(count: 10), value: $value)
             .frame(height: 60)
             .previewBorder()
     }

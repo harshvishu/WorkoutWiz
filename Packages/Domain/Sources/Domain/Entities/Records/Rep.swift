@@ -197,6 +197,38 @@ public enum HeightUnit: Int, Codable, CaseIterable {
     }
 }
 
+public enum DistanceUnit: Int, Codable, CaseIterable {
+    case kilometers = 0
+    case miles = 1
+    
+    public var sfSymbol: String {
+        switch self {
+            case .kilometers: return "km"
+            case .miles: return "mi"
+        }
+    }
+    
+    public func systemUnit() -> UnitLength {
+        switch self {
+            case .kilometers: .kilometers
+            case .miles: .miles
+        }
+    }
+    public var name: String {
+        switch self {
+            case .kilometers: return "Kilometers"
+            case .miles: return "Miles"
+        }
+    }
+    
+    public func convertInto(_ value: Double) -> Double {
+        switch self {
+            case .kilometers: return milesToKilometers(value)
+            case .miles: return kilometersToMiles(value)
+        }
+    }
+}
+
 // MARK: - Conversion functions
 public func feetToCentimeters(_ feet: Double) -> Double {
     return feet * 30.48
@@ -213,4 +245,18 @@ public func kilogramsToPounds(_ kilograms: Double) -> Double {
 
 public func poundsToKilograms(_ pounds: Double) -> Double {
     return pounds / 2.20462
+}
+
+/// Converts miles to kilometers
+/// - Parameter miles: The value in miles to be converted
+/// - Returns: The equivalent value in kilometers
+public func milesToKilometers(_ miles: Double) -> Double {
+    return miles * 1.60934
+}
+
+/// Converts kilometers to miles
+/// - Parameter kilometers: The value in kilometers to be converted
+/// - Returns: The equivalent value in miles
+public func kilometersToMiles(_ kilometers: Double) -> Double {
+    return kilometers / 1.60934
 }

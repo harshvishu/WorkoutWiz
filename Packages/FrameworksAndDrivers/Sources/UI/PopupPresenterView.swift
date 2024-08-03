@@ -96,56 +96,15 @@ struct PopupPresenterView: View {
         }
         .sheet(item: $store.scope(state: \.destination?.userWeightChangeRuler, action: \.destination.userWeightChangeRuler)) { store in
             
-            VStack(alignment: .center) {
-                WheelPicker(config: .init(count: store.bmi.preferredWeightUnit == .kg ? Settings.MAX_WEIGHT_KG : Settings.MAX_WEIGHT_POUND, multiplier: 1), value: .init(get: {
-                    return store.bmi.weight
-                }, set: { newValue in
-                    store.send(.weightChange(newValue), animation: .default)
-                }))
-                .frame(height: 60)
-                
-                TextField("Weight", value: Binding(get: {
-                    store.bmi.weight
-                }, set: { weight in
-                    store.send(.weightChange(weight), animation: .default)
-                }) , format: .number)
-                .multilineTextAlignment(.center)
-                .font(.system(size: 44, weight: .bold, design: .monospaced))
-                .keyboardType(.numberPad)
-                .frame(height: 240, alignment: .center)
-                .contentTransition(.numericText(value: store.bmi.weight))
-            }
-            .frame(maxWidth: .infinity)
-            .transition(.move(edge: .bottom))
-            .presentationDetents([.medium])
-            .presentationContentInteraction(.resizes)
+            WeightPickerRulerView(store: store)
+                .frame(maxWidth: .infinity)
+                .transition(.move(edge: .bottom))
+                .presentationDetents([.medium])
+                .presentationContentInteraction(.resizes)
         }
         .sheet(item: $store.scope(state: \.destination?.userHeightChangeRuler, action: \.destination.userHeightChangeRuler)) { store in
             
-            VStack(alignment: .center) {
-                WheelPicker(config: .init(count: store.bmi.preferredHeightUnit == .centimeter ? Settings.MAX_HEIGHT_CENTIMETER : Settings.MAX_HEIGHT_FEET, steps: 10, multiplier: 1), value: .init(get: {
-                    return store.bmi.height
-                }, set: { newValue in
-                    store.send(.heightChange(newValue), animation: .default)
-                }))
-                .frame(height: 60)
-                
-                TextField("Height", value: Binding(get: {
-                    store.bmi.height
-                }, set: { weight in
-                    store.send(.heightChange(weight), animation: .default)
-                }) , format: .number)
-                .multilineTextAlignment(.center)
-                .font(.system(size: 44, weight: .bold, design: .monospaced))
-                .keyboardType(.numberPad)
-                .frame(height: 240, alignment: .center)
-                .contentTransition(.numericText(value: store.bmi.height))
-                .overlay(alignment: .centerFirstTextBaseline) {
-                    Text(store.bmi.preferredHeightUnit.sfSymbol)
-                        .foregroundStyle(.secondary)
-                        .offset(x: 200)
-                }
-            }
+            HeightPickerRulerView(store: store)
             .frame(maxWidth: .infinity)
             .transition(.move(edge: .bottom))
             .presentationDetents([.medium])
@@ -159,4 +118,73 @@ struct PopupPresenterView: View {
     PopupPresenterView(store: StoreOf<PopupPresenter>(initialState: PopupPresenter.State(), reducer: {
         PopupPresenter()
     }))
+}
+
+struct HeightPickerRulerView: View {
+    @Bindable var store: StoreOf<Settings>
+    @State var unitTextViewSize: CGSize = .zero
+    
+    var body: some View {
+        VStack(alignment: .center) {
+            HorizontalRulerView(config: .init(count: store.bmi.preferredHeightUnit == .centimeter ? Settings.MAX_HEIGHT_CENTIMETER : Settings.MAX_HEIGHT_FEET, steps: 10, multiplier: 1), value: .init(get: {
+                return store.bmi.height
+            }, set: { newValue in
+                store.send(.heightChange(newValue), animation: .default)
+            }))
+            .frame(height: 60)
+            
+            TextField("Height", value: Binding(get: {
+                store.bmi.height
+            }, set: { weight in
+                store.send(.heightChange(weight), animation: .default)
+            }) , format: .number.precision(.fractionLength(2)))
+            .fixedSize()
+            .multilineTextAlignment(.center)
+            .font(.system(size: 44, weight: .bold, design: .monospaced))
+            .keyboardType(.numberPad)
+            .frame(height: 240, alignment: .center)
+            .contentTransition(.numericText(value: store.bmi.height))
+            .overlay(alignment: .trailingFirstTextBaseline) {
+                Text(store.bmi.preferredHeightUnit.sfSymbol)
+                    .measureSize(size: $unitTextViewSize)
+                    .foregroundStyle(.secondary)
+                    .offset(x: unitTextViewSize.width)
+            }
+        }
+    }
+}
+
+struct WeightPickerRulerView: View {
+    @Bindable var store: StoreOf<Settings>
+    @State var unitTextViewSize: CGSize = .zero
+    
+    var body: some View {
+        VStack(alignment: .center) {
+            HorizontalRulerView(config: .init(count: store.bmi.preferredWeightUnit == .kg ? Settings.MAX_WEIGHT_KG : Settings.MAX_WEIGHT_POUND, multiplier: 1), value: .init(get: {
+                return store.bmi.weight
+            }, set: { newValue in
+                store.send(.weightChange(newValue), animation: .default)
+            }))
+            .frame(height: 60)
+                
+                TextField("Weight", value: Binding(get: {
+                    store.bmi.weight
+                }, set: { weight in
+                    store.send(.weightChange(weight), animation: .default)
+                }) , format: .number.precision(.fractionLength(2)))
+                .fixedSize()
+                .multilineTextAlignment(.center)
+                .font(.system(size: 44, weight: .bold, design: .monospaced))
+                .keyboardType(.numberPad)
+                .frame(height: 240, alignment: .center)
+                .contentTransition(.numericText(value: store.bmi.weight))
+                .overlay(alignment: .trailingFirstTextBaseline) {
+                    Text(store.bmi.preferredWeightUnit.sfSymbol)
+                        .measureSize(size: $unitTextViewSize)
+                        .foregroundStyle(.secondary)
+                        .offset(x: unitTextViewSize.width)
+                }
+        }
+       
+    }
 }
